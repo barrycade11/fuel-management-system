@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import CustomDatePicker from "../../../Components/CustomDatePicker";
+import CustomDatePicker from "../../../Components/CustomDatePicker.jsx";
 import MultiSelectDropdown from "~/Components/MultiSelectDropdown";
 
-const DashboardFilter = () => {
-    const [startDate, setStartDate] = useState(null);
+const DashboardFilter = ({activeTab, startDate, setStartDate, endDate, setEndDate}) => {
     
     return (
         <div className="flex gap-2 my-4 items-center">
@@ -15,13 +14,17 @@ const DashboardFilter = () => {
 
             <CustomDatePicker   
                 label={"Period End Date"}
-                startDate={startDate}
-                setStartDate={setStartDate}
+                startDate={endDate}
+                setStartDate={setEndDate}
             />
 
-            <MultiSelectDropdown 
-                label={"Station"}
-            />
+            {activeTab=="PMDTR" || activeTab=="Navigator" ? 
+                null
+            :
+                <MultiSelectDropdown 
+                    label={"Station"}
+                />
+            }
         </div>
     );
 };

@@ -1,7 +1,7 @@
 import SimpleTable from "~/Components/Tables/SimpleTable"
 import { useState } from "react";
 import { Products, Locations } from "~/Constants/Labels";
-import StackedBarChart from "~/Components/Charts/StackedBarChart";
+import StackedBarChart from "~/Pages/Dashboard/Components/Charts/StackedBarChart";
 
 const OtherProductsDashboard = (props) => {  
     const [Productsales, setProductsales] = useState({

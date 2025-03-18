@@ -6,7 +6,7 @@ const DashboardTabs = [
     "Other Products",
     "Tanks",
     "KPI",
-    "PMDTR",
+    "PMTDR",
     "Navigator"
 ]
 
