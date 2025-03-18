@@ -81,7 +81,7 @@ router.put("/customerContactPerson/:customerId/:id", async (req, res) => {
 
   try {
     const { customerId, id } = req.params;
-    const { name, startTime, endTime, details, status } = req.body;
+    const { name, contactNo, details } = req.body;
     
     await client.query("BEGIN")
     
