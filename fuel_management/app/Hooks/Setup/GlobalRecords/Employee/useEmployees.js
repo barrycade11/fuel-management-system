@@ -1,6 +1,6 @@
 import apiClient from "~/Constants/ApiClient";
 
-export const fetchFuels = async () => {
+export const fetchEmployees = async () => {
     try {
         const response = await apiClient.get(`/Employees`);
 

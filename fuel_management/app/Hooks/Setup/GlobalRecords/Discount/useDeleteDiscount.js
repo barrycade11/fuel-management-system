@@ -1,6 +1,6 @@
 import apiClient from "~/Constants/ApiClient";
 
-export const updateFuels = async (id) => {
+export const deleteDiscount = async (id) => {
     try {
         const response = await apiClient.delete(`/Discount/${id}`);
 

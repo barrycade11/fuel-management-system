@@ -1,6 +1,6 @@
 import apiClient from "~/Constants/ApiClient";
 
-export const fetchFuel = async (id) => {
+export const fetchDiscountDetails = async (id) => {
     try {
         const response = await apiClient.get(`/Discounts/${id}`);
 

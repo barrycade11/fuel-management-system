@@ -1,6 +1,6 @@
 import apiClient from "~/Constants/ApiClient";
 
-export const updateFuels = async (typeId, parentId, id, data) => {
+export const updateDropdown = async (typeId, parentId, id, data) => {
     try {
         const response = await apiClient.put(`/Dropdown/${typeId}/${parentId}/${id}`, data);
 

@@ -1,6 +1,6 @@
 import apiClient from "~/Constants/ApiClient";
 
-export const updateFuels = async (id, data) => {
+export const updateDiscount = async (id, data) => {
     try {
         const response = await apiClient.put(`/Discount/${id}`, data);
 

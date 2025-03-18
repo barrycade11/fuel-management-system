@@ -76,7 +76,7 @@ router.get("/discounts/:id", async (req, res) => {
   }
 });
 
-router.post("/discount-hdr", async (req, res) => {
+router.post("/discount", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -85,7 +85,7 @@ router.post("/discount-hdr", async (req, res) => {
     await client.query("BEGIN");
     
     const result = await client.query(`
-      INSERT INTO discount_hdr
+      INSERT INTO discountHdr
                   (
                     code,
                     name,
@@ -118,7 +118,7 @@ router.post("/discount-hdr", async (req, res) => {
   }
 });
 
-router.put("/discount_hdr/:id", async (req, res) => {
+router.put("/discount/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -128,7 +128,7 @@ router.put("/discount_hdr/:id", async (req, res) => {
     await client.query("BEGIN");
     
     const result = await client.query(`
-      UPDATE      discount_hdrs
+      UPDATE      discountHdr
       SET         code = $2,
                   name = $3,
                   criteriaId = $4,
@@ -158,7 +158,7 @@ router.put("/discount_hdr/:id", async (req, res) => {
   }
 });
 
-router.delete("/discount_hdr/:id", async (req, res) => {
+router.delete("/discount/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -168,7 +168,7 @@ router.delete("/discount_hdr/:id", async (req, res) => {
     
     const result = await client.query(`
       DELETE
-      FROM        discount_hdrs
+      FROM        discountHdr
       WHERE       id = $1
     `, [id]);
     
