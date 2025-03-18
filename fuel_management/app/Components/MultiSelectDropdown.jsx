@@ -2,7 +2,7 @@ import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button } from "@
 import { useMemo, useState } from "react";
 import { Locations } from "~/Constants/Labels";
 
-export default function MultiSelectDropdown(props) {
+export default function MultiSelectDropdown({label}) {
     const [selectedKeys, setSelectedKeys] = useState(new Set(["Select"]));
 
     const selectedValue = useMemo(
@@ -12,7 +12,7 @@ export default function MultiSelectDropdown(props) {
 
     return (
         <div className="flex flex-col justify-between p-2 ">
-            <label className="text-sm text-gray-400">{props.label}</label>
+            <label className="text-sm text-gray-400">{label}</label>
             <div className="mt-2 mb-1">
             <Dropdown>
                 <DropdownTrigger>

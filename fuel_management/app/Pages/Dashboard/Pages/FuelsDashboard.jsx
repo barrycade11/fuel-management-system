@@ -1,4 +1,4 @@
-import SeparateBarChart from "~/Components/Charts/SeparateBarChart";
+import SeparateBarChart from "~/Pages/Dashboard/Components/Charts/SeparateBarChart";
 import SimpleTable from "~/Components/Tables/SimpleTable"
 import { useState } from "react";
 import { Fuels, Locations } from "~/Constants/Labels";
