@@ -27,6 +27,9 @@ app.use("/Setup/GlobalRecords", dropdownRoutes);
 const employeeRoutes = require("./Setup/GlobalRecords/Employee");
 app.use("/Setup/GlobalRecords", employeeRoutes);
 
+const customerRoutes = require("./Setup/GlobalRecords/Customer");
+app.use("/Setup/GlobalRecords", customerRoutes);
+
 const port = process.env.PORT;
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
