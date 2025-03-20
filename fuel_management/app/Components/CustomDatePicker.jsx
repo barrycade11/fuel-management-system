@@ -5,7 +5,7 @@ import { parseDate } from "@internationalized/date";
 const CustomDatePicker = ({ startDate, setStartDate, label }) => {
     return (
         <div className="p-2">
-            <label className="text-sm text-gray-400">{label}</label>
+            <label className="text-sm text-gray-400 font-semibold">{label}</label>
             <DatePicker
                 className="w-48 my-2"
                 label=""

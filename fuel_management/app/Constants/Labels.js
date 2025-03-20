@@ -32,4 +32,22 @@ const Products = [
     {name: "OCPD", color: "#6366f1"}
 ]
 
-export { AppTitle, AppSubtitle, DashboardTabs, Locations, Fuels, Products };
+const SalesTabs = [
+    "Daily Sales Input",
+    "Upload POS",
+    "Reconcile"
+]
+
+const SampleEmployeeName = [
+    "Lester Mercado",
+    "Emil Pili",
+    "Jose Dela Cruz"
+]
+
+const Shifts = [
+    "1st Shift",
+    "2nd Shift",
+    "3rd Shift"
+]
+
+export { AppTitle, AppSubtitle, DashboardTabs, Locations, Fuels, Products, SalesTabs, SampleEmployeeName, Shifts };
