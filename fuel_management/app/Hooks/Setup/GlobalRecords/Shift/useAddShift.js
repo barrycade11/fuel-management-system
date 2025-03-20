@@ -1,6 +1,6 @@
 import apiClient from "~/Constants/ApiClient";
 
-export const createFuels = async (data) => {
+export const createShift = async (data) => {
     try {
         const response = await apiClient.post(`/Shift`, data);
 
