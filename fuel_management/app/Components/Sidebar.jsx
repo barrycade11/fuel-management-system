@@ -15,6 +15,7 @@ import useToggleDrawer from '~/Hooks/Sidenav/useToggleDrawer'
 import { useLocation, useNavigate } from 'react-router';
 import StringRoutes from '~/Constants/StringRoutes';
 import { NavLink } from 'react-router';
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button } from "@heroui/react";
 
 /*
  * Sidebar sample 
@@ -109,37 +110,47 @@ const AdminNavItem = () => {
   const { isOpen } = useToggleDrawer();
 
   return (
-    <li className="flex flex-row items-center px-3">
-      <span className='mr-2'>
-        <UserIcon size={24} />
-      </span>
-      <div
-        style={{
-          transform: isOpen ? 'translateX(0px)' : 'translateX(-10px)',
-          opacity: isOpen ? 1 : 0,
-          transition: 'transform 0.3s ease, opacity 0.3s ease',
-        }}
-      >
-        <div className="flex items-center">
-          <span className="font-medium text-gray-700">Alice Feeney</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 ml-1"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+
+    <Dropdown>
+      <DropdownTrigger>
+        <li className="flex flex-row items-center px-3">
+          <span className='mr-2'>
+            <UserIcon size={24} />
+          </span>
+          <div
+            style={{
+              transform: isOpen ? 'translateX(0px)' : 'translateX(-10px)',
+              opacity: isOpen ? 1 : 0,
+              transition: 'transform 0.3s ease, opacity 0.3s ease',
+            }}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </div>
-        <p className="text-xs text-gray-600">Admin</p>
-      </div>
-    </li>
+            <div className="flex items-center">
+              <span className="font-medium text-gray-700">Alice Feeney</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 ml-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+            <p className="text-xs text-gray-600">Admin</p>
+          </div>
+        </li>
+      </DropdownTrigger>
+      <DropdownMenu aria-label="Static Actions">
+        <DropdownItem key="new">Logout</DropdownItem>
+        <DropdownItem key="copy">Change Password</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+
 
   )
 }
