@@ -2,13 +2,13 @@ import SimpleInput from "~/Components/SimpleInput"
 
 const TaxTotals = () => {
     return (
-        <div className="h-full w-full border-[1px] rounded-sm">
+        <div className="h-min w-full border-[1px] rounded-sm">
             <div className="bg-blue-100 p-3 text-gray-500 font-semibold rounded-sm">
                 Tax Totals
             </div>
 
-            <div className="grid gap-2 px-14 py-6">
-                <div className="grid gap-1">
+            <div className="grid gap-1 md:px-20 px-8 py-6">
+                <div className="grid gap-1 w-full">
                     <SimpleInput
                         version={3}
                         label={"Vatable Sales"}
@@ -20,7 +20,7 @@ const TaxTotals = () => {
                     // setInitialValue={}
                     />
                 </div>
-                <div className="grid gap-1">
+                <div className="grid gap-1 w-full">
                     <SimpleInput
                         version={3}
                         label={"VAT Amount"}
@@ -32,7 +32,7 @@ const TaxTotals = () => {
                     // setInitialValue={}
                     />
                 </div>
-                <div className="grid gap-1">
+                <div className="grid gap-1 w-full">
                     <SimpleInput
                         version={3}
                         label={"VAT Exempt Sales"}
@@ -44,7 +44,7 @@ const TaxTotals = () => {
                     // setInitialValue={}
                     />
                 </div>
-                <div className="grid gap-1">
+                <div className="grid gap-1 w-full">
                     <SimpleInput
                         version={3}
                         label={"VAT Zero Rated Sales"}

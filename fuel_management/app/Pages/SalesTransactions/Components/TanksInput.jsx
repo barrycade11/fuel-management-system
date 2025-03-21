@@ -58,7 +58,7 @@ const TanksInput = () => {
     ])
 
     return (
-        <div className="h-full w-full border-[1px]">
+        <div className="h-min w-full border-[1px]">
             <div className="bg-blue-100 p-3 text-gray-500 font-semibold">
                 Tank Totals
             </div>

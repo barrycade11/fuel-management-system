@@ -6,7 +6,7 @@ import SimpleDropdown from "~/Components/SimpleDropdown.jsx";
 const SalesFilter = ({activeTab, effectivityDate, setEffectivityDate}) => {
     
     return (
-        <div className="flex gap-2 my-4 items-center">
+        <div className="lg:grid-cols-4 grid grid-cols-2 lg:gap-4 my-4 items-center">
             <CustomDatePicker   
                 label={"Effectivity Date"}
                 startDate={effectivityDate}

@@ -153,11 +153,11 @@ const KPIDashboard = ({ startDate, endDate }) => {
                 })}
             </div>
 
-            <div className="grid grid-cols-9 gap-4 mt-10">
-                <div className="col-span-6 bg-gray-100 rounded-2xl">
+            <div className="grid lg:grid-cols-9 gap-4 mt-10">
+                <div className="lg:col-span-6 bg-gray-100 rounded-2xl w-full">
                     <LineChart chartData={chartData} label={"KPI"}/>
                 </div>
-                <div className="col-span-3 flex justify-end">
+                <div className="lg:col-span-3 flex justify-end">
                     <div className="bg-gray-100 rounded-2xl p-6 w-72">
                         <label className="font-bold">Banding</label>
                         <div className="grid gap-2 px-4 my-4">

@@ -151,8 +151,8 @@ const PMTDRDashboard = () => {
                 })}
             </div>
 
-            <div className="grid grid-cols-9 gap-4 mt-10">
-                <div className="col-span-6 bg-gray-100 rounded-2xl">
+            <div className="grid lg:grid-cols-9 gap-4 mt-10">
+                <div className="lg:col-span-6 bg-gray-100 rounded-2xl min-h-[45vh]">
                     <LineChart chartData={chartData} label={"KPI"} />
                 </div>
             </div>

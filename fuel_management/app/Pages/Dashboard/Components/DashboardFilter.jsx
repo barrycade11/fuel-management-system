@@ -5,7 +5,7 @@ import MultiSelectDropdown from "~/Components/MultiSelectDropdown";
 const DashboardFilter = ({activeTab, startDate, setStartDate, endDate, setEndDate}) => {
     
     return (
-        <div className="flex gap-2 my-4 items-center">
+        <div className="md:flex grid grid-cols-2 gap-4 my-4 items-center">
             <CustomDatePicker   
                 label={"Period Start Date"}
                 startDate={startDate}

@@ -1,21 +1,18 @@
 import { Button } from "@heroui/react"
+import Plus from "~/Assets/Svg/Plus"
 
-const RandomButtons = () => {
-    const PlusIcon = ({fill = "currentColor", size, height, width, ...props}) => {
-        return (
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
-        );
-    };
+const RandomButtons = ({openModeOfPayments, setOpenModeOfPayments, openDepSales, setOpenDepSales}) => {
+
     return(
         <div>
             <div className="grid gap-3 mt-24">
-                <Button color="primary" className="w-min rounded-md font-semibold text-base" startContent={<PlusIcon />}>
+                <Button onPress={()=>setOpenDepSales(!openDepSales)} color="primary" className="w-min rounded-md font-semibold text-base" startContent={<Plus color={"white"}/>}>
                     Department Sales
                 </Button>
-                <Button color="primary" className="w-min rounded-md font-semibold text-base" startContent={<PlusIcon />}>
+                <Button onPress={()=>setOpenModeOfPayments(!openModeOfPayments)} color="primary" className="w-min rounded-md font-semibold text-base" startContent={<Plus color={"white"}/>}>
                     Mode Of Payment
                 </Button>
-                <Button color="primary" className="w-min rounded-md font-semibold text-base" startContent={<PlusIcon />}>
+                <Button color="primary" className="w-min rounded-md font-semibold text-base" startContent={<Plus color={"white"}/>}>
                     Supplements
                 </Button>
 
@@ -24,7 +21,7 @@ const RandomButtons = () => {
                 </Button>
             </div>
 
-            <div className="flex gap-4 mt-24">
+            <div className="md:flex grid grid-cols-3 gap-4 mt-24">
                 <Button color="default" className="w-min rounded-md font-semibold text-base text-white" isDisabled={true}>
                     Back
                 </Button>
