@@ -1,17 +1,20 @@
 import React from 'react'
 import {
-    UserIcon,
-    LayoutDashboardIcon,
-    FileTextIcon,
-    FuelIcon,
-    WrenchIcon,
-    PackageIcon,
-    Settings2Icon,
-    Users2Icon,
-    MapPinIcon,
-    GlobeIcon,
+  UserIcon,
+  LayoutDashboardIcon,
+  FileTextIcon,
+  FuelIcon,
+  WrenchIcon,
+  PackageIcon,
+  Settings2Icon,
+  Users2Icon,
+  MapPinIcon,
+  GlobeIcon,
 } from 'lucide-react'
 import useToggleDrawer from '~/Hooks/Sidenav/useToggleDrawer'
+import { useLocation, useNavigate } from 'react-router';
+import StringRoutes from '~/Constants/StringRoutes';
+import { NavLink } from 'react-router';
 
 /*
  * Sidebar sample 
@@ -50,17 +53,27 @@ const Sidebar = () => {
           <NavItem
             icon={<LayoutDashboardIcon size={18} />}
             text="Dashboard"
-            active
+            url={StringRoutes.dashboard}
           />
           <NavItem
             icon={<FileTextIcon size={18} />}
             text="Sales Transactions"
+            url={StringRoutes.salesTransactions}
           />
-          <NavItem icon={<FuelIcon size={18} />} text="Fuel Management" />
-          <NavItem icon={<WrenchIcon size={18} />} text="Service Management" />
+          <NavItem
+            icon={<FuelIcon size={18} />}
+            text="Fuel Management"
+            url={StringRoutes.fuelManagement}
+          />
+          <NavItem
+            icon={<WrenchIcon size={18} />}
+            text="Service Management"
+            url={StringRoutes.serviceManagement}
+          />
           <NavItem
             icon={<PackageIcon size={18} />}
             text="Inventory Management"
+            url={StringRoutes.inventoryManagement}
           />
         </ul>
       </nav>
@@ -68,14 +81,16 @@ const Sidebar = () => {
   )
 }
 
-const NavItem = ({ icon, text, active = false, indented = false }) => {
+const NavItem = ({ icon, text, active = false, indented = false, url = "" }) => {
   const { isOpen } = useToggleDrawer();
 
   return (
     <li>
-      <a
-        href="#"
-        className={`flex items-center px-4 py-2 ${active ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-blue-50'} ${indented ? 'pl-8' : ''}`}
+      <NavLink
+        to={url}
+        className={({ isActive }) =>
+          `cursor-pointer flex items-center px-4 py-2   ${isActive ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-blue-50'}`
+        }
       >
         <span className="mr-3">{icon}</span>
         <span
@@ -85,7 +100,7 @@ const NavItem = ({ icon, text, active = false, indented = false }) => {
             transition: 'transform 0.3s ease, opacity 0.3s ease',
           }}
           className="text-sm">{text}</span>
-      </a>
+      </NavLink>
     </li>
   )
 }
