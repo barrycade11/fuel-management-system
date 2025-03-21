@@ -1,5 +1,8 @@
 
 class StringRoutes {
+  //auth 
+  static login = '/auth/login';
+
   static dev = 'dev';
   static dashboard = 'dashboard';
   static salesTransactions = 'sales-transactions';
