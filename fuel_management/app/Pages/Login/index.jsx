@@ -1,12 +1,15 @@
 import FMSLogo from "~/Components/FMSLogo";
 import TextBoxField from "./Components/TextBoxField";
 import PrimaryButton from "~/Components/PrimayButton";
+import { useNavigate } from "react-router";
+import StringRoutes from "~/Constants/StringRoutes";
 
 const Login = () => {
+  const navigate = useNavigate();
   return (
     <div className="h-screen w-screen flex flex-row">
       <div className="flex-1 flex items-center bg-gray-50 justify-end">
-        <div className="flex-col bg-white rounded-xl shadow-xl">
+        <div className="flex-col bg-white rounded-[1.5rem] shadow-xl">
           <div className="p-20">
             <div className="py-10">
               <FMSLogo />
@@ -21,6 +24,7 @@ const Login = () => {
             />
             <div className="pt-5">
               <PrimaryButton
+                onClick={() => navigate(StringRoutes.dashboard)}
                 title="Login"
               />
             </div>
