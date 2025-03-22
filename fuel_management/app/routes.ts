@@ -25,5 +25,12 @@ export default [
 
         route(StringRoutes.serviceManagement, "./Pages/ServiceManagement/index.jsx"),
         route(StringRoutes.inventoryManagement, "./Pages/InventoryManagement/index.jsx"),
+
+        route(StringRoutes.settings, "./Pages/Settings/index.jsx", [
+            index("./SubRoutes/Settings/User.jsx"),
+
+            route(StringRoutes.permission, "./SubRoutes/Settings/Permissions.jsx"),
+
+        ])
     ])
 ] satisfies RouteConfig;

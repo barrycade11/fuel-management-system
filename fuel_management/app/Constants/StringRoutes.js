@@ -15,6 +15,17 @@ class StringRoutes {
 
   static serviceManagement = 'service-management';
   static inventoryManagement = 'inventory-management';
+
+  static settings = 'settings';
+  static permission = 'permissions';
+
+  getCurrentSubRoute = (pathname) => {
+    if(!pathname) return;
+
+    const subRoutes = pathname.split('/');
+    return subRoutes[subRoutes.length - 1];
+  }
+
 }
 
 export default StringRoutes;
