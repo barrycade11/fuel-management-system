@@ -26,6 +26,14 @@ class StringRoutes {
     return subRoutes[subRoutes.length - 1];
   }
 
+  getRootRoute = (pathname) => {
+    if(!pathname) return;
+
+    const subRoutes = pathname.split('/');
+    return subRoutes[1];
+
+  }
+
 }
 
 export default StringRoutes;

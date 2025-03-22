@@ -16,9 +16,8 @@ import {
   Users
 } from 'lucide-react'
 import useToggleDrawer from '~/Hooks/Sidenav/useToggleDrawer'
-import { useLocation, useNavigate } from 'react-router';
+import { useLocation, useNavigate, NavLink } from 'react-router';
 import StringRoutes from '~/Constants/StringRoutes';
-import { NavLink } from 'react-router';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, useToast, dropdown } from "@heroui/react";
 
 const NavItemWithDropdown = ({
@@ -28,15 +27,21 @@ const NavItemWithDropdown = ({
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { isOpen }  = useToggleDrawer(); 
+  const stringRoutes = new StringRoutes(); 
+  const { pathname } = useLocation()
 
   const toggleDropdown = () => {
     setDropdownOpen(state => !state);
   } 
+  //isActive ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-blue-50'
 
   return (
-    <li className='flex flex-col px-4 py-2'>
-      <div 
-        className='flex flex-row items-center text-gray-800 cursor-pointer'
+    <li className='flex flex-col '>
+      <NavLink
+        to={'#'}
+        className={({ isActive }) =>
+          `px-4 py-2 flex flex-row items-center text-gray-800 cursor-pointer ${stringRoutes.getRootRoute(pathname).includes(StringRoutes.settings)? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-blue-50'}`
+        }
         onClick={toggleDropdown}
       >
         <span className="mr-3">
@@ -56,7 +61,7 @@ const NavItemWithDropdown = ({
         <div className='flex justify-end flex-grow'>
           {dropdownOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
         </div>
-      </div>
+      </NavLink>
       <div
         style={{
           maxHeight: dropdownOpen ? "200px" : "0",
