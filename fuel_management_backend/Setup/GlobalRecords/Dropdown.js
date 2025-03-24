@@ -2,16 +2,21 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../../Config/Connection");
 
-router.get("/dropdowns/:typeId/:parentId", async (req, res) => {
+router.get("/dropdowns/:typeId", async (req, res) => {
+  // const { typeId, parentId } = req.params;
+  // console.log(typeId)
+  // console.log(parentId)
   try {
-    const { typeId, parentId } = req.params;
+    const { typeId } = req.params;
+    // const { typeId, parentId } = req.params;
     const result = await pool.query(`
       SELECT    id,
                 name
       FROM      dropdown
       WHERE     dropdownTypeId = $1
-                AND ($2 = 0 OR parentId = $2)
-    `, [typeId, parentId]);
+    `, 
+    // [typeId, parentId]);
+    [typeId]);
     res.status(201).json(result.rows);
   }
   catch (err) {
@@ -20,17 +25,22 @@ router.get("/dropdowns/:typeId/:parentId", async (req, res) => {
   }
 });
 
-router.get("/dropdowns/:typeId/:parentId/:id", async (req, res) => {
+// router.get("/dropdowns/:typeId/:parentId/:id", async (req, res) => {
+router.get("/dropdowns/:typeId/:id", async (req, res) => {
+  // const { typeId, id } = req.params;
+  // console.log(req.params)
   try {
-    const { typeId, id, parentId } = req.params;
+    // const { typeId, id, parentId } = req.params;
+    const { typeId, id } = req.params;
     const result = await pool.query(`
       SELECT    id,
                 name
       FROM      dropdown
       WHERE     dropdownTypeId = $1
-                AND ($2 = 0 OR parentId = $2)
-                AND id = $3
-    `, [typeId, parentId, id]);
+                AND id = $2
+    `, 
+    // [typeId, parentId, id]);
+    [typeId, id]);
     res.status(201).json(result.rows);
   }
   catch (err) {

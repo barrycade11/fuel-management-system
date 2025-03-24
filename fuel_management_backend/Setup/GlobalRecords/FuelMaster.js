@@ -17,7 +17,7 @@ router.get("/FuelMasters", async (req, res) => {
       INNER JOIN  dropdown b
               ON  a.categoryId = b.id
     `);
-    res.status(201).json(result.rows);
+    res.status(200).json(result.rows);
   }
   catch (err) {
     console.error(err);
@@ -25,7 +25,7 @@ router.get("/FuelMasters", async (req, res) => {
   }
 });
 
-router.get("/FuelMasters/:id", async (req, res) => {
+router.get("/FuelMaster/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(`
@@ -40,9 +40,11 @@ router.get("/FuelMasters/:id", async (req, res) => {
       FROM        fuelMaster a
       INNER JOIN  dropdown b
               ON  a.categoryId = b.id
-      WHERE       id = $1
+      WHERE       a.id = $1
     `, [id]);
-    res.status(201).json(result.rows);
+    res.status(200).json(result.rows);
+
+    console.log(result.rows);
   }
   catch (err) {
     console.error(err);
@@ -52,9 +54,11 @@ router.get("/FuelMasters/:id", async (req, res) => {
 
 router.post("/FuelMaster", async (req, res) => {
   const client = await pool.connect();
+  const { code, name, categoryId, details, color, status } = req.body;
 
+  // console.log(req.body);
   try {
-    const { code, name, categoryId, details, color, status } = req.body;
+    
 
     await client.query("BEGIN");
 
