@@ -1,96 +1,99 @@
 import { useEffect, useState } from "react";
+import TimePicker from "react-time-picker";
+import "react-time-picker/dist/TimePicker.css";
+import "react-clock/dist/Clock.css";
+import "~/timepicker.css";
 import Table from "~/Components/Table";
 import Dropdown from "~/Components/Dropdown";
 import Notification from "~/Components/Notification";
 import { 
-  fetchFuelMasters, 
-  fetchFuelMasterDetails, 
-  createFuelMaster, 
-  updateFuelMaster, 
-  deleteFuelMaster 
-} from "~/Hooks/Setup/GlobalRecords/FuelMaster/useFuelMasters";
-import { fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
+  fetchShifts, 
+  fetchShiftDetails, 
+  createShift, 
+  updateShift, 
+  deleteShift  
+} from "~/Hooks/Setup/GlobalRecords/Shift/useShifts";
+import { ClockIcon } from "lucide-react";
 
-const FuelMaster = () => {
-  const [fuels, setFuels] = useState([]);
+const Shift = () => {
+  const [shifts, setShifts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [newFuel, setNewFuel] = useState({ 
-    code: "", 
+  const [newShift, setNewShift] = useState({  
     name: "", 
-    categoryId: "", 
+    startTime: "00:00",
+    endTime: "00:00",
     details: "", 
-    color: "#000000", 
     status: true
   });
 
-  const getFuelMasters = async () => {
+  const getShifts = async () => {
     setLoading(true);
     try {
-        const data = await fetchFuelMasters();
-        setFuels(data);
-        // console.log(data);
+        const data = await fetchShifts();
+
+        const formattedData = data.map(shift => ({
+            ...shift,
+            startTime: shift.starttime, 
+            endTime: shift.endtime  
+        }));
+
+        setShifts(formattedData);
+        // console.log(formattedData);
     } catch (error) {
         console.error("Error fetching data:", error);
     } finally {
         setLoading(false);
     }
-  };
-
+};
   useEffect(() => {
-      getFuelMasters();
+      getShifts();
   }, []);
 
   const handleAdd = () => {
-    setNewFuel({ 
-      code: "", 
+    setNewShift({ 
       name: "", 
-      categoryId: "", 
+      startTime: "00:00",
+      endTime: "00:00", 
       details: "", 
-      color: "#000000", 
-      status: true 
+      status: true
     });
     setIsEditing(true);
   };
 
-  const handleEdit = async (fuel) => {
+  const handleEdit = async (shift) => {
     try {
-        const categoryData = await fetchDropdownTypeList(3, fuel.categoryid); 
+        setNewShift((prev) => ({
+          ...prev,
+          ...shift
+        }));
 
-        if (categoryData.length > 0) {
-            setNewFuel((prev) => ({
-                ...prev,
-                ...fuel,
-                categoryId: categoryData[0].id, 
-            }));
-
-            setIsEditing(true);
-        }
+        setIsEditing(true);
     } catch (error) {
-        console.error("Error fetching category data:", error);
+        console.error("Error fetching data:", error);
     }
   };
 
   const handleSave = async () => {
-    if (!newFuel.code || !newFuel.name || !newFuel.categoryId || !newFuel.details || !newFuel.color) {
+    if (!newShift.name || !newShift.startTime || !newShift.endTime || !newShift.details) {
         setNotification({ message: "All fields are required.", type: "error" });
         return;
     }
 
     try {
-        if (newFuel.id) {
-            await updateFuelMaster(newFuel.id, newFuel);
+        if (newShift.id) {
+            await updateShift(newShift.id, newShift);
         } else {
-            const response = await createFuelMaster(newFuel);
-            setFuels([...fuels, response[0]]); 
+            const response = await createShift(newShift);
+            setShifts([...shifts, response[0]]); 
         }
 
         setIsEditing(false);
         setNotification({ message: "Save successful", type: "success" });
 
-        getFuelMasters(); 
+        getShifts(); 
     } catch (error) {
         setNotification({ message: "Error saving data", type: "error" });
         console.error("Error saving data:", error);
@@ -100,12 +103,12 @@ const FuelMaster = () => {
   const handleDelete = (id) => {
     const handleConfirm = async () => {
         try {
-            await deleteFuelMaster(id);
+            await deleteShift(id);
 
             setIsEditing(false);
             setNotification({ message: "Record deleted successfully!", type: "success" });
-            getFuelMasters(); 
-            setFuels((prevFuels) => prevFuels.filter(fuel => fuel.id !== id)); 
+            getShifts(); 
+            setShifts((prevShifts) => prevShifts.filter(shift => shift.id !== id)); 
         } catch (error) {
             setNotification({ message: "Failed to delete record.", type: "error" });
             console.error("Error deleting record:", error);
@@ -127,27 +130,22 @@ const FuelMaster = () => {
 
   const columns = [
     { key: "id", label: "No.", hidden: true },
-    { key: "code", label: "Fuel Code", hidden: false },
-    { key: "name", label: "Fuel Name", hidden: false },
-    { key: "category", label: "Category", hidden: true },
-    { key: "details", label: "Details", hidden: false },
+    { key: "name", label: "Shift Name", hidden: false },
+    { key: "startTime", label: "Start Time", hidden: false },
+    { key: "endTime", label: "End Time", hidden: false },
+    { key: "details", label: "Details", hidden: true },
     { 
       key: "status", 
       label: "Status",
-      render: (fuel) => {
-        // console.log("Rendering status:", fuel.status);
-        return fuel.status ? "Active" : "Inactive";
+      render: (shift) => {
+        // console.log("Rendering status:", shift.status);
+        return shift.status ? "Active" : "Inactive";
       },
       hidden: true
     }
   ];
 
   const customRender = {
-    code: (value, row) => (
-      <span className="px-3 py-1 text-white rounded-lg" style={{ backgroundColor: row.color }}>
-        {value}
-      </span>
-    ),
     actions: (item) => (
       <button
         onClick={() => handleEdit(item)} 
@@ -173,53 +171,63 @@ const FuelMaster = () => {
       ) : isEditing ? (
           <div className="h-screen flex justify-center items-center">
             <div className="bg-white p-6 w-96 h-full max-w-lg">
-              <h2 className="text-xl font-semibold mb-4">{newFuel.id ? "Edit" : "Add"} Fuel</h2>
-              <label className="block text-sm font-medium">Fuel Code</label>
+              <h2 className="text-xl font-semibold mb-4">{newShift.id ? "Edit" : "Add"} Shift</h2>
+              <label className="block text-sm font-medium">Shift Name</label>
               <input
                 type="text"
-                value={newFuel.code}
-                onChange={(e) => setNewFuel({ ...newFuel, code: e.target.value })}
-                className="w-full mb-2 p-2 border rounded" 
-              />
-              <label className="block text-sm font-medium">Fuel Name</label>
-              <input
-                type="text"
-                value={newFuel.name}
-                onChange={(e) => setNewFuel({ ...newFuel, name: e.target.value })}
+                value={newShift.name}
+                onChange={(e) => setNewShift({ ...newShift, name: e.target.value })}
                 className="w-full mb-2 p-2 border rounded"
               />
-              <label className="block text-sm font-medium">Fuel Category</label>
-              <Dropdown 
-                  typeId={3} 
-                  value={newFuel.categoryId} 
-                  onChange={(e) => setNewFuel({ ...newFuel, categoryId: e.target.value })} 
-              />
+              <div className="flex space-x-4">
+                <div className="flex flex-col w-full">
+                  <label className="text-sm font-medium mb-1">Start Shift</label>
+                  <div className="relative flex items-center border rounded-lg px-2 py-1">
+                    <TimePicker
+                      value={newShift.startTime} 
+                      onChange={(time) => setNewShift({ ...newShift, startTime: time })}
+                      disableClock={true} 
+                      clearIcon={null} 
+                      format="HH:mm" 
+                      className="w-full bg-transparent border-none focus:outline-none"
+                    />
+                    <ClockIcon className="absolute right-2 text-gray-500 w-5 h-5" />
+                  </div>
+                </div>
+                <div className="flex flex-col w-full">
+                  <label className="text-sm font-medium mb-1">End Shift</label>
+                  <div className="relative flex items-center border rounded-lg px-2 py-1">
+                    <TimePicker
+                      value={newShift.endTime} 
+                      onChange={(time) => setNewShift({ ...newShift, endTime: time })}
+                      disableClock={true} 
+                      clearIcon={null} 
+                      format="HH:mm" 
+                      className="w-full bg-transparent border-none focus:outline-none"
+                    />
+                    <ClockIcon className="absolute right-2 text-gray-500 w-5 h-5" />
+                  </div>
+                </div>
+              </div>
               <label className="block text-sm font-medium">Details</label>
               <textarea
-                value={newFuel.details}
-                onChange={(e) => setNewFuel({ ...newFuel, details: e.target.value })}
+                value={newShift.details}
+                onChange={(e) => setNewShift({ ...newShift, details: e.target.value })}
                 className="w-full mb-2 p-2 border rounded"
-              />
-              <label className="block text-sm font-medium">Assign Color</label>
-              <input
-                type="color"
-                value={newFuel.color}
-                onChange={(e) => setNewFuel({ ...newFuel, color: e.target.value })}
-                className="w-full h-12 cursor-pointer"
               />
               <label className="block text-sm font-medium">Status</label>
               <select
-                value={newFuel.status}
-                onChange={(e) => setNewFuel({ ...newFuel, status: e.target.value })}
+                value={newShift.status}
+                onChange={(e) => setNewShift({ ...newShift, status: e.target.value })}
                 className="w-full mb-4 p-2 border rounded"
               >
                 <option value="true">Active</option>
                 <option value="false">Inactive</option>
               </select>
               <div className="flex justify-between items-center w-full">
-                {newFuel.id ? (
+                {newShift.id ? (
                   <button 
-                    onClick={() => handleDelete(newFuel.id)} 
+                    onClick={() => handleDelete(newShift.id)} 
                     className="text-red-500"
                   >
                     Delete...
@@ -236,8 +244,8 @@ const FuelMaster = () => {
           </div>
       ) : (
         <Table 
-          title="Fuels" 
-          data={fuels} 
+          title="Shifts" 
+          data={shifts} 
           columns={columns} 
           onEdit={handleEdit} 
           onAdd={handleAdd} 
@@ -248,4 +256,4 @@ const FuelMaster = () => {
   );  
 };
 
-export default FuelMaster;
+export default Shift;

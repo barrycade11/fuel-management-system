@@ -2,39 +2,32 @@
  * A class that provides string routes and utility methods for route management.
  */
 class StringRoutes {
-  // Auth routes
-  /** @type {string} The login route. */
-  static login = '/auth/login';
-
-  // Main sections
-  /** @type {string} The development route. */
   static dev = 'dev';
-  /** @type {string} The dashboard route. */
   static dashboard = 'dashboard';
-  /** @type {string} The sales transactions route. */
   static salesTransactions = 'sales-transactions';
 
-  // Fuel management routes
-  /** @type {string} The fuel management root route. */
   static fuelManagement = 'fuel-management';
-  /** @type {string} The fuel price route under fuel management. */
-  static fuelPrice = 'fuel-management/fuelPrice';
-  /** @type {string} The fuel delivery route under fuel management. */
-  static fuelDelivery = 'fuel-management/fuelDelivery';
-  /** @type {string} The lubricants route under fuel management. */
+  static fuelPrice = 'fuel-management/fuel-price';
+  static fuelDelivery = 'fuel-management/fuel-delivery';
   static lubricants = 'fuel-management/lubricants';
 
-  // Service and inventory management routes
-  /** @type {string} The service management route. */
   static serviceManagement = 'service-management';
-  /** @type {string} The inventory management route. */
   static inventoryManagement = 'inventory-management';
 
-  // Settings and permissions routes
-  /** @type {string} The settings route. */
+  static globalSetup = 'global-setup';
+  static fuelMaster = 'global-setup/fuel-master';
+  static departments = 'global-setup/departments';
+  static shifts = 'global-setup/shifts';
+  static paymentModes = 'global-setup/payment-modes';
+  static discounts = 'global-setup/discounts';
+  static dropdownRecords = 'global-setup/dropdown-records';
+  static employees = 'global-setup/employees';
+  static customers = 'global-setup/customers';
+  static targets = 'global-setup/targets';
+  static incentives = 'global-setup/incentives';
+
   static settings = 'settings';
-  /** @type {string} The permissions route. */
-  static permission = 'permissions';
+  static permission = 'settings/permissions';
 
   /**
    * Retrieves the current sub-route from a given pathname.
@@ -61,6 +54,7 @@ class StringRoutes {
     const subRoutes = pathname.split('/');
     return subRoutes[1];
   }
+
 }
 
 export default StringRoutes;

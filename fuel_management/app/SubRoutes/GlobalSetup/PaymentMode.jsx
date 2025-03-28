@@ -3,94 +3,82 @@ import Table from "~/Components/Table";
 import Dropdown from "~/Components/Dropdown";
 import Notification from "~/Components/Notification";
 import { 
-  fetchFuelMasters, 
-  fetchFuelMasterDetails, 
-  createFuelMaster, 
-  updateFuelMaster, 
-  deleteFuelMaster 
-} from "~/Hooks/Setup/GlobalRecords/FuelMaster/useFuelMasters";
-import { fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
+  fetchPaymentModes, 
+  fetchPaymentModeDetails, 
+  createPaymentMode, 
+  updatePaymentMode, 
+  deletePaymentMode
+} from "~/Hooks/Setup/GlobalRecords/PaymentMode/usePaymentModes";
 
-const FuelMaster = () => {
-  const [fuels, setFuels] = useState([]);
+const PaymentMode = () => {
+  const [paymentModes, setPaymentModes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [newFuel, setNewFuel] = useState({ 
+  const [newPaymentMode, setNewPaymentMode] = useState({  
     code: "", 
     name: "", 
-    categoryId: "", 
     details: "", 
-    color: "#000000", 
     status: true
   });
 
-  const getFuelMasters = async () => {
+  const getPaymentModes = async () => {
     setLoading(true);
     try {
-        const data = await fetchFuelMasters();
-        setFuels(data);
+        const data = await fetchPaymentModes();
+        setPaymentModes(data);
         // console.log(data);
     } catch (error) {
         console.error("Error fetching data:", error);
     } finally {
         setLoading(false);
     }
-  };
-
+};
   useEffect(() => {
-      getFuelMasters();
+      getPaymentModes();
   }, []);
 
   const handleAdd = () => {
-    setNewFuel({ 
+    setNewPaymentMode({ 
       code: "", 
       name: "", 
-      categoryId: "", 
-      details: "", 
-      color: "#000000", 
-      status: true 
+      status: true
     });
     setIsEditing(true);
   };
 
-  const handleEdit = async (fuel) => {
+  const handleEdit = async (paymentMode) => {
     try {
-        const categoryData = await fetchDropdownTypeList(3, fuel.categoryid); 
+        setNewPaymentMode((prev) => ({
+          ...prev,
+          ...paymentMode
+        }));
 
-        if (categoryData.length > 0) {
-            setNewFuel((prev) => ({
-                ...prev,
-                ...fuel,
-                categoryId: categoryData[0].id, 
-            }));
-
-            setIsEditing(true);
-        }
+        setIsEditing(true);
     } catch (error) {
-        console.error("Error fetching category data:", error);
+        console.error("Error fetching data:", error);
     }
   };
 
   const handleSave = async () => {
-    if (!newFuel.code || !newFuel.name || !newFuel.categoryId || !newFuel.details || !newFuel.color) {
+    if (!newPaymentMode.code || !newPaymentMode.name || !newPaymentMode.details) {
         setNotification({ message: "All fields are required.", type: "error" });
         return;
     }
 
     try {
-        if (newFuel.id) {
-            await updateFuelMaster(newFuel.id, newFuel);
+        if (newPaymentMode.id) {
+            await updatePaymentMode(newPaymentMode.id, newPaymentMode);
         } else {
-            const response = await createFuelMaster(newFuel);
-            setFuels([...fuels, response[0]]); 
+            const response = await createPaymentMode(newPaymentMode);
+            setPaymentModes([...paymentModes, response[0]]); 
         }
 
         setIsEditing(false);
         setNotification({ message: "Save successful", type: "success" });
 
-        getFuelMasters(); 
+        getPaymentModes(); 
     } catch (error) {
         setNotification({ message: "Error saving data", type: "error" });
         console.error("Error saving data:", error);
@@ -100,12 +88,12 @@ const FuelMaster = () => {
   const handleDelete = (id) => {
     const handleConfirm = async () => {
         try {
-            await deleteFuelMaster(id);
+            await deletePaymentMode(id);
 
             setIsEditing(false);
             setNotification({ message: "Record deleted successfully!", type: "success" });
-            getFuelMasters(); 
-            setFuels((prevFuels) => prevFuels.filter(fuel => fuel.id !== id)); 
+            getPaymentModes(); 
+            setPaymentModes((prevPaymentModes) => prevPaymentModes.filter(paymentMode => paymentMode.id !== id)); 
         } catch (error) {
             setNotification({ message: "Failed to delete record.", type: "error" });
             console.error("Error deleting record:", error);
@@ -127,27 +115,21 @@ const FuelMaster = () => {
 
   const columns = [
     { key: "id", label: "No.", hidden: true },
-    { key: "code", label: "Fuel Code", hidden: false },
-    { key: "name", label: "Fuel Name", hidden: false },
-    { key: "category", label: "Category", hidden: true },
+    { key: "code", label: "Payment Code", hidden: false },
+    { key: "name", label: "Payment Name", hidden: false },
     { key: "details", label: "Details", hidden: false },
     { 
       key: "status", 
       label: "Status",
-      render: (fuel) => {
-        // console.log("Rendering status:", fuel.status);
-        return fuel.status ? "Active" : "Inactive";
+      render: (paymentMode) => {
+        // console.log("Rendering status:", paymentMode.status);
+        return paymentMode.status ? "Active" : "Inactive";
       },
-      hidden: true
+      hidden: false
     }
   ];
 
   const customRender = {
-    code: (value, row) => (
-      <span className="px-3 py-1 text-white rounded-lg" style={{ backgroundColor: row.color }}>
-        {value}
-      </span>
-    ),
     actions: (item) => (
       <button
         onClick={() => handleEdit(item)} 
@@ -157,7 +139,7 @@ const FuelMaster = () => {
       </button>
     ),
   };
-
+  
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
       {notification && 
@@ -173,53 +155,40 @@ const FuelMaster = () => {
       ) : isEditing ? (
           <div className="h-screen flex justify-center items-center">
             <div className="bg-white p-6 w-96 h-full max-w-lg">
-              <h2 className="text-xl font-semibold mb-4">{newFuel.id ? "Edit" : "Add"} Fuel</h2>
-              <label className="block text-sm font-medium">Fuel Code</label>
+              <h2 className="text-xl font-semibold mb-4">{newPaymentMode.id ? "Edit" : "Add"} Payment Mode</h2>
+              <label className="block text-sm font-medium">Payment Code</label>
               <input
                 type="text"
-                value={newFuel.code}
-                onChange={(e) => setNewFuel({ ...newFuel, code: e.target.value })}
-                className="w-full mb-2 p-2 border rounded" 
-              />
-              <label className="block text-sm font-medium">Fuel Name</label>
-              <input
-                type="text"
-                value={newFuel.name}
-                onChange={(e) => setNewFuel({ ...newFuel, name: e.target.value })}
+                value={newPaymentMode.code}
+                onChange={(e) => setNewPaymentMode({ ...newPaymentMode, code: e.target.value })}
                 className="w-full mb-2 p-2 border rounded"
               />
-              <label className="block text-sm font-medium">Fuel Category</label>
-              <Dropdown 
-                  typeId={3} 
-                  value={newFuel.categoryId} 
-                  onChange={(e) => setNewFuel({ ...newFuel, categoryId: e.target.value })} 
+              <label className="block text-sm font-medium">Payment Name</label>
+              <input
+                type="text"
+                value={newPaymentMode.name}
+                onChange={(e) => setNewPaymentMode({ ...newPaymentMode, name: e.target.value })}
+                className="w-full mb-2 p-2 border rounded"
               />
               <label className="block text-sm font-medium">Details</label>
               <textarea
-                value={newFuel.details}
-                onChange={(e) => setNewFuel({ ...newFuel, details: e.target.value })}
+                value={newPaymentMode.details}
+                onChange={(e) => setNewPaymentMode({ ...newPaymentMode, details: e.target.value })}
                 className="w-full mb-2 p-2 border rounded"
-              />
-              <label className="block text-sm font-medium">Assign Color</label>
-              <input
-                type="color"
-                value={newFuel.color}
-                onChange={(e) => setNewFuel({ ...newFuel, color: e.target.value })}
-                className="w-full h-12 cursor-pointer"
               />
               <label className="block text-sm font-medium">Status</label>
               <select
-                value={newFuel.status}
-                onChange={(e) => setNewFuel({ ...newFuel, status: e.target.value })}
+                value={newPaymentMode.status}
+                onChange={(e) => setNewPaymentMode({ ...newPaymentMode, status: e.target.value })}
                 className="w-full mb-4 p-2 border rounded"
               >
                 <option value="true">Active</option>
                 <option value="false">Inactive</option>
               </select>
               <div className="flex justify-between items-center w-full">
-                {newFuel.id ? (
+                {newPaymentMode.id ? (
                   <button 
-                    onClick={() => handleDelete(newFuel.id)} 
+                    onClick={() => handleDelete(newPaymentMode.id)} 
                     className="text-red-500"
                   >
                     Delete...
@@ -236,8 +205,8 @@ const FuelMaster = () => {
           </div>
       ) : (
         <Table 
-          title="Fuels" 
-          data={fuels} 
+          title="Payment Modes" 
+          data={paymentModes} 
           columns={columns} 
           onEdit={handleEdit} 
           onAdd={handleAdd} 
@@ -248,4 +217,4 @@ const FuelMaster = () => {
   );  
 };
 
-export default FuelMaster;
+export default PaymentMode;

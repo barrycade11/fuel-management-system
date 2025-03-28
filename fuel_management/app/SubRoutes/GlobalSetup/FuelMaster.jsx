@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Table from "~/Components/Table";
 import Dropdown from "~/Components/Dropdown";
 import Notification from "~/Components/Notification";
+import { Textarea, Input } from "@heroui/react";
 import { 
   fetchFuelMasters, 
   fetchFuelMasterDetails, 
@@ -188,13 +189,22 @@ const FuelMaster = () => {
                 onChange={(e) => setNewFuel({ ...newFuel, name: e.target.value })}
                 className="w-full mb-2 p-2 border rounded"
               />
-              <label className="block text-sm font-medium">Fuel Category</label>
               <Dropdown 
+                  label="Fuel Category"
                   typeId={3} 
                   value={newFuel.categoryId} 
                   onChange={(e) => setNewFuel({ ...newFuel, categoryId: e.target.value })} 
               />
               <label className="block text-sm font-medium">Details</label>
+              <Textarea 
+                className="max-w-xs" 
+                label="Details" 
+                placeholder="Enter Details" 
+                value={newFuel.details}
+                onChange={(e) => setNewFuel({ ...newFuel, details: e.target.value })}
+                isRequired
+                isClearable
+              />
               <textarea
                 value={newFuel.details}
                 onChange={(e) => setNewFuel({ ...newFuel, details: e.target.value })}
