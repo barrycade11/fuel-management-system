@@ -130,9 +130,16 @@ const PaymentMode = () => {
   ];
 
   const customRender = {
-    
+    actions: (item) => (
+      <button
+        onClick={() => handleEdit(item)} 
+        className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
+      >
+        Edit
+      </button>
+    ),
   };
-
+  
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
       {notification && 

@@ -148,6 +148,14 @@ const FuelMaster = () => {
         {value}
       </span>
     ),
+    actions: (item) => (
+      <button
+        onClick={() => handleEdit(item)} 
+        className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
+      >
+        Edit
+      </button>
+    ),
   };
 
   return (

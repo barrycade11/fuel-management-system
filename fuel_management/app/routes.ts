@@ -30,6 +30,12 @@ export default [
       // route("departments", "./SubRoutes/GlobalSetup/Department.jsx"),
       route("shifts", "./SubRoutes/GlobalSetup/Shift.jsx"),
       route("payment-modes", "./SubRoutes/GlobalSetup/PaymentMode.jsx"),
+      // route("discounts", "./SubRoutes/GlobalSetup/Discount.jsx"),
+      // route("dropdown-records", "./SubRoutes/GlobalSetup/DropdownRecord.jsx"),
+      route("employees", "./SubRoutes/GlobalSetup/Employee.jsx"),
+      route("customers", "./SubRoutes/GlobalSetup/Customer.jsx"),
+      route("targets", "./SubRoutes/GlobalSetup/Target.jsx"),
+      // route("incentives", "./SubRoutes/GlobalSetup/Incentive.jsx"),
     ]),
   ])
 ] satisfies RouteConfig;

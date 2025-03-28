@@ -1,27 +1,23 @@
 import { useEffect, useState } from "react";
-import TimePicker from "react-time-picker";
-import "react-time-picker/dist/TimePicker.css";
-import "react-clock/dist/Clock.css";
-import "~/timepicker.css";
 import Table from "~/Components/Table";
 import Dropdown from "~/Components/Dropdown";
 import Notification from "~/Components/Notification";
 import { 
-  fetchShifts, 
-  fetchShiftDetails, 
-  createShift, 
-  updateShift, 
-  deleteShift  
-} from "~/Hooks/Setup/GlobalRecords/Shift/useShifts";
+  fetchDepartments, 
+  fetchDepartmentDetails, 
+  createDepartment, 
+  updateDepartment, 
+  deleteDepartment  
+} from "~/Hooks/Setup/GlobalRecords/Department/useDepartments";
 import { ClockIcon } from "lucide-react";
 
-const Shift = () => {
-  const [shifts, setShifts] = useState([]);
+const Department = () => {
+  const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [newShift, setNewShift] = useState({  
+  const [newDepartment, setNewDepartment] = useState({  
     name: "", 
     startTime: "00:00",
     endTime: "00:00",
@@ -29,18 +25,18 @@ const Shift = () => {
     status: true
   });
 
-  const getShifts = async () => {
+  const getDepartments = async () => {
     setLoading(true);
     try {
-        const data = await fetchShifts();
+        const data = await fetchDepartments();
 
-        const formattedData = data.map(shift => ({
-            ...shift,
-            startTime: shift.starttime, 
-            endTime: shift.endtime  
+        const formattedData = data.map(department => ({
+            ...department,
+            startTime: department.starttime, 
+            endTime: department.endtime  
         }));
 
-        setShifts(formattedData);
+        setDepartments(formattedData);
         // console.log(formattedData);
     } catch (error) {
         console.error("Error fetching data:", error);
@@ -49,11 +45,11 @@ const Shift = () => {
     }
 };
   useEffect(() => {
-      getShifts();
+      getDepartments();
   }, []);
 
   const handleAdd = () => {
-    setNewShift({ 
+    setNewDepartment({ 
       name: "", 
       startTime: "00:00",
       endTime: "00:00", 
@@ -63,11 +59,11 @@ const Shift = () => {
     setIsEditing(true);
   };
 
-  const handleEdit = async (shift) => {
+  const handleEdit = async (department) => {
     try {
-        setNewShift((prev) => ({
+        setNewDepartment((prev) => ({
           ...prev,
-          ...shift
+          ...department
         }));
 
         setIsEditing(true);
@@ -77,23 +73,23 @@ const Shift = () => {
   };
 
   const handleSave = async () => {
-    if (!newShift.name || !newShift.startTime || !newShift.endTime || !newShift.details) {
+    if (!newDepartment.name || !newDepartment.startTime || !newDepartment.endTime || !newDepartment.details) {
         setNotification({ message: "All fields are required.", type: "error" });
         return;
     }
 
     try {
-        if (newShift.id) {
-            await updateShift(newShift.id, newShift);
+        if (newDepartment.id) {
+            await updateDepartment(newDepartment.id, newDepartment);
         } else {
-            const response = await createShift(newShift);
-            setShifts([...shifts, response[0]]); 
+            const response = await createDepartment(newDepartment);
+            setDepartments([...departments, response[0]]); 
         }
 
         setIsEditing(false);
         setNotification({ message: "Save successful", type: "success" });
 
-        getShifts(); 
+        getDepartments(); 
     } catch (error) {
         setNotification({ message: "Error saving data", type: "error" });
         console.error("Error saving data:", error);
@@ -103,12 +99,12 @@ const Shift = () => {
   const handleDelete = (id) => {
     const handleConfirm = async () => {
         try {
-            await deleteShift(id);
+            await deleteDepartment(id);
 
             setIsEditing(false);
             setNotification({ message: "Record deleted successfully!", type: "success" });
-            getShifts(); 
-            setShifts((prevShifts) => prevShifts.filter(shift => shift.id !== id)); 
+            getDepartments(); 
+            setDepartments((prevDepartments) => prevDepartments.filter(department => department.id !== id)); 
         } catch (error) {
             setNotification({ message: "Failed to delete record.", type: "error" });
             console.error("Error deleting record:", error);
@@ -130,16 +126,16 @@ const Shift = () => {
 
   const columns = [
     { key: "id", label: "No.", hidden: true },
-    { key: "name", label: "Shift Name", hidden: false },
+    { key: "name", label: "Department Name", hidden: false },
     { key: "startTime", label: "Start Time", hidden: false },
     { key: "endTime", label: "End Time", hidden: false },
     { key: "details", label: "Details", hidden: true },
     { 
       key: "status", 
       label: "Status",
-      render: (shift) => {
-        // console.log("Rendering status:", shift.status);
-        return shift.status ? "Active" : "Inactive";
+      render: (department) => {
+        // console.log("Rendering status:", department.status);
+        return department.status ? "Active" : "Inactive";
       },
       hidden: true
     }
@@ -171,21 +167,21 @@ const Shift = () => {
       ) : isEditing ? (
           <div className="h-screen flex justify-center items-center">
             <div className="bg-white p-6 w-96 h-full max-w-lg">
-              <h2 className="text-xl font-semibold mb-4">{newShift.id ? "Edit" : "Add"} Shift</h2>
-              <label className="block text-sm font-medium">Shift Name</label>
+              <h2 className="text-xl font-semibold mb-4">{newDepartment.id ? "Edit" : "Add"} Department</h2>
+              <label className="block text-sm font-medium">Department Name</label>
               <input
                 type="text"
-                value={newShift.name}
-                onChange={(e) => setNewShift({ ...newShift, name: e.target.value })}
+                value={newDepartment.name}
+                onChange={(e) => setNewDepartment({ ...newDepartment, name: e.target.value })}
                 className="w-full mb-2 p-2 border rounded"
               />
               <div className="flex space-x-4">
                 <div className="flex flex-col w-full">
-                  <label className="text-sm font-medium mb-1">Start Shift</label>
+                  <label className="text-sm font-medium mb-1">Start Department</label>
                   <div className="relative flex items-center border rounded-lg px-2 py-1">
                     <TimePicker
-                      value={newShift.startTime} 
-                      onChange={(time) => setNewShift({ ...newShift, startTime: time })}
+                      value={newDepartment.startTime} 
+                      onChange={(time) => setNewDepartment({ ...newDepartment, startTime: time })}
                       disableClock={true} 
                       clearIcon={null} 
                       format="HH:mm" 
@@ -195,11 +191,11 @@ const Shift = () => {
                   </div>
                 </div>
                 <div className="flex flex-col w-full">
-                  <label className="text-sm font-medium mb-1">End Shift</label>
+                  <label className="text-sm font-medium mb-1">End Department</label>
                   <div className="relative flex items-center border rounded-lg px-2 py-1">
                     <TimePicker
-                      value={newShift.endTime} 
-                      onChange={(time) => setNewShift({ ...newShift, endTime: time })}
+                      value={newDepartment.endTime} 
+                      onChange={(time) => setNewDepartment({ ...newDepartment, endTime: time })}
                       disableClock={true} 
                       clearIcon={null} 
                       format="HH:mm" 
@@ -211,23 +207,23 @@ const Shift = () => {
               </div>
               <label className="block text-sm font-medium">Details</label>
               <textarea
-                value={newShift.details}
-                onChange={(e) => setNewShift({ ...newShift, details: e.target.value })}
+                value={newDepartment.details}
+                onChange={(e) => setNewDepartment({ ...newDepartment, details: e.target.value })}
                 className="w-full mb-2 p-2 border rounded"
               />
               <label className="block text-sm font-medium">Status</label>
               <select
-                value={newShift.status}
-                onChange={(e) => setNewShift({ ...newShift, status: e.target.value })}
+                value={newDepartment.status}
+                onChange={(e) => setNewDepartment({ ...newDepartment, status: e.target.value })}
                 className="w-full mb-4 p-2 border rounded"
               >
                 <option value="true">Active</option>
                 <option value="false">Inactive</option>
               </select>
               <div className="flex justify-between items-center w-full">
-                {newShift.id ? (
+                {newDepartment.id ? (
                   <button 
-                    onClick={() => handleDelete(newShift.id)} 
+                    onClick={() => handleDelete(newDepartment.id)} 
                     className="text-red-500"
                   >
                     Delete...
@@ -244,8 +240,8 @@ const Shift = () => {
           </div>
       ) : (
         <Table 
-          title="Shifts" 
-          data={shifts} 
+          title="Departments" 
+          data={departments} 
           columns={columns} 
           onEdit={handleEdit} 
           onAdd={handleAdd} 
@@ -256,4 +252,4 @@ const Shift = () => {
   );  
 };
 
-export default Shift;
+export default Department;

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { Select, SelectItem } from "@heroui/react";
 import { fetchDropdowns, fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
 
-const Dropdown = ({ typeId, value, onChange }) => {
+const Dropdown = ({ typeId, value, onChange, label }) => {
   const [options, setOptions] = useState([]);
   const [selectedValue, setSelectedValue] = useState("");
 
@@ -30,23 +31,34 @@ const Dropdown = ({ typeId, value, onChange }) => {
       };
 
       fetchSelectedValue();
+    } else {
+      setSelectedValue("");
     }
   }, [value, typeId]);
 
+  const handleSelectionChange = (keys) => {
+    const selectedKey = Array.from(keys)[0];
+    if (onChange) {
+      onChange({ target: { value: selectedKey } });
+    }
+  };
+
   return (
-    <select 
-      value={value || ""} 
-      onChange={onChange} 
-      className="w-full mb-2 p-2 border rounded"
-      required
+    <Select 
+      label={label}
+      selectedKeys={value ? [value.toString()] : []}
+      onSelectionChange={handleSelectionChange}
+      placeholder="Select an option"
+      className="w-full mb-2"
+      isRequired
+      aria-label={selectedValue || "Select dropdown"}
     >
-      <option value="">{selectedValue || "Select an option"}</option>
       {options.map((option) => (
-        <option key={option.id} value={option.id}>
+        <SelectItem key={option.id.toString()} textValue={option.name}>
           {option.name}
-        </option>
+        </SelectItem>
       ))}
-    </select>
+    </Select>
   );
 };
 
