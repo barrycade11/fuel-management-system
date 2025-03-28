@@ -1,6 +1,9 @@
 import { Button, SelectItem, Input } from "@heroui/react";
 import SelectComponent from "./Components/SelectComponent";
 import { MailIcon, SearchIcon, SettingsIcon } from "lucide-react";
+import useAuth from "~/Hooks/Auth/useAuth";
+import useToken from '~/Hooks/TestHook/useToken';
+import { useEffect } from "react";
 
 const RoleCheckItem = ({
   action = "",
@@ -14,6 +17,9 @@ const RoleCheckItem = ({
 }
 
 const Permissions = () => {
+  const { data, isLoading, isError, refetch } = useToken(); // onInitialize it will call this api;
+  console.log(data);
+
   const menuItems = [
     {
       id: 0,
@@ -185,6 +191,10 @@ const Permissions = () => {
           radius="none"
           color="primary"
           className="rounded-sm"
+          onClick={() => {
+            const { token } = useAuth.getState();
+            refetch();// trigger refrech
+          }}
         >
           <span className="font-semibold">Save</span>
         </Button>

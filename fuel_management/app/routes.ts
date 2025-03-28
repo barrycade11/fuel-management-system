@@ -6,6 +6,9 @@ export default [
     * - Layout
     * add your page/views inside the layout
     */
+
+  index("./Pages/Login/index.jsx"),
+
   layout("./Layouts/DashboardLayout.jsx", [
     //initial dashboard page
     route(StringRoutes.dashboard, "./Pages/Dashboard/index.jsx"),
