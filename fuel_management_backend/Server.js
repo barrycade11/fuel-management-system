@@ -30,6 +30,10 @@ app.use("/Setup/GlobalRecords", employeeRoutes);
 const customerRoutes = require("./Setup/GlobalRecords/Customer");
 app.use("/Setup/GlobalRecords", customerRoutes);
 
+//users
+const settingsUserRoutes = require("./Settings/Users/User");
+app.use("/Settings/Users", settingsUserRoutes);
+
 const port = process.env.PORT;
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
