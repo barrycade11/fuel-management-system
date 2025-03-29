@@ -1,4 +1,6 @@
-
+/**
+ * A class that provides string routes and utility methods for route management.
+ */
 class StringRoutes {
   static dev = 'dev';
   static dashboard = 'dashboard';
@@ -23,6 +25,35 @@ class StringRoutes {
   static customers = 'global-setup/customers';
   static targets = 'global-setup/targets';
   static incentives = 'global-setup/incentives';
+
+  static settings = 'settings';
+  static permission = 'settings/permissions';
+
+  /**
+   * Retrieves the current sub-route from a given pathname.
+   *
+   * @param {string} pathname - The full pathname.
+   * @returns {string|undefined} The last segment of the route or undefined if no pathname is provided.
+   */
+  getCurrentSubRoute = (pathname) => {
+    if (!pathname) return;
+
+    const subRoutes = pathname.split('/');
+    return subRoutes[subRoutes.length - 1];
+  }
+
+  /**
+   * Retrieves the root route from a given pathname.
+   *
+   * @param {string} pathname - The full pathname.
+   * @returns {string|undefined} The first segment of the route after the root or undefined if no pathname is provided.
+   */
+  getRootRoute = (pathname) => {
+    if (!pathname) return;
+
+    const subRoutes = pathname.split('/');
+    return subRoutes[1];
+  }
 
 }
 

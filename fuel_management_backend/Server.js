@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const ValidateToken = require("./Middleware/TokenValidation");
 require("dotenv").config();
 
 const app = express();
@@ -29,6 +30,22 @@ app.use("/Setup/GlobalRecords", employeeRoutes);
 
 const customerRoutes = require("./Setup/GlobalRecords/Customer");
 app.use("/Setup/GlobalRecords", customerRoutes);
+
+//users
+const settingsUserRoutes = require("./Settings/Users/User");
+app.use("/Settings/Users", settingsUserRoutes);
+
+//authentication
+const authenticationRoutes = require("./Authentication/Authentication");
+app.use("/Authentication", authenticationRoutes);
+
+app.use("/testing/token", ValidateToken, async (req, res) => {
+    res.status(201).json({
+        success: true,
+        message: 'Valid',
+        body: {},
+    })
+})
 
 const port = process.env.PORT;
 
