@@ -1,0 +1,175 @@
+{
+	"info": {
+		"_postman_id": "0ffe4605-2a35-4372-930d-1de347ee7f51",
+		"name": "FMS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13626485"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "/Authentication/login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let jsonData = JSON.parse(responseBody);\r",
+									"\r",
+									"pm.environment.set(\"token\", jsonData.body.token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"jmdelacruz\",\r\n    \"password\": \"password\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhosturl}}/Authentication/login",
+							"host": [
+								"{{localhosturl}}"
+							],
+							"path": [
+								"Authentication",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "/Authentication/login  \nautomatically stored token in the postman environment variables"
+		},
+		{
+			"name": "Settings",
+			"item": [
+				{
+					"name": "Permissions",
+					"item": [
+						{
+							"name": "/Settings/permissions",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Settings/permissions",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Settings",
+										"permissions"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "/roles",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhosturl}}/Settings/roles",
+							"host": [
+								"{{localhosturl}}"
+							],
+							"path": [
+								"Settings",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "/testing/token",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{localhosturl}}/testing/token",
+					"host": [
+						"{{localhosturl}}"
+					],
+					"path": [
+						"testing",
+						"token"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
