@@ -1,6 +1,6 @@
-const enum EndPoints {
+const enum endPoints {
     GlobalRecords = "/Setup/GlobalRecords",
     Station = "/Setup/Station"
 }
 
-export { EndPoints }
+export { endPoints }
