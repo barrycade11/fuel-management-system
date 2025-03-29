@@ -1,8 +1,9 @@
-import apiClient from "~/Constants/ApiClient";
+import { apiClient } from "~/Constants/ApiClient";
+import { endPoints } from "~/Constants/EndPoints";
 
 const fetchEmployees = async () => {
     try {
-        const response = await apiClient.get(`/Setup/GlobalRecords/Employees`);
+        const response = await apiClient.get(`${endPoints.GlobalRecords}/Employees`);
 
         return response.data;
     }
@@ -13,7 +14,7 @@ const fetchEmployees = async () => {
 
 const fetchEmployeeDetails = async (id) => {
     try {
-        const response = await apiClient.get(`/Setup/GlobalRecords/Employees/${id}`);
+        const response = await apiClient.get(`${endPoints.GlobalRecords}/Employees/${id}`);
 
         return response.data;
     }
@@ -24,7 +25,7 @@ const fetchEmployeeDetails = async (id) => {
 
 const createEmployee = async (data) => {
     try {
-        const response = await apiClient.post(`/Setup/GlobalRecords/Employee`, data);
+        const response = await apiClient.post(`${endPoints.GlobalRecords}/Employee`, data);
 
         return response.data;
     }
@@ -35,7 +36,7 @@ const createEmployee = async (data) => {
 
 const updateEmployee = async (id, data) => {
     try {
-        const response = await apiClient.put(`/Setup/GlobalRecords/Employee/${id}`, data);
+        const response = await apiClient.put(`${endPoints.GlobalRecords}/Employee/${id}`, data);
 
         return response.data;
     }
@@ -46,7 +47,7 @@ const updateEmployee = async (id, data) => {
 
 const deleteEmployee = async (id) => {
     try {
-        const response = await apiClient.delete(`/Setup/GlobalRecords/Employee/${id}`);
+        const response = await apiClient.delete(`${endPoints.GlobalRecords}/Employee/${id}`);
 
         return response.data;
     }

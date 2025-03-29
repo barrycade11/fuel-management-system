@@ -1,4 +1,4 @@
-export enum DropdownType {
+const enum DropdownType {
     ChargeAmountTo = 1,
     Designation = 2,
     FuelCategory = 3,
@@ -19,3 +19,5 @@ export enum DropdownType {
     DiscountType = 17,
     SubDepartment = 18
 }
+
+export { DropdownType }

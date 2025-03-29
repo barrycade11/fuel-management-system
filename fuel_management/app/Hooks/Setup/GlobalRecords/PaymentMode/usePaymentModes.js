@@ -1,8 +1,9 @@
-import apiClient from "~/Constants/ApiClient";
+import { apiClient } from "~/Constants/ApiClient";
+import { endPoints } from "~/Constants/EndPoints";
 
 const fetchPaymentModes= async () => {
     try {
-        const response = await apiClient.get(`/Setup/GlobalRecords/PaymentModes`);
+        const response = await apiClient.get(`${endPoints.GlobalRecords}/PaymentModes`);
 
         return response.data;
     }
@@ -13,7 +14,7 @@ const fetchPaymentModes= async () => {
 
 const fetchPaymentModeDetails = async (id) => {
     try {
-        const response = await apiClient.get(`/Setup/GlobalRecords/PaymentModes/${id}`);
+        const response = await apiClient.get(`${endPoints.GlobalRecords}/PaymentModes/${id}`);
 
         return response.data;
     }
@@ -24,7 +25,7 @@ const fetchPaymentModeDetails = async (id) => {
 
 const createPaymentMode = async (data) => {
     try {
-        const response = await apiClient.post(`/Setup/GlobalRecords/PaymentMode`, data);
+        const response = await apiClient.post(`${endPoints.GlobalRecords}/PaymentMode`, data);
 
         return response.data;
     }
@@ -35,7 +36,7 @@ const createPaymentMode = async (data) => {
 
 const updatePaymentMode = async (id, data) => {
     try {
-        const response = await apiClient.put(`/Setup/GlobalRecords/PaymentMode/${id}`, data);
+        const response = await apiClient.put(`${endPoints.GlobalRecords}/PaymentMode/${id}`, data);
 
         return response.data;
     }
@@ -46,7 +47,7 @@ const updatePaymentMode = async (id, data) => {
 
 const deletePaymentMode = async (id) => {
     try {
-        const response = await apiClient.delete(`/Setup/GlobalRecords/PaymentMode/${id}`);
+        const response = await apiClient.delete(`${endPoints.GlobalRecords}/PaymentMode/${id}`);
 
         return response.data;
     }

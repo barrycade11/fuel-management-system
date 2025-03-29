@@ -1,8 +1,9 @@
-import apiClient from "~/Constants/ApiClient";
+import { apiClient } from "~/Constants/ApiClient";
+import { endPoints } from "~/Constants/EndPoints";
 
 export const fetchStationTankPumpDetails = async (stationId, tankId, id) => {
     try {
-        const response = await apiClient.get(`/Station/${stationId}/Tank/${tankId}/Pumps/${id}`);
+        const response = await apiClient.get(`${endPoints.GlobalRecords}/Station/${stationId}/Tank/${tankId}/Pumps/${id}`);
 
         return response.data;
     }

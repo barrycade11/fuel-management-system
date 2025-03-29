@@ -1,8 +1,9 @@
-import apiClient from "~/Constants/ApiClient";
+import { apiClient } from "~/Constants/ApiClient";
+import { endPoints } from "~/Constants/EndPoints";
 
 const fetchFuelMasters = async () => {
     try {
-        const response = await apiClient.get(`/Setup/GlobalRecords/FuelMasters`);
+        const response = await apiClient.get(`${endPoints.GlobalRecords}/FuelMasters`);
 
         return response.data;
     }
@@ -13,7 +14,7 @@ const fetchFuelMasters = async () => {
 
 const fetchFuelMasterDetails = async (id) => {
     try {
-        const response = await apiClient.get(`/Setup/GlobalRecords/FuelMaster/${id}`);
+        const response = await apiClient.get(`${endPoints.GlobalRecords}/FuelMaster/${id}`);
 
         return response.data;
     }
@@ -24,7 +25,7 @@ const fetchFuelMasterDetails = async (id) => {
 
 const createFuelMaster = async (data) => {
     try {
-        const response = await apiClient.post(`/Setup/GlobalRecords/FuelMaster`, data);
+        const response = await apiClient.post(`${endPoints.GlobalRecords}/FuelMaster`, data);
 
         return response.data;
     }
@@ -35,7 +36,7 @@ const createFuelMaster = async (data) => {
 
 const updateFuelMaster = async (id, data) => {
     try {
-        const response = await apiClient.put(`/Setup/GlobalRecords/FuelMaster/${id}`, data);
+        const response = await apiClient.put(`${endPoints.GlobalRecords}/FuelMaster/${id}`, data);
 
         return response.data;
     }
@@ -46,7 +47,7 @@ const updateFuelMaster = async (id, data) => {
 
 const deleteFuelMaster = async (id) => {
     try {
-        const response = await apiClient.delete(`/Setup/GlobalRecords/FuelMaster/${id}`);
+        const response = await apiClient.delete(`${endPoints.GlobalRecords}/FuelMaster/${id}`);
 
         return response.data;
     }

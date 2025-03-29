@@ -1,8 +1,9 @@
-import apiClient from "~/Constants/ApiClient";
+import { apiClient } from "~/Constants/ApiClient";
+import { endPoints } from "~/Constants/EndPoints";
 
 export const createStationTank = async (stationId, data) => {
     try {
-        const response = await apiClient.post(`/Station/${stationId}/Tank`, data);
+        const response = await apiClient.post(`${endPoints.GlobalRecords}/Station/${stationId}/Tank`, data);
 
         return response.data;
     }

@@ -1,8 +1,9 @@
-import apiClient from "~/Constants/ApiClient";
+import { apiClient } from "~/Constants/ApiClient";
+import { endPoints } from "~/Constants/EndPoints";
 
 const fetchShifts = async () => {
     try {
-        const response = await apiClient.get(`/Setup/GlobalRecords/Shifts`);
+        const response = await apiClient.get(`${endPoints.GlobalRecords}/Shifts`);
 
         return response.data;
     }
@@ -13,7 +14,7 @@ const fetchShifts = async () => {
 
 const fetchShiftDetails = async (id) => {
     try {
-        const response = await apiClient.get(`/Setup/GlobalRecords/Shifts/${id}`);
+        const response = await apiClient.get(`${endPoints.GlobalRecords}/Shifts/${id}`);
 
         return response.data;
     }
@@ -24,7 +25,7 @@ const fetchShiftDetails = async (id) => {
 
 const createShift = async (data) => {
     try {
-        const response = await apiClient.post(`/Setup/GlobalRecords/Shift`, data);
+        const response = await apiClient.post(`${endPoints.GlobalRecords}/Shift`, data);
 
         return response.data;
     }
@@ -35,7 +36,7 @@ const createShift = async (data) => {
 
 const updateShift = async (id, data) => {
     try {
-        const response = await apiClient.put(`/Setup/GlobalRecords/Shift/${id}`, data);
+        const response = await apiClient.put(`${endPoints.GlobalRecords}/Shift/${id}`, data);
 
         return response.data;
     }
@@ -46,7 +47,7 @@ const updateShift = async (id, data) => {
 
 const deleteShift = async (id) => {
     try {
-        const response = await apiClient.delete(`/Setup/GlobalRecords/Shift/${id}`);
+        const response = await apiClient.delete(`${endPoints.GlobalRecords}/Shift/${id}`);
 
         return response.data;
     }
