@@ -47,6 +47,7 @@ router.post("/shift", async (req, res) => {
 
   try {
     const { name, startTime, endTime, details, status } = req.body;
+    console.log(req.body)
 
     await client.query("BEGIN");
 
@@ -54,8 +55,8 @@ router.post("/shift", async (req, res) => {
       INSERT INTO shift
                   (
                     name,
-                    startTime,
-                    endTime,
+                    starttime,
+                    endtime,
                     details,
                     status
                   )
