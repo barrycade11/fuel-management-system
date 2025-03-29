@@ -1,8 +1,8 @@
 import apiClient from "~/Constants/ApiClient";
 
-export const deleteEmployeeContact = async (id) => {
+export const deleteEmployeeContact = async (employeeId, id) => {
     try {
-        const response = await apiClient.delete(`/EmployeeContact/${id}`);
+        const response = await apiClient.delete(`/Employee/${employeeId}/Contact/${id}`);
 
         return response.data;
     }

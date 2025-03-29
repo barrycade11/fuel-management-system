@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../../Config/Connection");
 
-router.get("/employeePhoto/:employeeId", async (req, res) => {
+router.get("/employee/:employeeId/photo", async (req, res) => {
   try {
     const { employeeId } = req.params;
     const result = await pool.query(`
@@ -19,7 +19,7 @@ router.get("/employeePhoto/:employeeId", async (req, res) => {
   }
 });
 
-router.get("/employeePhoto/:employeeId/:id", async (req, res) => {
+router.get("/employee/:employeeId/photo/:id", async (req, res) => {
   try {
     const { employeeId, id } = req.params;
     const result = await pool.query(`
@@ -37,7 +37,7 @@ router.get("/employeePhoto/:employeeId/:id", async (req, res) => {
   }
 });
 
-router.post("/employeePhoto/:employeeId", async (req, res) => {
+router.post("/employee/:employeeId/photo", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -70,7 +70,7 @@ router.post("/employeePhoto/:employeeId", async (req, res) => {
   }
 });
 
-router.put("/employeePhoto/:employeeId/:id", async (req, res) => {
+router.put("/employee/:employeeId/photo/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -100,7 +100,7 @@ router.put("/employeePhoto/:employeeId/:id", async (req, res) => {
   }
 });
 
-router.delete("/employeePhoto/:employeeId/:id", async (req, res) => {
+router.delete("/employee/:employeeId/photo/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {

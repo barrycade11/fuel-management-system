@@ -1,8 +1,8 @@
 import apiClient from "~/Constants/ApiClient";
 
-export const fetchEmployeePhotos = async () => {
+export const fetchEmployeePhotos = async (employeeId) => {
     try {
-        const response = await apiClient.get(`/EmployeePhotos`);
+        const response = await apiClient.get(`/Employee/${employeeId}/Photos`);
 
         return response.data;
     }

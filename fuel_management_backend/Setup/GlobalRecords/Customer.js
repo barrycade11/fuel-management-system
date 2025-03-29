@@ -15,7 +15,7 @@ router.get("/customers", async (req, res) => {
                   a.cityId,
                   c.name city,
                   a.barangayId,
-                  d.barangay,
+                  d.name barangay,
                   a.contactNo,
                   a.email,
                   a.taxCodeId,

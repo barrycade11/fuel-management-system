@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../../Config/Connection");
 
-router.get("/FuelMasters", async (req, res) => {
+router.get("/fuelMasters", async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT      a.id,
@@ -25,7 +25,7 @@ router.get("/FuelMasters", async (req, res) => {
   }
 });
 
-router.get("/FuelMaster/:id", async (req, res) => {
+router.get("/fuelMasters/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(`
@@ -52,7 +52,7 @@ router.get("/FuelMaster/:id", async (req, res) => {
   }
 });
 
-router.post("/FuelMaster", async (req, res) => {
+router.post("/fuelMaster", async (req, res) => {
   const client = await pool.connect();
   const { code, name, categoryId, details, color, status } = req.body;
 
@@ -90,7 +90,7 @@ router.post("/FuelMaster", async (req, res) => {
   }
 });
 
-router.put("/FuelMaster/:id", async (req, res) => {
+router.put("/fuelMaster/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -124,7 +124,7 @@ router.put("/FuelMaster/:id", async (req, res) => {
   }
 });
 
-router.delete("/FuelMaster/:id", async (req, res) => {
+router.delete("/fuelMaster/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {

@@ -1,8 +1,8 @@
 import apiClient from "~/Constants/ApiClient";
 
-export const createEmployeePhoto = async (data) => {
+export const createEmployeePhoto = async (employeeId, data) => {
     try {
-        const response = await apiClient.post(`/EmployeePhoto`, data);
+        const response = await apiClient.post(`/Employee/${employeeId}/Photo`, data);
 
         return response.data;
     }

@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../../Config/Connection");
 
-router.get("/customerVehicles/:customerId", async (req, res) => {
+router.get("/customer/:customerId/vehicles", async (req, res) => {
   try {
     const { customerId } = req.params;
     const result = await pool.query(`
@@ -26,7 +26,7 @@ router.get("/customerVehicles/:customerId", async (req, res) => {
   }
 });
 
-router.get("/customerVehicles/:customerId/:id", async (req, res) => {
+router.get("/customer/:customerId/vehicles/:id", async (req, res) => {
   try {
     const { customerId, id } = req.params;
     const result = await pool.query(`
@@ -51,7 +51,7 @@ router.get("/customerVehicles/:customerId/:id", async (req, res) => {
   }
 });
 
-router.post("/customerVehicle/:customerId", async (req, res) => {
+router.post("/customer/:customerId/vehicle", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -87,7 +87,7 @@ router.post("/customerVehicle/:customerId", async (req, res) => {
   }
 });
 
-router.put("/customerVehicle/:customerId/:id", async (req, res) => {
+router.put("/customer/:customerId/vehicle/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -120,7 +120,7 @@ router.put("/customerVehicle/:customerId/:id", async (req, res) => {
   }
 });
 
-router.delete("/customerVehicle/:customerId/:id", async (req, res) => {
+router.delete("/customer/:customerId/vehicle/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {

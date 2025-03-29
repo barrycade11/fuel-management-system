@@ -16,5 +16,6 @@ export enum DropdownType {
     City = 15,
     Barangay = 16,
     DiscountCriteria = 16,
-    DiscountType = 17
+    DiscountType = 17,
+    SubDepartment = 18
 }
