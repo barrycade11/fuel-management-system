@@ -1,14 +1,15 @@
 module.exports = {
     apps: [
         {
-            name: "vite-app",
+            name: "fuel-management",
             script: "npm",
-            args: "run preview",
+            args: "run start",
+            cwd: "fuel_management",
             env: {
                 NODE_ENV: "production",
-                PORT: 5173,
-                HOST: "0.0.0.0"
-            }
+                PORT: 5173
+            },
+            watch: true
         },
         {
             name: "fuel-management-backend",
