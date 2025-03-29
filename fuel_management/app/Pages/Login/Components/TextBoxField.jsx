@@ -23,6 +23,7 @@ const TextBoxField = ({
           labelPlacement={'outside'}
           placeholder={placeholder}
           type={type}
+          
           className='w-full  border border-black bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 placeholder-gray-400'
         />
       </div>
