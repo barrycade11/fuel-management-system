@@ -24,6 +24,7 @@ router.post("/login", async (req, res) => {
 
         if (error) {
             return res.status(400).json({
+                success: false,
                 message: error.details.map((err) => err.message), // Returns an array of error messages
             });
         }
