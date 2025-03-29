@@ -5,13 +5,41 @@ const pool = require("../../Config/Connection");
 router.get("/departments", async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT      id,
-                  name,
-                  details,
-                  status
-      FROM        departmentHdr
+      SELECT      a.id,
+                  a.name,
+                  a.details,
+                  a.status,
+                  b.id            departmentLinId,
+                  c.id            subDepartmentId,
+                  b.name          subDepartment
+      FROM        departmentHdr a
+      INNER JOIN  departmentLin b
+              ON  a.id = b.departmentHdrId
+      INNER JOIN  subDepartment c
+              ON  b.subDepartmentId = c.Id
     `);
-    res.status(201).json(result.rows);
+    const resultFormatted = {};
+
+    result.rows.forEach(row => {
+      if (!resultFormatted[row.id]) {
+        formattedResult[row.id] = {
+          id: row.id,
+          title: row.name,
+          details: row.details,
+          status: row.status,
+          departmentLin: []
+        };
+      }
+      if (row.detail_id) {
+        resultFormatted[row.id].departmentLin.push({
+            id: row.departmentLinId,
+            subDepartmentId: row.subDepartmentId,
+            description: row.subDepartment
+        });
+      }
+    });
+
+    res.status(201).json(Object.values(resultFormatted));
   }
   catch (err) {
     console.error(err);
@@ -23,14 +51,42 @@ router.get("/departments/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(`
-      SELECT      id,
-                  name,
-                  details,
-                  status
+      SELECT      a.id,
+                  a.name,
+                  a.details,
+                  a.status,
+                  b.id            departmentLinId,
+                  c.id            subDepartmentId,
+                  b.name          subDepartment
       FROM        departmentHdr a
-      WHERE       id = $1
+      INNER JOIN  departmentLin b
+              ON  a.id = b.departmentHdrId
+      INNER JOIN  subDepartment c
+              ON  b.subDepartmentId = c.Id
+      WHERE       a.id = $1
     `, [id]);
-    res.status(201).json(result.rows);
+    const resultFormatted = {};
+
+    result.rows.forEach(row => {
+      if (!resultFormatted[row.id]) {
+        formattedResult[row.id] = {
+          id: row.id,
+          title: row.name,
+          details: row.details,
+          status: row.status,
+          departmentLin: []
+        };
+      }
+      if (row.detail_id) {
+        resultFormatted[row.id].departmentLin.push({
+            id: row.departmentLinId,
+            subDepartmentId: row.subDepartmentId,
+            description: row.subDepartment
+        });
+      }
+    });
+
+    res.status(201).json(Object.values(resultFormatted));
   }
   catch (err) {
     console.error(err);
