@@ -60,7 +60,7 @@
 					"name": "Permissions",
 					"item": [
 						{
-							"name": "/Settings/permissions",
+							"name": "/",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
 							},
@@ -94,6 +94,129 @@
 									"path": [
 										"Settings",
 										"permissions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/save",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"id\": 72,\r\n            \"name\": \"Stations\",\r\n            \"create\": true,\r\n            \"read\": true,\r\n            \"update\": true,\r\n            \"delete\": true\r\n        },\r\n        {\r\n            \"id\": 69,\r\n            \"name\": \"Global Records\",\r\n            \"create\": false,\r\n            \"read\": false,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"id\": 67,\r\n            \"name\": \"Fuel Master\",\r\n            \"create\": true,\r\n            \"read\": true,\r\n            \"update\": true,\r\n            \"delete\": true\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Settings/permissions/save",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Settings",
+										"permissions",
+										"save"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/generate",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"role\": \"test 123\",\r\n    \"role_detail\": \"test\"\r\n}       ",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Settings/permissions/generate",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Settings",
+										"permissions",
+										"generate"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/:roleid",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Settings/Permissions/:roleid",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Settings",
+										"Permissions",
+										":roleid"
+									],
+									"variable": [
+										{
+											"key": "roleid",
+											"value": "28"
+										}
 									]
 								}
 							},
