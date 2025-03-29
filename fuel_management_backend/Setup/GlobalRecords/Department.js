@@ -57,7 +57,7 @@ router.get("/departments/:id", async (req, res) => {
                   a.status,
                   b.id            departmentLinId,
                   c.id            subDepartmentId,
-                  b.name          subDepartment
+                  c.name          subDepartment
       FROM        departmentHdr a
       INNER JOIN  departmentLin b
               ON  a.id = b.departmentHdrId
