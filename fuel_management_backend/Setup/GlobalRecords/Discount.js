@@ -212,7 +212,7 @@ router.put("/discount/:id", async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { code, name, criteriaId, qualifierValue, discountTypeId, discountValue, chargeToId, maxLimit, startDate, endDate, details, status } = req.body;
+    const { code, name, applicabilities, criteriaId, qualifierValue, discountTypeId, discountValue, chargeToId, maxLimit, startDate, endDate, details, status } = req.body;
     
     await client.query("BEGIN");
     
