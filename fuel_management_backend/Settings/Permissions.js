@@ -23,10 +23,10 @@ router.get('/:roleid', async (req, res) => {
                     rl.name as rolename,
                     rlp.moduleid,
                     mdl.name,
-                    rlp.create,
-                    rlp.read,
-                    rlp.update,
-                    rlp.delete
+                    rlp.create as Add,
+                    rlp.read as View,
+                    rlp.update as Edit,
+                    rlp.delete as Delete
         FROM 			  rolepermissions rlp
         INNER JOIN	roles	rl
                 ON	rlp.roleid = rl.id
@@ -53,14 +53,14 @@ router.post('/generate', async (req, res) => {
   try {
     const { error, value } = AddNewRoleSchema.validate(req.body);
 
-    if(error) {
+    if (error) {
       return res.status(401).json({
         success: false,
         message: error.details.map((err) => err.message), // Returns an array of error messages
-      }) 
+      })
     }
 
-    const result  = await pool.query(`
+    const result = await pool.query(`
       INSERT INTO roles (name, details, created_by)
       VALUES ($1, $2, $3)
       RETURNING id
@@ -69,8 +69,8 @@ router.post('/generate', async (req, res) => {
     const id = result.rows[0].id; // Retrieve the newly inserted ID
 
     await pool.query(`
-      CALL settings_permissions_generate_role_based_permission($1) 
-    `, [id])
+      CALL settings_permissions_generate_role_based_permission($1, $2) 
+    `, [id, req.user.username])
 
     return res.status(201).json({
       success: true,
@@ -79,7 +79,6 @@ router.post('/generate', async (req, res) => {
     })
 
   } catch (error) {
-    console.log(error)
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -112,6 +111,9 @@ router.put('/save', async (req, res) => {
       });
     }
 
+    const now = new Date();
+    const username = req.user.username;
+
     // Prepare batch update queries
     const updatePromises = value.items.map((item) => {
       const query = `
@@ -120,14 +122,16 @@ router.put('/save', async (req, res) => {
           "create" = $1,
           "read" = $2,
           "update" = $3,
-          "delete" = $4
-        WHERE ID = $5
+          "delete" = $4,
+          "updatedat" = $6, 
+          "updatedby" = $7 
+        WHERE id = $5; 
       `;
-      const values = [item.create, item.read, item.update, item.delete, item.id];
-      return pool.query(query, values); // Use parameterized query
+      const values = [item.create, item.read, item.update, item.delete,item.id, now, username];
+
+      return pool.query(query, values); // Ensure proper parameterized queries
     });
 
-    // Wait for all updates to finish
     await Promise.all(updatePromises);
 
     return res.status(200).json({
@@ -135,6 +139,7 @@ router.put('/save', async (req, res) => {
       message: 'Successfully updated permissions',
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: false,
       message: error.message,
