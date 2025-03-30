@@ -1,4 +1,4 @@
-import { Button, Input, Textarea } from "@heroui/react";
+import { Button, Input, menuItem, Textarea } from "@heroui/react";
 import SelectComponent from "./Components/SelectComponent";
 import { MailIcon, SearchIcon, SettingsIcon } from "lucide-react";
 import useAuth from "~/Hooks/Auth/useAuth";
@@ -8,21 +8,35 @@ import HeroUIModal from "~/Components/Modal";
 import TextBoxField from "~/Pages/Login/Components/TextBoxField";
 import PrimaryButton from "~/Components/PrimayButton";
 import { addToast } from "@heroui/react";
+
+//api hooks
 import useAddRoleMutation from "~/Hooks/Settings/useAddRoleMutation";
 import useRoles from "~/Hooks/Settings/useRoles";
+import useRolesDeleteMutation from '~/Hooks/Settings/useRolesDeleteMutation';
 import usePermissionsMutation from "~/Hooks/Settings/usePermissionsMutation";
+import usePermissionsSaveMutation from "~/Hooks/Settings/usePermissionsSaveMutation";
 
+/**
+ * Component for rendering a role check item.
+ *
+ * @param {object} props - The component props.
+ * @param {string} props.action - The action name.
+ * @param {boolean} props.checked - The checked state.
+ * @param {function} props.onChange - The change event handler.
+ * @param {string} props.id - The item ID.
+ * @returns {JSX.Element} The rendered component.
+ */
 const RoleCheckItem = ({
   action = "",
   checked = false,
-  onChange = () => {},
+  onChange = () => { },
   id = ""
 }) => {
   return (
     <div className="flex flex-row items-center">
-      <input 
-        type="checkbox" 
-        className="mr-2" 
+      <input
+        type="checkbox"
+        className="mr-2"
         checked={checked}
         onChange={(e) => onChange(e, id, action)}
         id={`${id}-${action}`}
@@ -34,17 +48,23 @@ const RoleCheckItem = ({
 
 /**
  * Permission page to handle role based permission on each modules & submodules
+ *
+ * @returns {JSX.Element} The rendered component.
  */
 const Permissions = () => {
   //api hooks
   const { refetch, isSuccess } = useRoles();
   const addNewRoleMutation = useAddRoleMutation();
   const permissionsMutation = usePermissionsMutation();
+  const permissionSaveMutation = usePermissionsSaveMutation();
+  const roleDeleteMutaion = useRolesDeleteMutation();
 
-  //local state
+  //states
+  const [deleteModalIsOpen, setDeleteModalIsOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [menuItems, setMenuItems] = useState([]);
   const [isAddNewRoleLoading, setAddNewRoleLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
   const [formAddNewRole, setFormAddNewRole] = useState({
     role: "",
     role_detail: "",
@@ -57,17 +77,34 @@ const Permissions = () => {
     Edit: false,
     Delete: false
   });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredMenuItems, setFilteredMenuItems] = useState([]);
 
+  /**
+   * Shows a toast notification.
+   *
+   * @param {object} params - The toast parameters.
+   * @param {string} params.title - The toast title.
+   * @param {string} params.color - The toast color.
+   * @param {string} params.description - The toast description.
+   */
   const showToast = ({
     title = "",
     color = "danger",
     description = "",
   }) => addToast({
+    timeout: 3000,
     title: title,
     description: description,
     color: color,
   });
 
+  /**
+   * Sets the form data for adding a new role.
+   *
+   * @param {string} val - The value to set.
+   * @param {string} key - The form field key.
+   */
   const onSetFormAddNewRole = (val, key) => {
     setFormAddNewRole(prevState => ({
       ...prevState,
@@ -75,6 +112,9 @@ const Permissions = () => {
     }))
   }
 
+  /**
+   * Manages the process of adding a new role.
+   */
   const onManageAddRole = () => {
     setAddNewRoleLoading(true);
     addNewRoleMutation.mutate(formAddNewRole, {
@@ -101,8 +141,16 @@ const Permissions = () => {
     })
   }
 
+  /**
+   * Manages the role permission selection.
+   *
+   * @param {object} e - The event object.
+   */
   const onManageRolePermission = (e) => {
     const { value } = e.target;
+
+    setSelectedRole(value); //save selected role to state
+
     permissionsMutation.mutate(value, {
       onSuccess: (response) => {
         const data = response.data.body;
@@ -110,13 +158,14 @@ const Permissions = () => {
         const updatedMenuItems = data.map(item => ({
           ...item,
           permissions: {
-            View: false,
-            Add: false,
-            Edit: false,
-            Delete: false
+            View: item.view,
+            Add: item.add,
+            Edit: item.edit,
+            Delete: item.delete
           }
         }));
         setMenuItems(updatedMenuItems);
+        setFilteredMenuItems(updatedMenuItems);
         // Reset selected rows
         setSelectedRows({});
         setSelectAll(false);
@@ -126,9 +175,9 @@ const Permissions = () => {
           Edit: false,
           Delete: false
         });
+        setSearchTerm("");
       },
       onError: (error) => {
-        console.log(error);
         showToast({
           title: "Error",
           description: "Error: " + error.response?.data?.message || error.message,
@@ -138,7 +187,64 @@ const Permissions = () => {
     })
   }
 
-  // Handle row selection
+  /**
+   * Performs a fuzzy search on the menu items.
+   *
+   * @param {array} items - The menu items.
+   * @param {string} searchTerm - The search term.
+   * @returns {array} The filtered menu items.
+   */
+  const fuzzySearch = (items, searchTerm) => {
+    if (!searchTerm || searchTerm.trim() === "") {
+      return items;
+    }
+
+    const term = searchTerm.toLowerCase();
+
+    return items.filter(item => {
+      const name = item.name.toLowerCase();
+
+      // Direct match
+      if (name.includes(term)) {
+        return true;
+      }
+
+      // Fuzzy match - check if characters appear in sequence
+      let termIndex = 0;
+      for (let i = 0; i < name.length && termIndex < term.length; i++) {
+        if (name[i] === term[termIndex]) {
+          termIndex++;
+        }
+      }
+
+      // If we matched all characters in the search term
+      return termIndex === term.length;
+    });
+  };
+
+  /**
+   * Handles the search input change.
+   *
+   * @param {object} e - The event object.
+   */
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    setFilteredMenuItems(fuzzySearch(menuItems, value));
+
+    // Reset selection when search changes
+    if (value) {
+      setSelectedRows({});
+      setSelectAll(false);
+    }
+  };
+
+  /**
+   * Handles row selection.
+   *
+   * @param {object} e - The event object.
+   * @param {string} itemId - The item ID.
+   */
   const handleRowSelect = (e, itemId) => {
     const isChecked = e.target.checked;
     setSelectedRows(prev => ({
@@ -147,20 +253,29 @@ const Permissions = () => {
     }));
   }
 
-  // Handle select all rows
+  /**
+   * Handles select all rows.
+   *
+   * @param {object} e - The event object.
+   */
   const handleSelectAll = (e) => {
     const isChecked = e.target.checked;
     setSelectAll(isChecked);
-    
+
     const newSelectedRows = {};
-    menuItems.forEach(item => {
+    filteredMenuItems.forEach(item => {
       newSelectedRows[item.id] = isChecked;
     });
-    
+
     setSelectedRows(newSelectedRows);
   }
 
-  // Handle top permissions change
+  /**
+   * Handles top permissions change.
+   *
+   * @param {object} e - The event object.
+   * @param {string} action - The permission action.
+   */
   const handleTopPermissionChange = (e, action) => {
     const isChecked = e.target.checked;
     setTopPermissions(prev => ({
@@ -169,7 +284,9 @@ const Permissions = () => {
     }));
   }
 
-  // Apply permissions to selected rows
+  /**
+   * Applies permissions to selected rows.
+   */
   const applyToSelected = () => {
     const updatedMenuItems = menuItems.map(item => {
       if (selectedRows[item.id]) {
@@ -183,9 +300,10 @@ const Permissions = () => {
       }
       return item;
     });
-    
+
     setMenuItems(updatedMenuItems);
-    
+    setFilteredMenuItems(fuzzySearch(updatedMenuItems, searchTerm));
+
     showToast({
       title: "Success",
       description: "Permissions applied to selected menus",
@@ -193,34 +311,118 @@ const Permissions = () => {
     });
   }
 
-  // Handle individual permission change
+  /**
+   * Handles individual permission change.
+   *
+   * @param {object} e - The event object.
+   * @param {string} itemId - The item ID.
+   * @param {string} action - The permission action.
+   */
   const handlePermissionChange = (e, itemId, action) => {
     const isChecked = e.target.checked;
-    
-    setMenuItems(prevItems => 
-      prevItems.map(item => {
-        if (item.id === itemId) {
-          return {
-            ...item,
-            permissions: {
-              ...item.permissions,
-              [action]: isChecked
-            }
-          };
-        }
-        return item;
-      })
-    );
+
+    const updatedItems = menuItems.map(item => {
+      if (item.id === itemId) {
+        return {
+          ...item,
+          permissions: {
+            ...item.permissions,
+            [action]: isChecked
+          }
+        };
+      }
+      return item;
+    });
+
+    setMenuItems(updatedItems);
+    setFilteredMenuItems(fuzzySearch(updatedItems, searchTerm));
   }
 
-  // Save all permissions
-  const savePermissions = () => {
-    // Here you would typically send the updated permissions to the server
-    // This is a mock implementation
-    showToast({
-      title: "Success",
-      description: "Permissions saved successfully",
-      color: 'success',
+  /**
+   * Saves all permissions.
+   */
+  const savePermissions = async () => {
+    const selectedMenuRows = Object.keys(selectedRows)
+    let items = [];
+
+    selectedMenuRows.map((id) => {
+      const item = menuItems.find(menu => menu.id === parseInt(id));
+      if (item) {
+        items.push({
+          id: item.id,
+          name: item.name,
+          create: item.permissions.Add,
+          read: item.permissions.View,
+          update: item.permissions.Edit,
+          delete: item.permissions.Delete,
+        });
+      }
+    });
+
+    if(items.length === 0) return;
+
+    onManageSavePermissions(items);
+  }
+
+  /**
+   * Manages the saving of permissions.
+   *
+   * @param {array} items - The permission items.
+   */
+  const onManageSavePermissions = async (items) => {
+    const request = { items: items };
+    permissionSaveMutation.mutate(request, {
+      onSettled: (response) => {
+        if (response.data.success) {
+          showToast({
+            title: "Success",
+            description: response.data.message,
+            color: 'success',
+          });
+        }
+      },
+      onError: (error) => {
+        showToast({
+          title: "Error",
+          description: error.message,
+          color: 'danger',
+        });
+      }
+    });
+  }
+
+  /**
+   * Handles the delete role action.
+   */
+  const handleDeleteRole = () => {
+    setDeleteModalIsOpen(true);
+  }
+
+  /**
+   * Manages the deletion of a role.
+   */
+  const onManageDeleteRole = async () => {
+    roleDeleteMutaion.mutate(selectedRole, {
+      onSuccess: async (response) => {
+        setDeleteModalIsOpen(false);
+        setFilteredMenuItems([]); //clear table if role is deleted
+        setSelectedRole(null)
+        showToast({
+          title: 'Success',
+          description: response.data.message,
+          color: 'success',
+        })
+        await refetch();
+      },
+      onError: (error) => {
+        setDeleteModalIsOpen(false);
+        showToast({
+          title: 'Error',
+          description: error.message,
+          color: 'danger',
+        })
+
+      }
     });
   }
 
@@ -237,23 +439,23 @@ const Permissions = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 pt-5 items-center">
 
           <div className="col-span-2 flex flex-wrap flex-row items-center gap-2">
-            <RoleCheckItem 
-              action="View" 
+            <RoleCheckItem
+              action="View"
               checked={topPermissions.View}
               onChange={(e) => handleTopPermissionChange(e, 'View')}
             />
-            <RoleCheckItem 
-              action="Add" 
+            <RoleCheckItem
+              action="Add"
               checked={topPermissions.Add}
               onChange={(e) => handleTopPermissionChange(e, 'Add')}
             />
-            <RoleCheckItem 
-              action="Edit" 
+            <RoleCheckItem
+              action="Edit"
               checked={topPermissions.Edit}
               onChange={(e) => handleTopPermissionChange(e, 'Edit')}
             />
-            <RoleCheckItem 
-              action="Delete" 
+            <RoleCheckItem
+              action="Delete"
               checked={topPermissions.Delete}
               onChange={(e) => handleTopPermissionChange(e, 'Delete')}
             />
@@ -275,11 +477,12 @@ const Permissions = () => {
                 <div className="flex gap-2">
                   <SearchIcon className="rounded-sm text-2xl text-default-400 pointer-events-none flex-shrink-0" size={18} />
                   <SettingsIcon size={18} />
-
                 </div>
               }
               labelPlacement="outside"
               placeholder="Search Module"
+              value={searchTerm}
+              onChange={handleSearchChange}
             />
             <Button
               radius="none"
@@ -329,7 +532,7 @@ const Permissions = () => {
               </tr>
             </thead>
             <tbody>
-              {menuItems.map((item, index) => (
+              {filteredMenuItems.map((item, index) => (
                 <tr
                   key={item.id}
                   className={index % 2 === 0 ? 'bg-blue-50' : 'bg-white'}
@@ -345,26 +548,26 @@ const Permissions = () => {
                   <td className="py-3 px-4 text-gray-800">{item.name}</td>
                   <td className="py-3 px-4">
                     <div className="flex items-center space-x-6">
-                      <RoleCheckItem 
-                        action="View" 
+                      <RoleCheckItem
+                        action="View"
                         checked={item.permissions?.View}
                         onChange={handlePermissionChange}
                         id={item.id}
                       />
-                      <RoleCheckItem 
-                        action="Add" 
+                      <RoleCheckItem
+                        action="Add"
                         checked={item.permissions?.Add}
                         onChange={handlePermissionChange}
                         id={item.id}
                       />
-                      <RoleCheckItem 
-                        action="Edit" 
+                      <RoleCheckItem
+                        action="Edit"
                         checked={item.permissions?.Edit}
                         onChange={handlePermissionChange}
                         id={item.id}
                       />
-                      <RoleCheckItem 
-                        action="Delete" 
+                      <RoleCheckItem
+                        action="Delete"
                         checked={item.permissions?.Delete}
                         onChange={handlePermissionChange}
                         id={item.id}
@@ -373,10 +576,10 @@ const Permissions = () => {
                   </td>
                 </tr>
               ))}
-              {menuItems.length === 0 && (
+              {filteredMenuItems.length === 0 && (
                 <tr>
                   <td colSpan={3} className="py-4 px-4 text-center text-gray-500">
-                    Select a role to view menu items
+                    {searchTerm ? 'No matching menu items found' : 'Select a role to view menu items'}
                   </td>
                 </tr>
               )}
@@ -387,23 +590,22 @@ const Permissions = () => {
         <div className="absolute bottom-[3%] right-[3%] flex flex-row gap-2">
           <Button
             radius="none"
-            color="danger"
             className="rounded-sm"
-            disabled={selectedRowsCount === 0}
+            color={selectedRole === null ? 'default' : 'danger'}
+            onPress={handleDeleteRole}
+            disabled={selectedRole === null ? true : false}
           >
-            <span className="font-semibold">Delete</span>
+            <span className="font-semibold text-white">Delete</span>
           </Button>
           <Button
             radius="none"
-            color="primary"
+            color='primary'
             className="rounded-sm"
-            onClick={savePermissions}
+            onPress={savePermissions}
           >
             <span className="font-semibold">Save</span>
           </Button>
-
         </div>
-
       </section>
 
       <HeroUIModal
@@ -438,6 +640,33 @@ const Permissions = () => {
         </form>
       </HeroUIModal>
 
+      <HeroUIModal
+        size="lg"
+        height="60px"
+        isOpen={deleteModalIsOpen}
+        onOpenChange={() => setDeleteModalIsOpen(false)}
+        title="Delete role"
+        footer={
+          <div className="flex flex-row justify-end flex-grow">
+            <Button
+              color='default'
+              onClick={() => setDeleteModalIsOpen(false)}
+              className="bg-white">
+              <span className="text-gray-600 font-semibold">Cancel</span>
+            </Button>
+            <PrimaryButton
+              color='danger'
+              onClick={onManageDeleteRole}
+              fullWidth={false}
+              isLoading={isAddNewRoleLoading}
+              title={"Confirm"}
+            />
+          </div>
+
+        }
+      >
+        <span>Are you sure you want to delete this role? It will remove all related permissions associated of this role.</span>
+      </HeroUIModal>
     </>
   )
 }

@@ -4,7 +4,8 @@ const PrimaryButton = ({
   title = "",
   onClick = null,
   isLoading = false,
-  fullWidth= true
+  fullWidth= true,
+  color = 'primary'
 }) => {
 
   return (
@@ -13,7 +14,7 @@ const PrimaryButton = ({
       onClick={onClick}
       className="rounded-md"
       fullWidth={fullWidth}
-      color='primary'>
+      color={color}>
       { isLoading ? <CircularProgress size='sm' aria-label="Loading..."/> : title } 
     </Button>
 
