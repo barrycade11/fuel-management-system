@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../Config/Connection");
 const loginSchema = require("./Params/LoginSchema");
-const { createToken, saveToken } = require("./AuthService");
+const { createToken, saveToken, userToJson } = require("./AuthService");
 
 /**
  * POST /login
@@ -34,12 +34,27 @@ router.post("/login", async (req, res) => {
 
         // Query the database for user credentials
         const result = await pool.query(`
-            SELECT  id,
-                    username,
-                    role_id
-            FROM    users
-            WHERE   username = $1
-            AND     password = $2
+            Select 
+                usr.id,
+                usr.username,
+                usr.role_id,
+                rl.name as rolename,
+                mdl.id AS moduleid,
+                mdl.name as modulename,
+                COALESCE(rlp.create, false) "add",
+                COALESCE(rlp.read, false) "view",
+                COALESCE(rlp.update, false) "edit",
+                COALESCE(rlp.delete, false) "delete"
+            from users usr
+            LEFT JOIN roles rl
+            ON usr.role_id = rl.id
+            CROSS JOIN modules mdl
+            LEFT JOIN rolepermissions rlp
+            ON usr.role_id = rlp.roleid
+            AND mdl.id = rlp.moduleid
+            where usr.username = $1
+            AND usr.password = $2
+            AND mdl.parentmoduleid IS NOT NULL
         `, [username, password]);
 
         if (result.rowCount === 0) {
@@ -49,11 +64,11 @@ router.post("/login", async (req, res) => {
         // Token creation
         const token = await createToken(value);
 
+        const json = userToJson(result.rows);
+        json[0].token = token
+
         // Prepare response data with token
-        const data = {
-            ...result.rows[0],
-            token: token,
-        };
+        const data = json[0];
 
         // Save the token (e.g., to the database or another service)
         await saveToken(data);
