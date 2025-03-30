@@ -161,6 +161,61 @@ When defining **query keys** for identifying queries, they’re often arrays whe
 
 **official docs: https://tanstack.com/query/latest/docs/framework/react/quick-start**
 
+### Why use react-query
+
+* Out of the box **CACHING!** Kahit mag pa lipat-lipat ka ng page. naka cache na yung data kapag binalikan mo yung page hindi mo na kailangan mag api call ulit, para makuha yung data mula sa api
+* Automatic re-attempts failed api calls! sa background kahit mag failed yung api call, mag a-api call ulit ang react query several times to fetch data
+* Mas simple mag api call `const { isLoading, isError, isSuccess, data, refetch } = useQuery()`  no need to `try cactch`
+* You can refetch query in the background without user interaction.
+
+```
+import { apiClient } from "~/Constants/ApiClient";
+import { useMutation } from "@tanstack/react-query";
+
+const useLoginMutation = () => {
+  return useMutation({
+    mutationFn: async (params) => {
+      return apiClient.post("/Authentication/login", params);
+    },
+    onSuccess: (_) => {},
+  });
+};
+
+export default useLoginMutation;
+
+//ui page
+const Login = () => {
+  const loginMutation = useLoginMutation();
+
+  /**
+   * Handles form submission.
+   * @param {Event} e - Form submit event.
+   */
+  const onManageLogin = async (e) => {
+    setIsLoading(true);
+    loginMutation.mutate(form, {
+      onError: (error) => {
+        console.error("Login failed:", error.response?.data?.message || error.message);
+        showError(error);
+        setIsLoading(false);
+      },
+      onSettled: (response) => {
+        if (response.data.success) {
+          setIsLoading(false);
+          const token = response.data.body.token;
+          //store user dtails in local storage
+          auth.onSetUserDetails(response.data.body, response.data.body.token)
+          navigate(StringRoutes.dashboard);
+        }
+      }
+    });
+  };
+
+  return /*JSX Element*/
+}
+
+```
+
 ## Styling
 
 This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
