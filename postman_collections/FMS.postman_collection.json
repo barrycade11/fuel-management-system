@@ -30,7 +30,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"jmdelacruz\",\r\n    \"password\": \"password\"\r\n}",
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"password\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -87,13 +87,20 @@
 									}
 								},
 								"url": {
-									"raw": "{{localhosturl}}/Settings/permissions",
+									"raw": "{{localhosturl}}/Settings/permissions/:roleid",
 									"host": [
 										"{{localhosturl}}"
 									],
 									"path": [
 										"Settings",
-										"permissions"
+										"permissions",
+										":roleid"
+									],
+									"variable": [
+										{
+											"key": "roleid",
+											"value": "32"
+										}
 									]
 								}
 							},
@@ -116,7 +123,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"id\": 72,\r\n            \"name\": \"Stations\",\r\n            \"create\": true,\r\n            \"read\": true,\r\n            \"update\": true,\r\n            \"delete\": true\r\n        },\r\n        {\r\n            \"id\": 69,\r\n            \"name\": \"Global Records\",\r\n            \"create\": false,\r\n            \"read\": false,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"id\": 67,\r\n            \"name\": \"Fuel Master\",\r\n            \"create\": true,\r\n            \"read\": true,\r\n            \"update\": true,\r\n            \"delete\": true\r\n        }\r\n    ]\r\n}",
+									"raw": "{\r\n    \"items\": [\r\n        {\r\n            \"id\": 157,\r\n            \"name\": \"Stations\",\r\n            \"create\": true,\r\n            \"read\": true,\r\n            \"update\": true,\r\n            \"delete\": true\r\n        },\r\n        {\r\n            \"id\": 158,\r\n            \"name\": \"Global Records\",\r\n            \"create\": false,\r\n            \"read\": false,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"id\": 67,\r\n            \"name\": \"Fuel Master\",\r\n            \"create\": true,\r\n            \"read\": true,\r\n            \"update\": true,\r\n            \"delete\": true\r\n        }\r\n    ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -259,6 +266,50 @@
 							"path": [
 								"Settings",
 								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/:roleid",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"\",\r\n    \"username\": \"\",\r\n    \"role_id\": \"\",\r\n    \"rolename\": \"\",\r\n    \"permissions\": [\r\n        {\r\n            \"moduleid\": 1,\r\n            \"modulename\": \"\",\r\n            \"view\": true,\r\n            \"add\": true,\r\n            \"edit\": true,\r\n            \"delete\": true\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhosturl}}/Settings/roles/:roleid",
+							"host": [
+								"{{localhosturl}}"
+							],
+							"path": [
+								"Settings",
+								"roles",
+								":roleid"
+							],
+							"variable": [
+								{
+									"key": "roleid",
+									"value": "33"
+								}
 							]
 						}
 					},
