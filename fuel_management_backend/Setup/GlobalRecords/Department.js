@@ -9,32 +9,34 @@ router.get("/departments", async (req, res) => {
                   a.name,
                   a.details,
                   a.status,
-                  b.id            departmentLinId,
-                  c.id            subDepartmentId,
-                  b.name          subDepartment
+                  b.id              as "departmentLinId",
+                  b.departmentHdrId as "departmentHdrId",
+                  c.id              as "subDepartmentId",
+                  c.name            as "subDepartment"
       FROM        departmentHdr a
       INNER JOIN  departmentLin b
               ON  a.id = b.departmentHdrId
-      INNER JOIN  subDepartment c
+      INNER JOIN  dropdown c
               ON  b.subDepartmentId = c.Id
+                  AND c.dropdownTypeId = 18
     `);
     const resultFormatted = {};
 
     result.rows.forEach(row => {
       if (!resultFormatted[row.id]) {
-        formattedResult[row.id] = {
+        resultFormatted[row.id] = {
           id: row.id,
-          title: row.name,
+          name: row.name,
           details: row.details,
           status: row.status,
           departmentLin: []
         };
       }
-      if (row.detail_id) {
+      if (row.departmentLinId) {
         resultFormatted[row.id].departmentLin.push({
-            id: row.departmentLinId,
-            subDepartmentId: row.subDepartmentId,
-            description: row.subDepartment
+          id: row.departmentLinId,
+          subDepartmentId: row.subDepartmentId,
+          subDepartment: row.subDepartment
         });
       }
     });
@@ -55,33 +57,35 @@ router.get("/departments/:id", async (req, res) => {
                   a.name,
                   a.details,
                   a.status,
-                  b.id            departmentLinId,
-                  c.id            subDepartmentId,
-                  c.name          subDepartment
+                  b.id              as "departmentLinId",
+                  b.departmentHdrId as "departmentHdrId",
+                  c.id              as "subDepartmentId",
+                  c.name            as "subDepartment"
       FROM        departmentHdr a
       INNER JOIN  departmentLin b
               ON  a.id = b.departmentHdrId
-      INNER JOIN  subDepartment c
+      INNER JOIN  dropdown c
               ON  b.subDepartmentId = c.Id
+                  AND c.dropdownTypeId = 18
       WHERE       a.id = $1
     `, [id]);
     const resultFormatted = {};
 
     result.rows.forEach(row => {
       if (!resultFormatted[row.id]) {
-        formattedResult[row.id] = {
+        resultFormatted[row.id] = {
           id: row.id,
-          title: row.name,
+          name: row.name,
           details: row.details,
           status: row.status,
           departmentLin: []
         };
       }
-      if (row.detail_id) {
+      if (row.departmentLinId) {
         resultFormatted[row.id].departmentLin.push({
-            id: row.departmentLinId,
-            subDepartmentId: row.subDepartmentId,
-            description: row.subDepartment
+          id: row.departmentLinId,
+          subDepartmentId: row.subDepartmentId,
+          subDepartment: row.subDepartment
         });
       }
     });
@@ -142,7 +146,7 @@ router.put("/department/:id", async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { name, details, statusId } = req.body;
+    const { name, subDepartments, details, status } = req.body;
 
     await client.query("BEGIN");
 
@@ -150,9 +154,28 @@ router.put("/department/:id", async (req, res) => {
       UPDATE      departmentHdr
       SET         name = $2
                   details = $3,
-                  statusId = $4
+                  status = $4
       WHERE       id = $1
-    `, [id, name, details, statusId]);
+    `, [id, name, details, status]);
+
+    await client.query(`
+      DELETE
+      FROM        departmentLin
+      WHERE       departmentHdrId = $1
+    `, [id]);
+
+    const subDepartmentItems = [];
+    const subDepartmentQuery = subDepartments.map((item, index) => {
+      const base = index * 2;
+      subDepartmentItems.push(id, item.subDepartmentId);
+
+      return `($${base + 1}, $${base + 2})`;
+    }).join(",");
+    await client.query(`
+      INSERT INTO departmentLin
+                  (departmentHdrId, subDepartmentId)
+      VALUES      ${subDepartmentQuery}
+    `, subDepartmentItems);
 
     await client.query("COMMIT");
 
