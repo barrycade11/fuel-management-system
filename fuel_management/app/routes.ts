@@ -29,11 +29,11 @@ export default [
     route(StringRoutes.globalSetup, "./Pages/GlobalSetup/index.jsx", [
       index("./SubRoutes/GlobalSetup/FuelMaster.jsx"), // globalSetup index (fuelMaster)
 
-      // route("departments", "./SubRoutes/GlobalSetup/Department.jsx"),
+      route("departments", "./SubRoutes/GlobalSetup/Department.jsx"),
       route("shifts", "./SubRoutes/GlobalSetup/Shift.jsx"),
       route("payment-modes", "./SubRoutes/GlobalSetup/PaymentMode.jsx"),
-      // route("discounts", "./SubRoutes/GlobalSetup/Discount.jsx"),
-      // route("dropdown-records", "./SubRoutes/GlobalSetup/DropdownRecord.jsx"),
+      route("discounts", "./SubRoutes/GlobalSetup/Discount.jsx"),
+      route("dropdown-records", "./SubRoutes/GlobalSetup/DropdownRecord.jsx"),
       route("employees", "./SubRoutes/GlobalSetup/Employee.jsx"),
       route("customers", "./SubRoutes/GlobalSetup/Customer.jsx"),
       route("targets", "./SubRoutes/GlobalSetup/Target.jsx"),

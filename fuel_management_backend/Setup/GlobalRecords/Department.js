@@ -98,21 +98,25 @@ router.get("/departments/:id", async (req, res) => {
   }
 });
 
-router.post("/deparment", async (req, res) => {
+router.post("/department", async (req, res) => {
   const client = await pool.connect();
 
   try {
     const { name, subDepartments, details, status } = req.body;
-
     await client.query("BEGIN");
 
     const result = await client.query(`
-      INSERT INTO departmentHdr
+      INSERT INTO departmenthdr
                   (name, details, status)
       VALUES      ($1, $2, $3)
       RETURNING   id
     `, [name, details, status]);
+
+    // console.log(result)
+
     const id = result.rows[0].id;
+
+    console.log(id)
     
     const subDepartmentItems = [];
     const subDepartmentQuery = subDepartments.map((item, index) => {
@@ -121,9 +125,13 @@ router.post("/deparment", async (req, res) => {
 
       return `($${base + 1}, $${base + 2})`;
     }).join(",");
+
+    console.log(subDepartmentItems)
+    console.log(subDepartmentQuery)
+
     await client.query(`
-      INSERT INTO departmentLin
-                  (departmentHdrId, subDepartmentId)
+      INSERT INTO departmentlin
+                  (departmenthdrid, subdepartmentid)
       VALUES      ${subDepartmentQuery}
     `, subDepartmentItems);
 

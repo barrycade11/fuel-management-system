@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
 import Table from "~/Components/Table";
 import Dropdown from "~/Components/Dropdown";
+import MultiDropdown from "~/Components/MultiDropdown";
 import Notification from "~/Components/Notification";
+import TableSkeleton from "~/Components/TableSkeleton";
+import DropdownStatus from "~/Components/DropdownStatus";
+import { Textarea, Input, Button, DatePicker } from "@heroui/react";
 import { 
   fetchDiscounts, 
   fetchDiscountDetails, 
   createDiscount, 
   updateDiscount, 
-  deleteDiscount  
+  deleteDiscount 
 } from "~/Hooks/Setup/GlobalRecords/Discount/useDiscounts";
-import { ClockIcon } from "lucide-react";
+import { fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
 
 const Discount = () => {
   const [discounts, setDiscounts] = useState([]);
@@ -17,11 +21,19 @@ const Discount = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [newDiscount, setNewDiscount] = useState({  
+  const [newDiscount, setNewDiscount] = useState({ 
+    code: "", 
     name: "", 
-    startTime: "00:00",
-    endTime: "00:00",
+    applicabilityId: [], 
     details: "", 
+    criteriaId: "",
+    qualifierValue: "",
+    discountTypeId: "",
+    discountValue: "",
+    chargeToId: "",
+    startDate: null,
+    endDate: null,
+    maxLimit: "",
     status: true
   });
 
@@ -29,31 +41,33 @@ const Discount = () => {
     setLoading(true);
     try {
         const data = await fetchDiscounts();
-
-        const formattedData = data.map(discount => ({
-            ...discount,
-            startTime: discount.starttime, 
-            endTime: discount.endtime  
-        }));
-
-        setDiscounts(formattedData);
-        // console.log(formattedData);
+        setDiscounts(data);
+        console.log(data);
     } catch (error) {
         console.error("Error fetching data:", error);
     } finally {
         setLoading(false);
     }
-};
+  };
+
   useEffect(() => {
       getDiscounts();
   }, []);
 
   const handleAdd = () => {
     setNewDiscount({ 
+      code: "", 
       name: "", 
-      startTime: "00:00",
-      endTime: "00:00", 
+      applicabilityId: [], 
       details: "", 
+      criteriaId: "",
+      qualifierValue: "",
+      discountTypeId: "",
+      discountValue: "",
+      chargeToId: "",
+      startDate: null,
+      endDate: null,
+      maxLimit: "",
       status: true
     });
     setIsEditing(true);
@@ -61,38 +75,101 @@ const Discount = () => {
 
   const handleEdit = async (discount) => {
     try {
+        const [criteriaData, discountTypeData, chargeToData] = await Promise.all([
+          fetchDropdownTypeList(3, discount.criteriaid),
+          fetchDropdownTypeList(3, discount.discounttypeid),
+          fetchDropdownTypeList(3, discount.chargetoid),
+        ]);
+      
         setNewDiscount((prev) => ({
-          ...prev,
-          ...discount
+            ...prev,
+            ...discount,
+            applicabilityId: [], 
         }));
 
-        setIsEditing(true);
+        setIsEditing(true); 
+
+        const applicabilityIds = Array.isArray(discount.subdiscountid)
+            ? discount.subdiscountid
+            : [discount.subdiscountid];
+
+        const applicabilityData = [];
+
+        for (const id of applicabilityIds) {
+            const response = await fetchDropdownTypeList(19, id);
+            if (response.length > 0) {
+                applicabilityData.push(response[0].id);
+            }
+        }
+
+        // Update state with sub-discount data
+        setNewDiscount((prev) => ({
+            ...prev,
+            applicabilityId: applicabilityData, 
+            criteriaId: criteriaData[0].id, 
+            discountTypeId: discountTypeData[0].id, 
+            chargeToId: chargeToData[0].id, 
+        }));
     } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching sub discount data:", error);
     }
   };
 
+
   const handleSave = async () => {
-    if (!newDiscount.name || !newDiscount.startTime || !newDiscount.endTime || !newDiscount.details) {
-        setNotification({ message: "All fields are required.", type: "error" });
-        return;
+    if (!newDiscount.code || 
+      !newDiscount.name || 
+      !newDiscount.details
+    ) {
+      setNotification({ message: "All fields are required.", type: "error" });
+      return;
     }
-
+  
     try {
-        if (newDiscount.id) {
-            await updateDiscount(newDiscount.id, newDiscount);
-        } else {
-            const response = await createDiscount(newDiscount);
-            setDiscounts([...discounts, response[0]]); 
-        }
+      const formatDate = (dateObj) => {
+        if (!dateObj || !dateObj.year || !dateObj.month || !dateObj.day) return null;
+        return `${dateObj.year}-${String(dateObj.month).padStart(2, "0")}-${String(dateObj.day).padStart(2, "0")}`;
+      };
 
-        setIsEditing(false);
-        setNotification({ message: "Save successful", type: "success" });
+      // const payload = {
+      //   ...newDiscount,
+      //   applicability: newDiscount.applicabilityId.map(id => ({ applicabilityId: id })), 
+      //   startDate: formatDate(newDiscount.startDate),
+      //   endDate: formatDate(newDiscount.endDate)
+      // };
 
-        getDiscounts(); 
+      const payload = {
+        code: newDiscount.code,
+        name: newDiscount.name,
+        criteriaId: parseInt(newDiscount.criteriaId, 10), 
+        qualifierValue: parseInt(newDiscount.qualifierValue, 10),
+        discountTypeId: parseInt(newDiscount.discountTypeId, 10),
+        discountValue: parseInt(newDiscount.discountValue, 10),
+        chargeToId: parseInt(newDiscount.chargeToId, 10),
+        maxLimit: parseInt(newDiscount.maxLimit, 10),
+        startDate: formatDate(newDiscount.startDate), 
+        endDate: formatDate(newDiscount.endDate),
+        details: newDiscount.details,
+        status: newDiscount.status ?? true, 
+        applicability: newDiscount.applicabilityId.map(id => ({ applicabilityId: id })), 
+
+      };
+
+      console.log(payload)
+  
+      if (newDiscount.id) {
+        await updateDiscount(newDiscount.id, payload);
+      } else {
+        const response = await createDiscount(payload);
+        setDiscounts([...discounts, response[0]]);
+      }
+  
+      setIsEditing(false);
+      setNotification({ message: "Save successful", type: "success" });
+      getDiscounts();
     } catch (error) {
-        setNotification({ message: "Error saving data", type: "error" });
-        console.error("Error saving data:", error);
+      setNotification({ message: "Error saving data", type: "error" });
+      console.error("Error saving data:", error);
     }
   };
 
@@ -126,30 +203,25 @@ const Discount = () => {
 
   const columns = [
     { key: "id", label: "No.", hidden: true },
+    { key: "code", label: "Discount Code", hidden: false },
     { key: "name", label: "Discount Name", hidden: false },
-    { key: "startTime", label: "Start Time", hidden: false },
-    { key: "endTime", label: "End Time", hidden: false },
+    { key: "discountType", label: "Discount Type", hidden: false },
     { key: "details", label: "Details", hidden: true },
-    { 
-      key: "status", 
-      label: "Status",
-      render: (discount) => {
-        // console.log("Rendering status:", discount.status);
-        return discount.status ? "Active" : "Inactive";
-      },
-      hidden: true
-    }
+    { key: "status", label: "Status", hidden: false }
   ];
 
   const customRender = {
     actions: (item) => (
-      <button
-        onClick={() => handleEdit(item)} 
-        className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
+      <Button 
+      onPress={() => handleEdit(item)} 
+      className="bg-blue-200 text-blue-800 rounded-lg hover:bg-blue-300"
       >
         Edit
-      </button>
+      </Button>
     ),
+    status: (value) => {
+      return value ? "Active" : "Inactive";
+    }
   };
 
   return (
@@ -163,77 +235,153 @@ const Discount = () => {
           onCancel={notification.onCancel}  
         />}
       {loading ? (
-        <p>Loading...</p>
+        // <p>Loading...</p>
+        <TableSkeleton columns={5} rows={5}/>
       ) : isEditing ? (
-          <div className="h-screen flex justify-center items-center">
-            <div className="bg-white p-6 w-96 h-full max-w-lg">
+          <div className="h-full flex justify-center items-center">
+            <div className="bg-white w-96 h-full max-w-lg">
               <h2 className="text-xl font-semibold mb-4">{newDiscount.id ? "Edit" : "Add"} Discount</h2>
-              <label className="block text-sm font-medium">Discount Name</label>
-              <input
-                type="text"
+              <Input 
+                className="w-full mb-2" 
+                label="Discount Code" 
+                placeholder="Enter discount code" 
+                value={newDiscount.code}
+                onChange={(e) => setNewDiscount({ ...newDiscount, code: e.target.value })}
+                isRequired
+              />
+              <Input 
+                className="w-full mb-2" 
+                label="Discount Name" 
+                placeholder="Enter discount name" 
                 value={newDiscount.name}
                 onChange={(e) => setNewDiscount({ ...newDiscount, name: e.target.value })}
-                className="w-full mb-2 p-2 border rounded"
+                isRequired
+              />
+              <MultiDropdown 
+                  label="Applicability"
+                  typeId={19} 
+                  isMultiline
+                  value={newDiscount.applicabilityId} 
+                  onChange={(e) => setNewDiscount({ ...newDiscount, applicabilityId: e.target.value })} 
               />
               <div className="flex space-x-4">
                 <div className="flex flex-col w-full">
-                  <label className="text-sm font-medium mb-1">Start Discount</label>
-                  <div className="relative flex items-center border rounded-lg px-2 py-1">
-                    <TimePicker
-                      value={newDiscount.startTime} 
-                      onChange={(time) => setNewDiscount({ ...newDiscount, startTime: time })}
-                      disableClock={true} 
-                      clearIcon={null} 
-                      format="HH:mm" 
-                      className="w-full bg-transparent border-none focus:outline-none"
-                    />
-                    <ClockIcon className="absolute right-2 text-gray-500 w-5 h-5" />
+                  <div className="relative flex items-center rounded-lg">
+                  <Dropdown 
+                    label="Criteria"
+                    typeId={3} 
+                    value={newDiscount.criteriaId} 
+                    onChange={(e) => setNewDiscount({ ...newDiscount, criteriaId: e.target.value })} 
+                  />
                   </div>
                 </div>
                 <div className="flex flex-col w-full">
-                  <label className="text-sm font-medium mb-1">End Discount</label>
-                  <div className="relative flex items-center border rounded-lg px-2 py-1">
-                    <TimePicker
-                      value={newDiscount.endTime} 
-                      onChange={(time) => setNewDiscount({ ...newDiscount, endTime: time })}
-                      disableClock={true} 
-                      clearIcon={null} 
-                      format="HH:mm" 
-                      className="w-full bg-transparent border-none focus:outline-none"
-                    />
-                    <ClockIcon className="absolute right-2 text-gray-500 w-5 h-5" />
+                  <div className="relative flex items-center rounded-lg">
+                  <Input 
+                    className="w-full mb-2" 
+                    label="Qualifier Value" 
+                    placeholder="Enter qualifier value" 
+                    value={newDiscount.qualifierValue}
+                    onChange={(e) => setNewDiscount({ ...newDiscount, qualifierValue: e.target.value })}
+                    isRequired
+                  />
                   </div>
                 </div>
               </div>
-              <label className="block text-sm font-medium">Details</label>
-              <textarea
+              <div className="flex space-x-4">
+                <div className="flex flex-col w-full">
+                  <div className="relative flex items-center rounded-lg">
+                  <Dropdown 
+                    label="Discount Type"
+                    typeId={3} 
+                    value={newDiscount.discountTypeId} 
+                    onChange={(e) => setNewDiscount({ ...newDiscount, discountTypeId: e.target.value })} 
+                  />
+                  </div>
+                </div>
+                <div className="flex flex-col w-full">
+                  <div className="relative flex items-center rounded-lg">
+                  <Input 
+                    className="w-full mb-2" 
+                    label="Discount Value" 
+                    placeholder="Enter discount value" 
+                    value={newDiscount.discountValue}
+                    onChange={(e) => setNewDiscount({ ...newDiscount, discountValue: e.target.value })}
+                    isRequired
+                  />
+                  </div>
+                </div>
+              </div>
+              <div className="flex space-x-4">
+                <div className="flex flex-col w-full">
+                  <div className="relative flex items-center rounded-lg">
+                  <Dropdown 
+                    label="Charge To"
+                    typeId={3} 
+                    value={newDiscount.chargeToId} 
+                    onChange={(e) => setNewDiscount({ ...newDiscount, chargeToId: e.target.value })} 
+                  />
+                  </div>
+                </div>
+                <div className="flex flex-col w-full">
+                  <div className="relative flex items-center rounded-lg">
+                  <Input 
+                    className="w-full mb-2" 
+                    label="Max Limit" 
+                    placeholder="Enter max limit" 
+                    value={newDiscount.maxLimit}
+                    onChange={(e) => setNewDiscount({ ...newDiscount, maxLimit: e.target.value })}
+                    isRequired
+                  />
+                  </div>
+                </div>
+              </div>
+              <div className="flex space-x-4 mb-2">
+                <div className="flex flex-col w-full">
+                  <div className="relative flex items-center rounded-lg">
+                    <DatePicker  
+                      isRequired 
+                      label="Start Date" 
+                      placeholder="Pick a date" 
+                      value={newDiscount.startDate} 
+                      onChange={(date) => setNewDiscount({ ...newDiscount, startDate: date })}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col w-full">
+                  <div className="relative flex items-center rounded-lg">
+                    <DatePicker  
+                      isRequired 
+                      label="End Date" 
+                      placeholder="Pick a date" 
+                      value={newDiscount.endDate} 
+                      onChange={(date) => setNewDiscount({ ...newDiscount, endDate: date })}
+                    />
+                  </div>
+                </div>
+              </div>
+              <Textarea 
+                className="w-full mb-2" 
+                label="Details" 
+                placeholder="Enter Details" 
                 value={newDiscount.details}
                 onChange={(e) => setNewDiscount({ ...newDiscount, details: e.target.value })}
-                className="w-full mb-2 p-2 border rounded"
+                isRequired
               />
-              <label className="block text-sm font-medium">Status</label>
-              <select
-                value={newDiscount.status}
-                onChange={(e) => setNewDiscount({ ...newDiscount, status: e.target.value })}
-                className="w-full mb-4 p-2 border rounded"
-              >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
-              <div className="flex justify-between items-center w-full">
+              <DropdownStatus
+                className="w-full mb-2"
+                value={Boolean(newDiscount.status)} 
+                onChange={(val) => setNewDiscount({ ...newDiscount, status: val })} 
+              />
+              <div className="flex justify-between items-center w-full mt-2">
                 {newDiscount.id ? (
-                  <button 
-                    onClick={() => handleDelete(newDiscount.id)} 
-                    className="text-red-500"
-                  >
-                    Delete...
-                  </button>
+                  <Button onClick={() => handleDelete(newDiscount.id)} color="danger">Delete</Button>
                 ) : (
                   <div></div> 
                 )}
                 <div className="flex space-x-2">
-                  <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-gray-300 text-blue-500 rounded-lg">Close</button>
-                  <button onClick={handleSave} className="px-4 py-2 bg-blue-500 text-white rounded-lg">Save</button>
+                  <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
+                  <Button onClick={handleSave} color="primary">Save</Button>
                 </div>
               </div>
             </div>

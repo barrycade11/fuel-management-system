@@ -4,7 +4,6 @@ import { endPoints } from "~/Constants/EndPoints";
 const fetchDropdowns = async (typeId) => {
     try {
         const response = await apiClient.get(`${endPoints.GlobalRecords}/Dropdowns/${typeId}`);
-
         return response.data;
     }
     catch (error) {
@@ -13,6 +12,10 @@ const fetchDropdowns = async (typeId) => {
 };
 
 const fetchDropdownTypeList = async (typeId, id) => {
+    if (!typeId || !id) {
+        console.error("Invalid parameters:", { typeId, id });
+        return;
+    }
     try {
         const response = await apiClient.get(`${endPoints.GlobalRecords}/Dropdowns/${typeId}/${id}`);
 
