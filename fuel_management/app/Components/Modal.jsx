@@ -8,13 +8,13 @@ import {
     Button 
 } from "@heroui/react";
 
-const HeroUIModal = ({ isOpen, onOpenChange, title, children, footer, size = "md" }) => {
+const HeroUIModal = ({ isOpen, onOpenChange, title, children, footer, size = "md", height = '80vh'}) => {
   const [scrollBehavior, setScrollBehavior] = React.useState("inside");
   const sizes = ["xs", "sm", "md", "lg", "xl", "2xl", "3xl", "4xl", "5xl", "full"];
   
   return (
     <Modal isOpen={isOpen} onOpenChange={onOpenChange} size={size} scrollBehavior={scrollBehavior}
-        style={{ maxHeight: "80vh", minHeight: "80vh" }} 
+        style={{ maxHeight: "80vh", minHeight: height }} 
     >
       <ModalContent>
         {(onClose) => (

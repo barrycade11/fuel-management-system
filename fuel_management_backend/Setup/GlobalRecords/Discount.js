@@ -8,17 +8,20 @@ router.get("/discounts", async (req, res) => {
       SELECT      a.id,
                   a.code,
                   a.name,
-                  a.criteriaId,
-                  b.name criteria,
-                  a.qualifierValue,
-                  a.discountTypeId,
-                  c.name discountType,
-                  a.discountValue,
-                  a.chargeToId,
-                  d.name chargeTo,
-                  a.maxLimit,
+                  a.criteriaId        AS "criteriaId",
+                  b.name              AS "criteria",
+                  a.qualifierValue    AS "qualifierValue",
+                  a.discountTypeId    AS "discountTypeId",
+                  c.name              AS "discountType",
+                  a.discountValue     AS "discountValue",
+                  a.chargeToId        AS "chargeToId",
+                  d.name              AS "chargeTo",
+                  a.maxLimit          AS "maxLimit",
                   a.details,
-                  a.status
+                  a.status,
+                  e.id                AS "discountLinId",
+                  f.id                AS "applicabilityId",
+                  f.name              AS "applicability"
       FROM        discountHdr a
       INNER JOIN  dropdown b
               ON  a.criteriaId = b.id
@@ -29,8 +32,43 @@ router.get("/discounts", async (req, res) => {
       INNER JOIN  dropdown d
               ON  a.chargeToId = d.id
                   AND d.dropdownTypeId = 1
+      INNER JOIN  discountLin e
+              ON  a.id = e.discountHdrId
+      INNER JOIN  departmentHdr f
+              ON  e.applicabilityId = f.id
     `);
-    res.status(201).json(result.rows);
+    const resultFormatted = {};
+
+    result.rows.forEach(row => {
+      if (!resultFormatted[row.id]) {
+        resultFormatted[row.id] = {
+          id: row.id,
+          code: row.code,
+          name: row.name,
+          criteriaId: row.criteriaId,
+          criteria: row.criteria,
+          qualifierValue: row.qualifierValue,
+          discountTypeId: row.discountTypeId,
+          discountType: row.discountType,
+          discountValue: row.discountValue,
+          chargeToId: row.chargeToId,
+          chargeTo: row.chargeTo,
+          maxLimit: row.maxLimit,
+          details: row.details,
+          status: row.status,
+          discountLin: []
+        };
+      }
+      if (row.discountLinId) {
+        resultFormatted[row.id].discountLin.push({
+          id: row.discountLinId,
+          applicabilityId: row.applicabilityId,
+          applicability: row.applicability
+        });
+      }
+    });
+
+    res.status(201).json(Object.values(resultFormatted));
   }
   catch (err) {
     console.error(err);
@@ -45,17 +83,20 @@ router.get("/discounts/:id", async (req, res) => {
       SELECT      a.id,
                   a.code,
                   a.name,
-                  a.criteriaId,
-                  b.name criteria,
-                  a.qualifierValue,
-                  a.discountTypeId,
-                  c.name discountType,
-                  a.discountValue,
-                  a.chargeToId,
-                  d.name chargeTo,
-                  a.maxLimit,
+                  a.criteriaId        AS "criteriaId",
+                  b.name              AS "criteria",
+                  a.qualifierValue    AS "qualifierValue",
+                  a.discountTypeId    AS "discountTypeId",
+                  c.name              AS "discountType",
+                  a.discountValue     AS "discountValue",
+                  a.chargeToId        AS "chargeToId",
+                  d.name              AS "chargeTo",
+                  a.maxLimit          AS "maxLimit",
                   a.details,
-                  a.status
+                  a.status,
+                  e.id                AS "discountLinId",
+                  f.id                AS "applicabilityId",
+                  f.name              AS "applicability"
       FROM        discountHdr a
       INNER JOIN  dropdown b
               ON  a.criteriaId = b.id
@@ -66,9 +107,44 @@ router.get("/discounts/:id", async (req, res) => {
       INNER JOIN  dropdown d
               ON  a.chargeToId = d.id
                   AND d.dropdownTypeId = 1
+      INNER JOIN  discountLin e
+              ON  a.id = e.discountHdrId
+      INNER JOIN  departmentHdr f
+              ON  e.applicabilityId = f.id
       WHERE       a.id = $1
     `, [id]);
-    res.status(201).json(result.rows);
+    const resultFormatted = {};
+
+    result.rows.forEach(row => {
+      if (!resultFormatted[row.id]) {
+        resultFormatted[row.id] = {
+          id: row.id,
+          code: row.code,
+          name: row.name,
+          criteriaId: row.criteriaId,
+          criteria: row.criteria,
+          qualifierValue: row.qualifierValue,
+          discountTypeId: row.discountTypeId,
+          discountType: row.discountType,
+          discountValue: row.discountValue,
+          chargeToId: row.chargeToId,
+          chargeTo: row.chargeTo,
+          maxLimit: row.maxLimit,
+          details: row.details,
+          status: row.status,
+          discountLin: []
+        };
+      }
+      if (row.discountLinId) {
+        resultFormatted[row.id].discountLin.push({
+          id: row.discountLinId,
+          applicabilityId: row.applicabilityId,
+          applicability: row.applicability
+        });
+      }
+    });
+
+    res.status(201).json(Object.values(resultFormatted));
   }
   catch (err) {
     console.error(err);
@@ -80,7 +156,7 @@ router.post("/discount", async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { code, name, criteriaId, qualifierValue, discountTypeId, discountValue, chargeToId, maxLimit, startDate, endDate, details, status } = req.body;
+    const { code, name, applicabilities, criteriaId, qualifierValue, discountTypeId, discountValue, chargeToId, maxLimit, startDate, endDate, details, status } = req.body;
     
     await client.query("BEGIN");
     
@@ -104,6 +180,19 @@ router.post("/discount", async (req, res) => {
       RETURNING   id
     `, [code, name, criteriaId, qualifierValue, discountTypeId, discountValue, chargeToId, maxLimit, startDate, endDate, details, status]);
     
+    const discountLinItems = [];
+    const discountLinQuery = applicabilities.map((item, index) => {
+      const base = index * 2;
+      subDepartmentItems.push(id, item.subDepartmentId);
+
+      return `($${base + 1}, $${base + 2})`;
+    }).join(",");
+    await client.query(`
+      INSERT INTO discountLin
+                  (discountHdrId, applicabilityId)
+      VALUES      ${discountLinQuery}
+    `, discountLinItems);
+
     await client.query("COMMIT");
     
     res.status(201).json(result.rows);
@@ -123,7 +212,7 @@ router.put("/discount/:id", async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { code, name, criteriaId, qualifierValue, discountTypeId, discountValue, chargeToId, maxLimit, startDate, endDate, details, status } = req.body;
+    const { code, name, applicabilities, criteriaId, qualifierValue, discountTypeId, discountValue, chargeToId, maxLimit, startDate, endDate, details, status } = req.body;
     
     await client.query("BEGIN");
     
@@ -144,6 +233,25 @@ router.put("/discount/:id", async (req, res) => {
       WHERE       id = $1
     `, [id, code, name, criteriaId, qualifierValue, discountTypeId, discountValue, chargeToId, maxLimit, startDate, endDate, details, status]);
     
+    await client.query(`
+      DELETE
+      FROM        discountLin
+      WHERE       discountHdrId = $1
+    `, [id]);
+
+    const discountLinItems = [];
+    const discountLinQuery = applicabilities.map((item, index) => {
+      const base = index * 2;
+      subDepartmentItems.push(id, item.subDepartmentId);
+
+      return `($${base + 1}, $${base + 2})`;
+    }).join(",");
+    await client.query(`
+      INSERT INTO discountLin
+                  (discountHdrId, applicabilityId)
+      VALUES      ${discountLinQuery}
+    `, discountLinItems);
+
     await client.query("COMMIT");
     
     res.status(201).json(result.rows);

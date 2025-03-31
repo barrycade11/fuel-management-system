@@ -26,6 +26,38 @@ router.get('/roles', async (_, res) => {
   }
 })
 
+
+/**
+ * Handle delete of role and it's related permissions of each module
+ *
+ * @param {int} roleid
+ * @returns {Object} express json response
+ */
+router.delete('/roles/:roleid', async (req, res) => {
+  try {
+    const { roleid } = req.params;
+
+    await pool.query(`
+        DELETE 
+        FROM    roles
+        WHERE   id = $1
+    `, [roleid])
+
+    return res.status(200).json({
+      success: true,
+      message: "Successfully deleted role and it's permissions",
+    })
+
+  } catch (error) {
+    return res.status(501).json({
+      success: false,
+      message: error.message,
+    })
+  }
+
+
+});
+
 module.exports = router;
 
 
