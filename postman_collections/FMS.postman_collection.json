@@ -10,7 +10,7 @@
 			"name": "Authentication",
 			"item": [
 				{
-					"name": "/Authentication/login",
+					"name": "/login",
 					"event": [
 						{
 							"listen": "test",
@@ -30,7 +30,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"password\"\r\n}",
+							"raw": "{\r\n    \"username\": \"jmdelacruz\",\r\n    \"password\": \"password\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -223,6 +223,172 @@
 										{
 											"key": "roleid",
 											"value": "28"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Users",
+					"item": [
+						{
+							"name": "/",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"admin123\",\r\n    \"password\": \"test123\",\r\n    \"lastname\": \"testing\",\r\n    \"firstname\": \"testing\",\r\n    \"stationAssignments\": [1],\r\n    \"userRole\": 1,\r\n    \"status\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Settings/Users",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Settings",
+										"Users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/create",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"jmdelacruz\",\r\n    \"password\": \"password\",\r\n    \"lastname\": \"Dela Cruz\",\r\n    \"firstname\": \"Jose Paulo\",\r\n    \"stationAssignments\": [1],\r\n    \"userRole\": 1,\r\n    \"status\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Settings/Users/create",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Settings",
+										"Users",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/update",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"admin123\",\r\n    \"lastname\": \"testing123\",\r\n    \"firstname\": \"123\",\r\n    \"stationAssignments\": [1],\r\n    \"userRole\": 1,\r\n    \"status\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Settings/Users/update",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Settings",
+										"Users",
+										"update"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/delete",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"admin123\",\r\n    \"lastname\": \"testing123\",\r\n    \"firstname\": \"123\",\r\n    \"stationAssignments\": [1],\r\n    \"userRole\": 1,\r\n    \"status\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Settings/Users/delete/:userid",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Settings",
+										"Users",
+										"delete",
+										":userid"
+									],
+									"variable": [
+										{
+											"key": "userid",
+											"value": "4"
 										}
 									]
 								}
