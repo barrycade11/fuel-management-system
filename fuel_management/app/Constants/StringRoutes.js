@@ -27,7 +27,7 @@ class StringRoutes {
   static incentives = 'global-setup/incentives';
 
   static settings = 'settings';
-  static permission = 'settings/permissions';
+  static permission = 'permissions';
 
   /**
    * Retrieves the current sub-route from a given pathname.

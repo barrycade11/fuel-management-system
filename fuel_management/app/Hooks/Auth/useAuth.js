@@ -11,6 +11,7 @@ const useAuth = create(
           token: token,
           user: data
         })
+        console.log(get().user);
       },
     }),
     {

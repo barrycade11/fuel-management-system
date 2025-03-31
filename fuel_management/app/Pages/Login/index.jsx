@@ -12,6 +12,7 @@ const Login = () => {
   const navigate = useNavigate();
   const loginMutation = useLoginMutation();
   const auth = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -30,18 +31,22 @@ const Login = () => {
    * @param {Event} e - Form submit event.
    */
   const onManageLogin = async (e) => {
-
+    setIsLoading(true);
     loginMutation.mutate(form, {
-      onSuccess: (response) => {
-        const token = response.data.body.token;
-        //store user dtails in local storage
-        auth.onSetUserDetails(response.data.body, response.data.body.token)
-        navigate(StringRoutes.dashboard);
-      },
       onError: (error) => {
         console.error("Login failed:", error.response?.data?.message || error.message);
         showError(error);
+        setIsLoading(false);
       },
+      onSettled: (response) => {
+        if (response.data.success) {
+          setIsLoading(false);
+          const token = response.data.body.token;
+          //store user dtails in local storage
+          auth.onSetUserDetails(response.data.body, response.data.body.token)
+          navigate(StringRoutes.dashboard);
+        }
+      }
     });
   };
 
@@ -80,6 +85,7 @@ const Login = () => {
             />
             <div className="pt-5">
               <PrimaryButton
+                isLoading={isLoading}
                 title="Login"
                 onClick={onManageLogin} // Handle button click for form submission
               />
