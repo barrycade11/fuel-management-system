@@ -2,7 +2,7 @@ import Tabs from "~/Components/Tabs";
 import { SalesTabs } from "~/Constants/Labels";
 import { useState } from "react";
 import Navbar from "~/Components/Navbar"
-import SalesFilter from "./Components/Salesfilter";
+import SalesFilter from "./Components/SalesFilter";
 import FuelSalesInput from "./Components/FuelSalesInput";
 import TaxTotals from "./Components/TaxTotals";
 import TanksInput from "./Components/TanksInput";
