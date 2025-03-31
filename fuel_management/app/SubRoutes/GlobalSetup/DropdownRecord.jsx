@@ -1,40 +1,29 @@
 import { useEffect, useState } from "react";
-import Table from "~/Components/Table";
-import Dropdown from "~/Components/Dropdown";
+import Table from "~/Components/DropdownTable";
 import Notification from "~/Components/Notification";
 import TableSkeleton from "~/Components/TableSkeleton";
 import DropdownStatus from "~/Components/DropdownStatus";
 import { Textarea, Input, Button } from "@heroui/react";
-import { 
-  fetchFuelMasters, 
-  fetchFuelMasterDetails, 
-  createFuelMaster, 
-  updateFuelMaster, 
-  deleteFuelMaster 
-} from "~/Hooks/Setup/GlobalRecords/FuelMaster/useFuelMasters";
-import { fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
 
-const FuelMaster = () => {
-  const [fuels, setFuels] = useState([]);
+const DropdownRecord = () => {
+  const [dropdownRecords, setDropdownRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [newFuel, setNewFuel] = useState({ 
-    code: "", 
+  const [selectedDropdownKey, setSelectedDropdownKey] = useState(1);
+  const [newDropdownRecord, setNewDropdownRecord] = useState({ 
     name: "", 
-    categoryId: "", 
     details: "", 
-    color: "#000000", 
     status: true
   });
 
-  const getFuelMasters = async () => {
+  const getDropdownRecords = async () => {
+    if (!selectedDropdownKey) return;
     setLoading(true);
     try {
-        const data = await fetchFuelMasters();
-        setFuels(data);
-        console.log(data);
+        const data = await fetchDropdownRecords(selectedDropdownKey); 
+        setDropdownRecords(data);
     } catch (error) {
         console.error("Error fetching data:", error);
     } finally {
@@ -43,57 +32,47 @@ const FuelMaster = () => {
   };
 
   useEffect(() => {
-      getFuelMasters();
-  }, []);
+      getDropdownRecords();
+  }, [selectedDropdownKey]);
+
 
   const handleAdd = () => {
-    setNewFuel({ 
-      code: "", 
+    setNewDropdownRecord({ 
       name: "", 
-      categoryId: "", 
       details: "", 
-      color: "#000000", 
       status: true 
     });
     setIsEditing(true);
   };
 
-  const handleEdit = async (fuel) => {
+  const handleEdit = async (dropdownRecord) => {
     try {
-        const categoryData = await fetchDropdownTypeList(3, fuel.categoryid); 
-
-        if (categoryData.length > 0) {
-            setNewFuel((prev) => ({
-                ...prev,
-                ...fuel,
-                categoryId: categoryData[0].id, 
-            }));
-
-            setIsEditing(true);
-        }
+        setNewDropdownRecord(dropdownRecord);
+        setIsEditing(true);
+        
     } catch (error) {
-        console.error("Error fetching category data:", error);
+        console.error("Error fetching data:", error);
     }
   };
 
   const handleSave = async () => {
-    if (!newFuel.code || !newFuel.name || !newFuel.categoryId || !newFuel.details || !newFuel.color) {
+    if ( !newDropdownRecord.name || !newDropdownRecord.details ) {
         setNotification({ message: "All fields are required.", type: "error" });
         return;
     }
 
     try {
-        if (newFuel.id) {
-            await updateFuelMaster(newFuel.id, newFuel);
+        if (newDropdownRecord.id) {
+            await updateDropdownRecord(newDropdownRecord.id, newDropdownRecord);
         } else {
-            const response = await createFuelMaster(newFuel);
-            setFuels([...fuels, response[0]]); 
+            const response = await createDropdownRecord(newDropdownRecord);
+            setDropdownRecords([...dropdownRecords, response[0]]); 
         }
 
         setIsEditing(false);
         setNotification({ message: "Save successful", type: "success" });
 
-        getFuelMasters(); 
+        getDropdownRecords(); 
     } catch (error) {
         setNotification({ message: "Error saving data", type: "error" });
         console.error("Error saving data:", error);
@@ -103,12 +82,12 @@ const FuelMaster = () => {
   const handleDelete = (id) => {
     const handleConfirm = async () => {
         try {
-            await deleteFuelMaster(id);
+            await deleteDropdownRecord(id);
 
             setIsEditing(false);
             setNotification({ message: "Record deleted successfully!", type: "success" });
-            getFuelMasters(); 
-            setFuels((prevFuels) => prevFuels.filter(fuel => fuel.id !== id)); 
+            getDropdownRecords(); 
+            setDropdownRecords((prevDropdownRecords) => prevDropdownRecords.filter(dropdownRecord => dropdownRecord.id !== id)); 
         } catch (error) {
             setNotification({ message: "Failed to delete record.", type: "error" });
             console.error("Error deleting record:", error);
@@ -130,19 +109,12 @@ const FuelMaster = () => {
 
   const columns = [
     { key: "id", label: "No.", hidden: true },
-    { key: "code", label: "Fuel Code", hidden: false },
-    { key: "name", label: "Fuel Name", hidden: false },
-    { key: "category", label: "Category", hidden: true },
+    { key: "name", label: "Name", hidden: false },
     { key: "details", label: "Details", hidden: false },
     { key: "status", label: "Status", hidden: true }
   ];
 
   const customRender = {
-    code: (value, row) => (
-      <span className="px-3 py-1 text-white rounded-lg" style={{ backgroundColor: row.color }}>
-        {value}
-      </span>
-    ),
     actions: (item) => (
       <Button 
       onPress={() => handleEdit(item)} 
@@ -168,58 +140,35 @@ const FuelMaster = () => {
         />}
       {loading ? (
         // <p>Loading...</p>
-        <TableSkeleton columns={4} rows={5}/>
+        <TableSkeleton columns={3} rows={5}/>
       ) : isEditing ? (
           <div className="h-screen flex justify-center items-center">
             <div className="bg-white p-6 w-96 h-full max-w-lg">
-              <h2 className="text-xl font-semibold mb-4">{newFuel.id ? "Edit" : "Add"} Fuel</h2>
+              <h2 className="text-xl font-semibold mb-4">{newDropdownRecord.id ? "Edit" : "Add"} Dropdown Record</h2>
               <Input 
                 className="w-full mb-2" 
-                label="Fuel Code" 
-                placeholder="Enter fuel code" 
-                value={newFuel.code}
-                onChange={(e) => setNewFuel({ ...newFuel, code: e.target.value })}
+                label="Name" 
+                placeholder="Enter Name" 
+                value={newDropdownRecord.name}
+                onChange={(e) => setNewDropdownRecord({ ...newDropdownRecord, name: e.target.value })}
                 isRequired
-              />
-              <Input 
-                className="w-full mb-2" 
-                label="Fuel Name" 
-                placeholder="Enter fuel name" 
-                value={newFuel.name}
-                onChange={(e) => setNewFuel({ ...newFuel, name: e.target.value })}
-                isRequired
-              />
-              <Dropdown 
-                  label="Fuel Category"
-                  typeId={3} 
-                  // parentId={0} 
-                  value={newFuel.categoryId} 
-                  onChange={(e) => setNewFuel({ ...newFuel, categoryId: e.target.value })} 
               />
               <Textarea 
                 className="w-full mb-2" 
                 label="Details" 
                 placeholder="Enter Details" 
-                value={newFuel.details}
-                onChange={(e) => setNewFuel({ ...newFuel, details: e.target.value })}
-                isRequired
-              />
-              <Input 
-                type="color"
-                className="w-full mb-2 cursor-pointer" 
-                label="Assign Color" 
-                value={newFuel.color}
-                onChange={(e) => setNewFuel({ ...newFuel, color: e.target.value })}
+                value={newDropdownRecord.details}
+                onChange={(e) => setNewDropdownRecord({ ...newDropdownRecord, details: e.target.value })}
                 isRequired
               />
               <DropdownStatus
                 className="w-full mb-2"
-                value={Boolean(newFuel.status)} 
-                onChange={(val) => setNewFuel({ ...newFuel, status: val })} 
+                value={Boolean(newDropdownRecord.status)} 
+                onChange={(val) => setNewDropdownRecord({ ...newDropdownRecord, status: val })} 
               />
               <div className="flex justify-between items-center w-full mt-2">
-                {newFuel.id ? (
-                  <Button onClick={() => handleDelete(newFuel.id)} color="danger">Delete</Button>
+                {newDropdownRecord.id ? (
+                  <Button onClick={() => handleDelete(newDropdownRecord.id)} color="danger">Delete</Button>
                 ) : (
                   <div></div> 
                 )}
@@ -232,16 +181,17 @@ const FuelMaster = () => {
           </div>
       ) : (
         <Table 
-          title="Fuels" 
-          data={fuels} 
+          data={dropdownRecords} 
           columns={columns} 
           onEdit={handleEdit} 
           onAdd={handleAdd} 
           customRender={customRender} 
+          selectedDropdownKey={selectedDropdownKey}
+          setSelectedDropdownKey={setSelectedDropdownKey} 
         />
       )}
     </div>
   );  
 };
 
-export default FuelMaster;
+export default DropdownRecord;

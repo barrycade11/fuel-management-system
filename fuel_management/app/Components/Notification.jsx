@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Check, AlertCircle } from "lucide-react";
+import { Button } from "@heroui/react";
 
 const Notification = ({ message, type, onClose, onConfirm, onCancel }) => {
   const timerRef = useRef(null);
@@ -26,7 +27,7 @@ const Notification = ({ message, type, onClose, onConfirm, onCancel }) => {
 
         {type === "delete" ? (
           <div className="flex space-x-2">
-            <button 
+            <Button 
               onClick={() => {
                 if (onConfirm) {
                   onConfirm();
@@ -34,12 +35,12 @@ const Notification = ({ message, type, onClose, onConfirm, onCancel }) => {
                   console.error("onConfirm is undefined!");
                 }
               }} 
-              className="bg-red-800 px-3 py-1 rounded"
+              className="bg-red-800 px-3 py-1 rounded text-white"
             >
               Delete
-            </button>
+            </Button>
 
-            <button 
+            <Button 
               onClick={() => {
                 if (onCancel) {
                   onCancel();
@@ -47,10 +48,10 @@ const Notification = ({ message, type, onClose, onConfirm, onCancel }) => {
                   console.error("onCancel is undefined!");
                 }
               }} 
-              className="bg-red-700 px-3 py-1 rounded"
+              className="bg-red-700 px-3 py-1 rounded text-white"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         ) : (
           <button onClick={onClose} className="ml-4">✕</button>

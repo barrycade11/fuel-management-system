@@ -6,6 +6,10 @@ import "~/timepicker.css";
 import Table from "~/Components/Table";
 import Dropdown from "~/Components/Dropdown";
 import Notification from "~/Components/Notification";
+import TableSkeleton from "~/Components/TableSkeleton";
+import DropdownStatus from "~/Components/DropdownStatus";
+import TimeInput from "~/Components/TimeInput";
+import { Textarea, Input, Button } from "@heroui/react";
 import { 
   fetchShifts, 
   fetchShiftDetails, 
@@ -47,7 +51,7 @@ const Shift = () => {
     } finally {
         setLoading(false);
     }
-};
+  };
   useEffect(() => {
       getShifts();
   }, []);
@@ -55,8 +59,8 @@ const Shift = () => {
   const handleAdd = () => {
     setNewShift({ 
       name: "", 
-      startTime: "00:00",
-      endTime: "00:00", 
+      startTime: "00:00:00",
+      endTime: "00:00:00", 
       details: "", 
       status: true
     });
@@ -67,7 +71,9 @@ const Shift = () => {
     try {
         setNewShift((prev) => ({
           ...prev,
-          ...shift
+          ...shift, 
+          startTime: ensureTimeFormat(shift.startTime),
+          endTime: ensureTimeFormat(shift.endTime)
         }));
 
         setIsEditing(true);
@@ -145,15 +151,40 @@ const Shift = () => {
     }
   ];
 
+  const ensureTimeFormat = (timeString) => {
+    if (!timeString) return "00:00:00";
+    
+    const parts = timeString.split(':');
+    if (parts.length === 2) {
+      return `${parts[0]}:${parts[1]}:00`; 
+    }
+    return timeString; 
+  };
+
+  const formatTime = (timeString) => {
+    if (!timeString) return "-";
+    
+    const [hours, minutes] = timeString.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const hour12 = hours % 12 || 12;
+    
+    return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
+  };
+
   const customRender = {
+    startTime: (item) => formatTime(item),
+    endTime: (item) => formatTime(item),
     actions: (item) => (
-      <button
-        onClick={() => handleEdit(item)} 
-        className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
+      <Button 
+      onPress={() => handleEdit(item)} 
+      className="bg-blue-200 text-blue-800 rounded-lg hover:bg-blue-300"
       >
         Edit
-      </button>
+      </Button>
     ),
+    status: (value) => {
+      return value ? "Active" : "Inactive";
+    }
   };
 
   return (
@@ -167,77 +198,66 @@ const Shift = () => {
           onCancel={notification.onCancel}  
         />}
       {loading ? (
-        <p>Loading...</p>
+        // <p>Loading...</p>
+        <TableSkeleton columns={4} rows={5}/>
       ) : isEditing ? (
           <div className="h-screen flex justify-center items-center">
             <div className="bg-white p-6 w-96 h-full max-w-lg">
               <h2 className="text-xl font-semibold mb-4">{newShift.id ? "Edit" : "Add"} Shift</h2>
-              <label className="block text-sm font-medium">Shift Name</label>
-              <input
-                type="text"
+              <Input 
+                className="w-full mb-2" 
+                label="Shift Name" 
+                placeholder="Enter shift name" 
                 value={newShift.name}
                 onChange={(e) => setNewShift({ ...newShift, name: e.target.value })}
-                className="w-full mb-2 p-2 border rounded"
+                isRequired
               />
-              <div className="flex space-x-4">
+              <div className="flex space-x-4 mb-2">
                 <div className="flex flex-col w-full">
-                  <label className="text-sm font-medium mb-1">Start Shift</label>
-                  <div className="relative flex items-center border rounded-lg px-2 py-1">
-                    <TimePicker
+                  <div className="relative flex items-center rounded-lg">
+                    <TimeInput 
+                      isRequired 
+                      label="Start Shift" 
                       value={newShift.startTime} 
                       onChange={(time) => setNewShift({ ...newShift, startTime: time })}
-                      disableClock={true} 
-                      clearIcon={null} 
-                      format="HH:mm" 
-                      className="w-full bg-transparent border-none focus:outline-none"
                     />
                     <ClockIcon className="absolute right-2 text-gray-500 w-5 h-5" />
                   </div>
                 </div>
                 <div className="flex flex-col w-full">
-                  <label className="text-sm font-medium mb-1">End Shift</label>
-                  <div className="relative flex items-center border rounded-lg px-2 py-1">
-                    <TimePicker
+                  <div className="relative flex items-center rounded-lg">
+                    <TimeInput 
+                      isRequired 
+                      label="End Shift" 
                       value={newShift.endTime} 
                       onChange={(time) => setNewShift({ ...newShift, endTime: time })}
-                      disableClock={true} 
-                      clearIcon={null} 
-                      format="HH:mm" 
-                      className="w-full bg-transparent border-none focus:outline-none"
                     />
                     <ClockIcon className="absolute right-2 text-gray-500 w-5 h-5" />
                   </div>
                 </div>
               </div>
-              <label className="block text-sm font-medium">Details</label>
-              <textarea
+              <Textarea 
+                className="w-full mb-2" 
+                label="Details" 
+                placeholder="Enter Details" 
                 value={newShift.details}
                 onChange={(e) => setNewShift({ ...newShift, details: e.target.value })}
-                className="w-full mb-2 p-2 border rounded"
+                isRequired
               />
-              <label className="block text-sm font-medium">Status</label>
-              <select
-                value={newShift.status}
-                onChange={(e) => setNewShift({ ...newShift, status: e.target.value })}
-                className="w-full mb-4 p-2 border rounded"
-              >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
-              <div className="flex justify-between items-center w-full">
+              <DropdownStatus
+                className="w-full mb-2"
+                value={Boolean(newShift.status)} 
+                onChange={(val) => setNewShift({ ...newShift, status: val })} 
+              />
+              <div className="flex justify-between items-center w-full mt-2">
                 {newShift.id ? (
-                  <button 
-                    onClick={() => handleDelete(newShift.id)} 
-                    className="text-red-500"
-                  >
-                    Delete...
-                  </button>
+                  <Button onClick={() => handleDelete(newShift.id)} color="danger">Delete</Button>
                 ) : (
                   <div></div> 
                 )}
                 <div className="flex space-x-2">
-                  <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-gray-300 text-blue-500 rounded-lg">Close</button>
-                  <button onClick={handleSave} className="px-4 py-2 bg-blue-500 text-white rounded-lg">Save</button>
+                  <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
+                  <Button onClick={handleSave} color="primary">Save</Button>
                 </div>
               </div>
             </div>

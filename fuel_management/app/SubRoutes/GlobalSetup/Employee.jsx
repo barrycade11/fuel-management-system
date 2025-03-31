@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Table from "~/Components/Table";
 // import Dropdown from "~/Components/Dropdown";
 import Notification from "~/Components/Notification";
+import TableSkeleton from "~/Components/TableSkeleton";
 import { 
   fetchEmployees, 
   fetchEmployeeDetails, 
@@ -250,7 +251,8 @@ const Employee = () => {
           onCancel={notification.onCancel}  
         />}
       {loading ? (
-        <p>Loading...</p>
+        // <p>Loading...</p>
+        <TableSkeleton columns={5} rows={5}/>
       ) : isEditing ? (
         <>
         <Accordion variant="splitted" defaultExpandedKeys={["personal_info"]}>

@@ -12,12 +12,12 @@ const enum DropdownType {
     VehicleStatus = 11,
     TankStatus = 12,
     ReasonToFuelPriceChange = 13,
-    Provice = 14,
+    Province = 14,
     City = 15,
     Barangay = 16,
-    DiscountCriteria = 16,
-    DiscountType = 17,
-    SubDepartment = 18
+    DiscountCriteria = 17,
+    DiscountType = 18,
+    SubDepartment = 19
 }
 
 export { DropdownType }
