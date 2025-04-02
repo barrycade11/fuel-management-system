@@ -1,14 +1,18 @@
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button } from "@heroui/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Down from "~/Assets/Svg/Down";
 
-export default function SimpleDropdown({ label, items }) {
+export default function SimpleDropdown({ label, items, toUpdate }) {
     const [selectedKeys, setSelectedKeys] = useState(new Set(["Select"]));
-
+    
     const selectedValue = useMemo(
         () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
         [selectedKeys],
     );
+
+    useEffect(()=> {
+        toUpdate((Array.from(selectedKeys).join(", ").replaceAll("_", " ")))
+    }, [selectedKeys])
     
     return (
         <div className="flex flex-col justify-between">

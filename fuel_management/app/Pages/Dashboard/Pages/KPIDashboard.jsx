@@ -1,140 +1,46 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import LineChart from "~/Pages/Dashboard/Components/Charts/LineChart";
 import ColoredCard from "~/Pages/Dashboard/Components/ColoredCard"
+import moment from "moment";
+import useGetKPI from "~/Hooks/Dashboard/useGetKPI";
 
 const KPIDashboard = ({ startDate, endDate }) => {
-    const [data, setData] = useState([
-        {
-            color: 'yellow',
-            title: 'Total Fuel',
-            total: 51316.95,
-            percentage: 96,
-            target: 49200.50,
-            prior: 45216.06
-        },
-        {
-            color: 'green',
-            title: 'V-Power',
-            total: 51316.95,
-            percentage: 104,
-            target: 49200.50,
-            prior: 45216.06
-        },
-        {
-            color: 'blue',
-            title: 'EV Charging',
-            total: 39,
-            percentage: 186,
-            target: 21,
-            prior: 30
-        },
-        {
-            color: 'green',
-            title: 'NBS',
-            total: 21,
-            percentage: 100,
-            target: 21,
-            prior: 30
-        },
-        {
-            color: 'blue',
-            title: 'Shell Go+',
-            total: 34,
-            percentage: 139,
-            target: 25,
-            prior: 34
-        },
-        {
-            color: 'green',
-            title: 'Lubes',
-            total: 145.8,
-            percentage: 106,
-            target: 138,
-            prior: 120
-        },
-        {
-            color: 'red',
-            title: 'NFR Select',
-            total: 334534.32,
-            percentage: 86,
-            target: 23755423,
-            prior: 1230434
-        },
-        {
-            color: 'red',
-            title: 'Shell Go+',
-            total: 34,
-            percentage: 139,
-            target: 25,
-            prior: 34
-        },
-        {
-            color: 'green',
-            title: 'V-Power',
-            total: 51316.95,
-            percentage: 104,
-            target: 49200.50,
-            prior: 45216.06
-        },
-        {
-            color: 'blue',
-            title: 'EV Charging',
-            total: 39,
-            percentage: 186,
-            target: 21,
-            prior: 30
-        },
-        {
-            color: 'red',
-            title: 'NBS',
-            total: 21,
-            percentage: 100,
-            target: 21,
-            prior: 30
-        },
-    ])
-    const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
+    const [data, setData] = useState([])
+    const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const [thisYEar, setThisYear] = useState({
+        label: 'This year',
+        data: [],
+        borderColor: 'black',
+        backgroundColor: 'black',
+        tension: 0.4
+    })
+    const [lastYear, setLastYear] = useState({
+        label: 'Last year',
+        data: [],
+        borderColor: 'gray',
+        backgroundColor: 'gray',
+        borderDash: [10,5],
+        tension: 0.4
+    })
 
-    const chartData = {
-        labels,
-        datasets: [
-            {
-                label: 'This year',
-                data: [
-                    23,
-                    45,
-                    59,
-                    100,
-                    100,
-                    87,
-                    65
-                ],
-                borderColor: 'black',
-                backgroundColor: 'black',
-                tension: 0.4
-            },
-            {
-                label: 'Last year',
-                data: [
-                    43,
-                    67,
-                    48,
-                    78,
-                    62,
-                    34,
-                    96
-                ],
-                borderColor: 'gray',
-                backgroundColor: 'gray',
-                borderDash: [10,5],
-                tension: 0.4
-            },
-        ],
-    };
+    useEffect(()=> {
+        const getData = async () => {
+            let apiData = await useGetKPI(startDate, endDate)
+
+            setData(apiData?.kpi)
+            setThisYear({...thisYEar,
+                data: apiData?.thisYear
+            })
+            setLastYear({...lastYear,
+                data: apiData?.lastYear
+            })
+        }
+        getData()
+    }, [startDate, endDate])
 
     return (
-        <div>
-            <label className="text-2xl font-semibold">KPI: {startDate} - {endDate}</label>
+        <div className="px-5">
+            <label className="text-2xl font-semibold">KPI: {moment(startDate).format('MMMM DD, YYYY')} - {moment(endDate).format('MMMM DD, YYYY')}</label>
 
             <div className="grid xl:grid-cols-6 lg:grid-cols-5 md:grid-cols-4 grid-cols-3 gap-4 mt-8">
                 {data.map((item, index) => {
@@ -155,7 +61,16 @@ const KPIDashboard = ({ startDate, endDate }) => {
 
             <div className="grid lg:grid-cols-9 gap-4 mt-10">
                 <div className="lg:col-span-6 bg-gray-100 rounded-2xl w-full">
-                    <LineChart chartData={chartData} label={"KPI"}/>
+                    <LineChart 
+                        chartData={{
+                            labels,
+                            datasets: [
+                                thisYEar,
+                                lastYear
+                            ],
+                        }} 
+                        label={"KPI"}
+                    />
                 </div>
                 <div className="lg:col-span-3 flex justify-end">
                     <div className="bg-gray-100 rounded-2xl p-6 w-72">

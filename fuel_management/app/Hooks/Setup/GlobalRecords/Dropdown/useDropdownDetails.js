@@ -1,9 +1,8 @@
-import { apiClient } from "~/Constants/ApiClient";
-import { endPoints } from "~/Constants/EndPoints";
+import apiClient from "~/Constants/ApiClient";
 
 export const fetchDropdownDetails = async (typeId, parentId, id) => {
     try {
-        const response = await apiClient.get(`${endPoints.GlobalRecords}/Dropdowns/${typeId}/${parentId}/${id}`);
+        const response = await apiClient.get(`/Dropdowns/${typeId}/${parentId}/${id}`);
 
         return response.data;
     }
