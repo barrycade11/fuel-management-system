@@ -228,6 +228,3 @@ THIS IS THE INITIAL SETUP FOR THIS PROJECT
 FEEL FREE TO COMMIT ANYTING IN `master` branch
 
 Built with ❤️ using React Router.
-
-
-
