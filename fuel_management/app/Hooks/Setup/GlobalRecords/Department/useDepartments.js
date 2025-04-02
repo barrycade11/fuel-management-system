@@ -27,7 +27,7 @@ const createDepartment = async (data) => {
     try {
         // console.log("POST URL:", `${endPoints.GlobalRecords}/Department`);
         // console.log("Payload:", data);
-        const response = await apiClient.post(`${endPoints.GlobalRecords}/Deparment`, data);
+        const response = await apiClient.post(`${endPoints.GlobalRecords}/Department`, data);
         // console.log(response)
         return response.data;
     }

@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { Select, SelectItem } from "@heroui/react";
 import { fetchDropdowns, fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
 
-const Dropdown = ({ typeId, parentId, value, onChange, label }) => {
+const Dropdown = ({ typeId, value, onChange, label }) => {
   const [options, setOptions] = useState([]);
   const [selectedValue, setSelectedValue] = useState("");
 
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const data = await fetchDropdowns(typeId, parentId);
+        const data = await fetchDropdowns(typeId);
         setOptions(data);
       } catch (error) {
         console.error("Error fetching dropdown options:", error);
@@ -17,13 +17,13 @@ const Dropdown = ({ typeId, parentId, value, onChange, label }) => {
     };
 
     fetchOptions();
-  }, [typeId, parentId]);
+  }, [typeId]);
 
   useEffect(() => {
     if (value) {
       const fetchSelectedValue = async () => {
         try {
-          const data = await fetchDropdownTypeList(typeId, parentId, value);
+          const data = await fetchDropdownTypeList(typeId, value);
           setSelectedValue(data?.name || ""); 
         } catch (error) {
           console.error("Error fetching selected value:", error);
@@ -34,7 +34,7 @@ const Dropdown = ({ typeId, parentId, value, onChange, label }) => {
     } else {
       setSelectedValue("");
     }
-  }, [value, typeId, parentId]);
+  }, [typeId, value]);
 
   const handleSelectionChange = (keys) => {
     const selectedKey = Array.from(keys)[0];

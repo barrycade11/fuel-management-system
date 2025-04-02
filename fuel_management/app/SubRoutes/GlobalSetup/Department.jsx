@@ -100,12 +100,15 @@ const Department = () => {
         subDepartments: newDepartment.subDepartmentId.map(id => ({ subDepartmentId: id })), 
       };
   
+      console.log(payload)
+
       if (newDepartment.id) {
         await updateDepartment(newDepartment.id, payload);
       } else {
         const response = await createDepartment(payload);
         setDepartments([...departments, response[0]]);
       }
+
   
       setIsEditing(false);
       setNotification({ message: "Save successful", type: "success" });

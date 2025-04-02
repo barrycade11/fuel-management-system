@@ -3,7 +3,7 @@ import { endPoints } from "~/Constants/EndPoints";
 
 const fetchEmployees = async () => {
     try {
-        const response = await apiClient.get(`${endPoints.GlobalRecords}/Employees`);
+        const response = await apiClient.get(`${endPoints.GlobalRecords}/Employees/`);
 
         return response.data;
     }
