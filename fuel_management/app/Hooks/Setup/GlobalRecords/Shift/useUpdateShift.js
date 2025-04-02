@@ -1,9 +1,8 @@
-import { apiClient } from "~/Constants/ApiClient";
-import { endPoints } from "~/Constants/EndPoints";
+import apiClient from "~/Constants/ApiClient";
 
 export const updateShift = async (id, data) => {
     try {
-        const response = await apiClient.put(`${endPoints.GlobalRecords}/Shift/${id}`, data);
+        const response = await apiClient.put(`/Shift/${id}`, data);
 
         return response.data;
     }

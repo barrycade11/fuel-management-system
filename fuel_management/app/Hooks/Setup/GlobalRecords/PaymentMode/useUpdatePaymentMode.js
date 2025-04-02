@@ -1,9 +1,8 @@
-import { apiClient } from "~/Constants/ApiClient";
-import { endPoints } from "~/Constants/EndPoints";
+import apiClient from "~/Constants/ApiClient";
 
 export const updatePaymentMode = async (id, data) => {
     try {
-        const response = await apiClient.put(`${endPoints.GlobalRecords}/PaymentMode/${id}`, data);
+        const response = await apiClient.put(`/PaymentMode/${id}`, data);
 
         return response.data;
     }

@@ -1,32 +1,12 @@
-import { apiClient } from "~/Constants/ApiClient";
-import { endPoints } from "~/Constants/EndPoints";
+import apiClient from "~/Constants/ApiClient";
 
-const fetchDropdowns = async (typeId) => {
+export const fetchDropdowns = async (typeId, parentId) => {
     try {
-        const response = await apiClient.get(`${endPoints.GlobalRecords}/Dropdowns/${typeId}`);
-        return response.data;
-    }
-    catch (error) {
-        throw error;
-    }
-};
-
-const fetchDropdownTypeList = async (typeId, id) => {
-    if (!typeId || !id) {
-        console.error("Invalid parameters:", { typeId, id });
-        return;
-    }
-    try {
-        const response = await apiClient.get(`${endPoints.GlobalRecords}/Dropdowns/${typeId}/${id}`);
+        const response = await apiClient.get(`/Dropdowns/${typeId}/${parentId}`);
 
         return response.data;
     }
     catch (error) {
         throw error;
     }
-};
-
-export {
-    fetchDropdowns,
-    fetchDropdownTypeList
 };

@@ -1,22 +1,47 @@
 import { Button } from "@heroui/react"
 import Plus from "~/Assets/Svg/Plus"
 
-const RandomButtons = ({openModeOfPayments, setOpenModeOfPayments, openDepSales, setOpenDepSales}) => {
+const RandomButtons = ({
+        fuelSales,
+        tankTotal,
+        departmentSales,
+        openModeOfPayments, 
+        setOpenModeOfPayments, 
+        openDepSales, 
+        setOpenDepSales, 
+        openSupplements, 
+        setOpenSupplements,
+        openCrew, 
+        setOpenCrew,
+        openVariance,
+        setOpenVariance
+    }) => {
+
+    const submitHandler = async () => {
+        console.log({
+            fuelSales: fuelSales,
+            tankTotal: tankTotal,
+            departmentSales: departmentSales
+        })
+    }
 
     return(
         <div>
-            <div className="grid gap-3 mt-24">
+            <div className="grid gap-3 mt-12">
+                <Button onPress={()=>setOpenCrew(!openCrew)} color="primary" className="w-min rounded-md font-semibold text-base" startContent={<Plus color={"white"}/>}>
+                    Confirm Crew
+                </Button>
                 <Button onPress={()=>setOpenDepSales(!openDepSales)} color="primary" className="w-min rounded-md font-semibold text-base" startContent={<Plus color={"white"}/>}>
                     Department Sales
                 </Button>
                 <Button onPress={()=>setOpenModeOfPayments(!openModeOfPayments)} color="primary" className="w-min rounded-md font-semibold text-base" startContent={<Plus color={"white"}/>}>
                     Mode Of Payment
                 </Button>
-                <Button color="primary" className="w-min rounded-md font-semibold text-base" startContent={<Plus color={"white"}/>}>
+                <Button onPress={()=>setOpenSupplements(!openSupplements)} color="primary" className="w-min rounded-md font-semibold text-base" startContent={<Plus color={"white"}/>}>
                     Supplements
                 </Button>
 
-                <Button color="success" className="w-min rounded-md font-semibold text-base text-white" isDisabled={true}>
+                <Button onPress={()=>setOpenVariance(!openVariance)} className="w-min rounded-md font-semibold text-base bg-emerald-400 text-white">
                     Variance Check
                 </Button>
             </div>
@@ -28,7 +53,7 @@ const RandomButtons = ({openModeOfPayments, setOpenModeOfPayments, openDepSales,
                 <Button color="danger" className="w-min rounded-md font-semibold text-base text-white" isDisabled={true}>
                     Delete
                 </Button>
-                <Button color="primary" className="w-min rounded-md font-semibold text-base text-white" isDisabled={true}>
+                <Button onPress={submitHandler} color="primary" className="w-min rounded-md font-semibold text-base text-white">
                     Save
                 </Button>
                 <Button className="w-min rounded-md font-semibold text-base text-blue-600 bg-blue-200">

@@ -1,9 +1,8 @@
-import { apiClient } from "~/Constants/ApiClient";
-import { endPoints } from "~/Constants/EndPoints";
+import apiClient from "~/Constants/ApiClient";
 
 export const deleteDropdown = async (typeId, parentId, id) => {
     try {
-        const response = await apiClient.delete(`${endPoints.GlobalRecords}/Dropdowns/${typeId}/${parentId}/${id}`);
+        const response = await apiClient.delete(`/Dropdowns/${typeId}/${parentId}/${id}`);
 
         return response.data;
     }

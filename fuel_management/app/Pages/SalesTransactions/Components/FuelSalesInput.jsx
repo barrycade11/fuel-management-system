@@ -1,8 +1,7 @@
-import ColorBGText from "~/Components/ColoredBGText"
 import SimpleInput from "~/Components/SimpleInput"
-import { Fuels } from "~/Constants/Labels"
+import { FuelInputRows } from "./Rows/FuelInputRows"
 
-const FuelSalesInput = () => {
+const FuelSalesInput = ({fuelSales, setFuelSales}) => {
     const tableHeader = ["Fuel", "Trans Ct", "Volume", "Amount"]
 
     return (
@@ -21,46 +20,14 @@ const FuelSalesInput = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {Fuels.map((item, index) => {
+                        {fuelSales?.map((item, index) => {
                             return (
                                 <tr key={index} className="border-b-[1px]">
-                                    <td className="px-8 items-center"><ColorBGText text={item.name} color={item.color} /></td>
-                                    <td className="px-8 items-center">
-                                        <SimpleInput
-                                            version={1}
-                                            label={''}
-                                            placeholder={"type here"}
-                                            icon={'₱'}
-                                            type={"number"}
-                                            textAlign={"center"}
-                                        // initialValue={}
-                                        // setInitialValue={}
-                                        />
-                                    </td>
-                                    <td className="px-8 items-center">
-                                        <SimpleInput
-                                            version={1}
-                                            label={''}
-                                            placeholder={"type here"}
-                                            icon={'₱'}
-                                            type={"number"}
-                                            textAlign={"center"}
-                                        // initialValue={}
-                                        // setInitialValue={}
-                                        />
-                                    </td>
-                                    <td className="px-8 items-center">
-                                        <SimpleInput
-                                            version={1}
-                                            label={''}
-                                            placeholder={"type here"}
-                                            icon={'₱'}
-                                            type={"number"}
-                                            textAlign={"center"}
-                                        // initialValue={}
-                                        // setInitialValue={}
-                                        />
-                                    </td>
+                                    <FuelInputRows
+                                        fuelData={item}
+                                        fuelSales={fuelSales}
+                                        setFuelSales={setFuelSales}
+                                    />
                                 </tr>
                             )
                         })}
@@ -83,7 +50,7 @@ const FuelSalesInput = () => {
                     <div className="grid gap-1">
                         <SimpleInput
                             version={3}
-                            label={"Fuel Discount"}
+                            label={"Fuel Tax Exemption"}
                             placeholder={""}
                             icon={''}
                             type={"number"}
