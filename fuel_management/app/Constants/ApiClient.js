@@ -30,4 +30,4 @@ apiClient.interceptors.request.use(
   }
 );
 
-export { apiClient };
+export default apiClient;

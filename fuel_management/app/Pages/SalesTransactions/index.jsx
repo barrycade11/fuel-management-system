@@ -2,32 +2,26 @@ import Tabs from "~/Components/Tabs";
 import { SalesTabs } from "~/Constants/Labels";
 import { useState } from "react";
 import Navbar from "~/Components/Navbar"
-import SalesFilter from "./Components/SalesFilter";
-import FuelSalesInput from "./Components/FuelSalesInput";
-import TaxTotals from "./Components/TaxTotals";
-import TanksInput from "./Components/TanksInput";
-import RandomButtons from "./Components/RandomButtons";
-import ModeOfPayments from "./Components/Modals/ModeOfPayments";
-import DepartmentSales from "./Components/Modals/DepartmentSales";
+import SalesFilter from "./Components/Salesfilter";
+import DailySales from "./Pages/DailySales";
+import UploadPOS from "./Pages/UploadPOS";
 
 const SalesTransactions = () => {
     const [activeTab, setActiveTab] = useState(SalesTabs[0]);
     const [effectivityDate, setEffectivityDate] = useState(null);
     const [openModeOfPayments, setOpenModeOfPayments] = useState(false);
     const [openDepSales, setOpenDepSales] = useState(false);
+    const [openSupplements, setOpenSupplements] = useState(false);
+    const [openCrew, setOpenCrew] = useState(false);
+    const [openVariance, setOpenVariance] = useState(false);
+
+    //input data 
+    const [selectedStation, setSelectedStation] = useState('')
+    const [selectedShiftManager, setSelectedShiftManager] = useState('')
+    const [selectedShift, setSelectedShift] = useState('')
 
     return (
         <>
-            <ModeOfPayments
-                title={"Finalization Totals"}
-                openModal={openModeOfPayments}
-                setOpenModal={setOpenModeOfPayments}
-            />
-            <DepartmentSales
-                title={"Department Sales"}
-                openModal={openDepSales}
-                setOpenModal={setOpenDepSales}
-            />
             <Navbar
                 title="Sales"
             />
@@ -43,28 +37,35 @@ const SalesTransactions = () => {
                     activeTab={activeTab}
                     effectivityDate={effectivityDate}
                     setEffectivityDate={setEffectivityDate}
+                    setSelectedStation={setSelectedStation}
+                    setSelectedShiftManager={setSelectedShiftManager}
+                    setSelectedShift={setSelectedShift}
                 />
 
-                <div className="grid lg:grid-cols-5 gap-14">
-                    <div className="lg:col-span-3 grid gap-8">
-                        <FuelSalesInput />
-                        
-                        <TanksInput />
-                    </div>
-                    <div className="lg:col-span-2 grid grid-cols-2 lg:grid-cols-1 gap-8">
-                        <div className="col-span-1">
-                            <TaxTotals />
-                        </div>
-                        <div className="col-span-1">
-                            <RandomButtons 
-                                openModeOfPayments={openModeOfPayments}
-                                setOpenModeOfPayments={setOpenModeOfPayments}
-                                openDepSales={openDepSales}
-                                setOpenDepSales={setOpenDepSales}
-                            />
-                        </div>
-                    </div>
-                </div>
+                {activeTab==="Daily Sales Input" && (
+                    <DailySales 
+                        openModeOfPayments={openModeOfPayments}
+                        setOpenModeOfPayments={setOpenModeOfPayments}
+                        openDepSales={openDepSales}
+                        setOpenDepSales={setOpenDepSales}
+                        openSupplements={openSupplements}
+                        setOpenSupplements={setOpenSupplements}
+                        openCrew={openCrew}
+                        setOpenCrew={setOpenCrew}
+                        openVariance={openVariance}
+                        setOpenVariance={setOpenVariance}
+                        inputFilter={{
+                            date: effectivityDate,
+                            station: selectedStation,
+                            manager: selectedShiftManager,
+                            shift: selectedShift
+                        }}
+                    />
+                )}
+
+                {activeTab==="Upload POS" && (
+                    <UploadPOS />
+                )}
             </div>
         </>
     )
