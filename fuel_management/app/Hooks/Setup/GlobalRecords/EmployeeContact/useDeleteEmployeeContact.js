@@ -1,9 +1,8 @@
-import { apiClient } from "~/Constants/ApiClient";
-import { endPoints } from "~/Constants/EndPoints";
+import apiClient from "~/Constants/ApiClient";
 
-export const deleteEmployeeContact = async (employeeId, id) => {
+export const deleteEmployeeContact = async (id) => {
     try {
-        const response = await apiClient.delete(`${endPoints.GlobalRecords}/Employee/${employeeId}/Contact/${id}`);
+        const response = await apiClient.delete(`/EmployeeContact/${id}`);
 
         return response.data;
     }

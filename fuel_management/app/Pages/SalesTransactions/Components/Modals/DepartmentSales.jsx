@@ -8,19 +8,43 @@ import {
     useDisclosure,
 } from "@heroui/react";
 import SimpleInput from "~/Components/SimpleInput"
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { NonFuelRows } from "../Rows/NonFuelRows";
+import { SelectRows } from "../Rows/SelectRows";
+import { DepartmentSalesRows } from "../Rows/DepartmentSalesRows";
 
-const DepartmentSales = ({ openModal, setOpenModal, title }) => {
-    const [scrollBehavior, setScrollBehavior] = useState("inside");
+const DepartmentSales = ({ openModal, setOpenModal, title, departmentSales, setDepartmentSales }) => {
     const table1Header = ["POS Station", "Quantity"]
-    const table1Rows = [1, 2, 3]
     const table2Header = ["POS Station", "Value"]
-    const table2Rows = ["Transaction Count", "Final Count (Less Lubes)", "Select Sales", "Final Sales (Less Lubes)", "Select Discount", "Sales Tax Exempt"]
     const table3Header = ["Category", "Transaction Count", "Sales", "Discount"]
-    const table3Rows = ["FC Lubes", "NBS", "SHOC", "Recharge"]
+    const [nonfuel, setNonFuel] = useState(departmentSales?.nonFuel)
+    const [nonfuelTotal, setNonFuelTotal] = useState(0);
+    const [select, setSelect] = useState(departmentSales?.select)
+    const [departmentSalesTotal, setDepartmentSalesTotal] = useState(departmentSales?.departmentSalesTotal)
+    // console.log(nonfuel)
+
+    useEffect(() => {
+        const compute = () => {
+            let sum = nonfuel?.reduce((total, data) => {
+                return total = total + data.quantity
+            }, 0)
+            setNonFuelTotal(sum)
+        }
+        compute()
+    }, [nonfuel])
+
+    async function submitHandler() {
+        setDepartmentSales({
+            nonFuel: nonfuel,
+            select: select,
+            departmentSalesTotal: departmentSalesTotal
+        })
+
+        setOpenModal(!openModal)
+    }
 
     return (
-        <Modal isOpen={openModal} scrollBehavior={scrollBehavior} size={"5xl"} onClose={() => setOpenModal(!openModal)} radius="none">
+        <Modal isOpen={openModal} scrollBehavior={"inside"} size={"5xl"} onClose={() => setOpenModal(!openModal)} radius="none">
             <ModalContent>
                 <ModalHeader className="flex flex-col gap-1 text-gray-500 text-2xl">{title}</ModalHeader>
                 <ModalBody className="px-10 pb-4 grid grid-cols-5">
@@ -35,24 +59,14 @@ const DepartmentSales = ({ openModal, setOpenModal, title }) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {table1Rows.map((item, index) => {
+                                {nonfuel?.map((item, index) => {
                                     return (
                                         <tr key={index} className="border-b-[1px]">
-                                            <td className="px-8 text-center">
-                                                {item}
-                                            </td>
-                                            <td className="px-8 items-center">
-                                                <SimpleInput
-                                                    version={1}
-                                                    label={''}
-                                                    placeholder={"type here"}
-                                                    icon={'₱'}
-                                                    type={"number"}
-                                                    textAlign={"center"}
-                                                // initialValue={}
-                                                // setInitialValue={}
-                                                />
-                                            </td>
+                                            <NonFuelRows
+                                                nonFuelData={item}
+                                                nonfuel={nonfuel}
+                                                setNonFuel={setNonFuel}
+                                            />
                                         </tr>
                                     )
                                 })}
@@ -60,17 +74,8 @@ const DepartmentSales = ({ openModal, setOpenModal, title }) => {
                                     <th className="px-8 text-center">
                                         Total
                                     </th>
-                                    <td className="px-8 items-center font-bold">
-                                        <SimpleInput
-                                            version={1}
-                                            label={''}
-                                            placeholder={"type here"}
-                                            icon={'₱'}
-                                            type={"number"}
-                                            textAlign={"center"}
-                                        // initialValue={}
-                                        // setInitialValue={}
-                                        />
+                                    <td className="px-8 text-center font-bold">
+                                        <span>{nonfuelTotal}</span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -88,24 +93,14 @@ const DepartmentSales = ({ openModal, setOpenModal, title }) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {table2Rows.map((item, index) => {
+                                {select?.map((item, index) => {
                                     return (
                                         <tr key={index} className="border-b-[1px]">
-                                            <td className="pl-16 text-left">
-                                                {item}
-                                            </td>
-                                            <td className="px-8 items-center">
-                                                <SimpleInput
-                                                    version={1}
-                                                    label={''}
-                                                    placeholder={"type here"}
-                                                    icon={'₱'}
-                                                    type={"number"}
-                                                    textAlign={"center"}
-                                                // initialValue={}
-                                                // setInitialValue={}
-                                                />
-                                            </td>
+                                            <SelectRows
+                                                selectData={item}
+                                                select={select}
+                                                setSelect={setSelect}
+                                            />
                                         </tr>
                                     )
                                 })}
@@ -123,48 +118,14 @@ const DepartmentSales = ({ openModal, setOpenModal, title }) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {table3Rows.map((item, index) => {
+                                {departmentSalesTotal?.map((item, index) => {
                                     return (
                                         <tr key={index} className="border-b-[1px]">
-                                            <td className="px-16 text-center">
-                                                {item}
-                                            </td>
-                                            <td className="px-8 items-center">
-                                                <SimpleInput
-                                                    version={1}
-                                                    label={''}
-                                                    placeholder={"type here"}
-                                                    icon={'₱'}
-                                                    type={"number"}
-                                                    textAlign={"center"}
-                                                // initialValue={}
-                                                // setInitialValue={}
-                                                />
-                                            </td>
-                                            <td className="px-8 items-center">
-                                                <SimpleInput
-                                                    version={1}
-                                                    label={''}
-                                                    placeholder={"type here"}
-                                                    icon={'₱'}
-                                                    type={"number"}
-                                                    textAlign={"center"}
-                                                // initialValue={}
-                                                // setInitialValue={}
-                                                />
-                                            </td>
-                                            <td className="px-8 items-center">
-                                                <SimpleInput
-                                                    version={1}
-                                                    label={''}
-                                                    placeholder={"type here"}
-                                                    icon={'₱'}
-                                                    type={"number"}
-                                                    textAlign={"center"}
-                                                // initialValue={}
-                                                // setInitialValue={}
-                                                />
-                                            </td>
+                                            <DepartmentSalesRows
+                                                departmentSalesData={item}
+                                                departmentSales={departmentSalesTotal}
+                                                setDepartmentSales={setDepartmentSalesTotal}
+                                            />
                                         </tr>
                                     )
                                 })}
@@ -180,7 +141,7 @@ const DepartmentSales = ({ openModal, setOpenModal, title }) => {
                         <Button color="primary" className="font-semibold text-base" variant="light" onPress={() => setOpenModal(!openModal)}>
                             Close
                         </Button>
-                        <Button color="primary" className="font-semibold text-base rounded-md" onPress={() => setOpenModal(!openModal)}>
+                        <Button onPress={() => submitHandler()} color="primary" className="font-semibold text-base rounded-md">
                             Save
                         </Button>
                     </div>

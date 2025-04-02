@@ -1,9 +1,8 @@
-import { apiClient } from "~/Constants/ApiClient";
-import { endPoints } from "~/Constants/EndPoints";
+import apiClient from "~/Constants/ApiClient";
 
 export const createFuelMaster = async (data) => {
     try {
-        const response = await apiClient.post(`${endPoints.GlobalRecords}/FuelMaster`, data);
+        const response = await apiClient.post(`/FuelMaster`, data);
 
         return response.data;
     }

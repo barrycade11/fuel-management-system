@@ -1,9 +1,8 @@
-import { apiClient } from "~/Constants/ApiClient";
-import { endPoints } from "~/Constants/EndPoints";
+import apiClient from "~/Constants/ApiClient";
 
-export const createEmployeePhoto = async (employeeId, data) => {
+export const createEmployeePhoto = async (data) => {
     try {
-        const response = await apiClient.post(`${endPoints.GlobalRecords}/Employee/${employeeId}/Photo`, data);
+        const response = await apiClient.post(`/EmployeePhoto`, data);
 
         return response.data;
     }

@@ -1,9 +1,8 @@
-import { apiClient } from "~/Constants/ApiClient";
-import { endPoints } from "~/Constants/EndPoints";
+import apiClient from "~/Constants/ApiClient";
 
 export const createDropdown = async (typeId, parentId, data) => {
     try {
-        const response = await apiClient.post(`${endPoints.GlobalRecords}/Dropdown`, data);
+        const response = await apiClient.post(`/Dropdown`, data);
 
         return response.data;
     }
