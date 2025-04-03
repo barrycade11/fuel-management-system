@@ -2,6 +2,34 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../../Config/Connection");
 
+/**
+ * Only get the station table 
+ *
+ */
+router.get('/', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+          id,
+          code,
+          name
+      FROM station
+    `)
+
+    return res.status(200).json({
+      success: true,
+      message: "Successfully fetch stations.",
+      body: result.rows,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+
+})
+
 router.get("/stations", async (req, res) => {
   try {
     const result = await pool.query(`
