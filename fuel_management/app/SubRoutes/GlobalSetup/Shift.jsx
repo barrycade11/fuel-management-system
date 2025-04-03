@@ -215,6 +215,7 @@ const Shift = () => {
               <div className="flex space-x-4 mb-2">
                 <div className="flex flex-col w-full">
                   <div className="relative flex items-center rounded-lg">
+
                     <TimeInput 
                       isRequired 
                       label="Start Shift" 

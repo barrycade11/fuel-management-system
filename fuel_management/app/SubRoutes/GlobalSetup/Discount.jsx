@@ -125,37 +125,38 @@ const Discount = () => {
       return;
     }
   
+    const formatDate = (dateObj) => {
+      if (!dateObj || !dateObj.year || !dateObj.month || !dateObj.day) return null;
+      return `${dateObj.year}-${String(dateObj.month).padStart(2, "0")}-${String(dateObj.day).padStart(2, "0")}`;
+    };
+
+    // const payload = {
+    //   ...newDiscount,
+    //   applicability: newDiscount.applicabilityId.map(id => ({ applicabilityId: id })), 
+    //   startDate: formatDate(newDiscount.startDate),
+    //   endDate: formatDate(newDiscount.endDate)
+    // };
+
+    const payload = {
+      code: newDiscount.code,
+      name: newDiscount.name,
+      criteriaId: parseInt(newDiscount.criteriaId, 10), 
+      qualifierValue: parseInt(newDiscount.qualifierValue, 10),
+      discountTypeId: parseInt(newDiscount.discountTypeId, 10),
+      discountValue: parseInt(newDiscount.discountValue, 10),
+      chargeToId: parseInt(newDiscount.chargeToId, 10),
+      maxLimit: parseInt(newDiscount.maxLimit, 10),
+      startDate: formatDate(newDiscount.startDate), 
+      endDate: formatDate(newDiscount.endDate),
+      details: newDiscount.details,
+      status: newDiscount.status ?? true, 
+      applicabilities: newDiscount.applicabilityId.map(id => ({ applicabilityId: id })), 
+
+    };
+
+    console.log(payload)
     try {
-      const formatDate = (dateObj) => {
-        if (!dateObj || !dateObj.year || !dateObj.month || !dateObj.day) return null;
-        return `${dateObj.year}-${String(dateObj.month).padStart(2, "0")}-${String(dateObj.day).padStart(2, "0")}`;
-      };
-
-      // const payload = {
-      //   ...newDiscount,
-      //   applicability: newDiscount.applicabilityId.map(id => ({ applicabilityId: id })), 
-      //   startDate: formatDate(newDiscount.startDate),
-      //   endDate: formatDate(newDiscount.endDate)
-      // };
-
-      const payload = {
-        code: newDiscount.code,
-        name: newDiscount.name,
-        criteriaId: parseInt(newDiscount.criteriaId, 10), 
-        qualifierValue: parseInt(newDiscount.qualifierValue, 10),
-        discountTypeId: parseInt(newDiscount.discountTypeId, 10),
-        discountValue: parseInt(newDiscount.discountValue, 10),
-        chargeToId: parseInt(newDiscount.chargeToId, 10),
-        maxLimit: parseInt(newDiscount.maxLimit, 10),
-        startDate: formatDate(newDiscount.startDate), 
-        endDate: formatDate(newDiscount.endDate),
-        details: newDiscount.details,
-        status: newDiscount.status ?? true, 
-        applicability: newDiscount.applicabilityId.map(id => ({ applicabilityId: id })), 
-
-      };
-
-      console.log(payload)
+      
   
       if (newDiscount.id) {
         await updateDiscount(newDiscount.id, payload);
@@ -239,7 +240,7 @@ const Discount = () => {
         <TableSkeleton columns={5} rows={5}/>
       ) : isEditing ? (
           <div className="h-full flex justify-center items-center">
-            <div className="bg-white w-96 h-full max-w-lg">
+            <div className="bg-white w-full h-full max-w-lg">
               <h2 className="text-xl font-semibold mb-4">{newDiscount.id ? "Edit" : "Add"} Discount</h2>
               <Input 
                 className="w-full mb-2" 
@@ -269,7 +270,7 @@ const Discount = () => {
                   <div className="relative flex items-center rounded-lg">
                   <Dropdown 
                     label="Criteria"
-                    typeId={3} 
+                    typeId={17} 
                     value={newDiscount.criteriaId} 
                     onChange={(e) => setNewDiscount({ ...newDiscount, criteriaId: e.target.value })} 
                   />
@@ -293,7 +294,7 @@ const Discount = () => {
                   <div className="relative flex items-center rounded-lg">
                   <Dropdown 
                     label="Discount Type"
-                    typeId={3} 
+                    typeId={18} 
                     value={newDiscount.discountTypeId} 
                     onChange={(e) => setNewDiscount({ ...newDiscount, discountTypeId: e.target.value })} 
                   />
@@ -317,7 +318,7 @@ const Discount = () => {
                   <div className="relative flex items-center rounded-lg">
                   <Dropdown 
                     label="Charge To"
-                    typeId={3} 
+                    typeId={1} 
                     value={newDiscount.chargeToId} 
                     onChange={(e) => setNewDiscount({ ...newDiscount, chargeToId: e.target.value })} 
                   />

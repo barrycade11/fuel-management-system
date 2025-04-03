@@ -103,7 +103,7 @@ const HeroUITable = ({
           placeholder="Search an option"
           size="sm"
           selectedKey={selectedDropdownKey}
-          onSelectionChange={(key) => setSelectedDropdownKey(key)}
+          onSelectionChange={(key) => setSelectedDropdownKey(key || "1")}
         >
           {(item) => <AutocompleteItem key={item.key}>{item.label}</AutocompleteItem>}
         </Autocomplete>

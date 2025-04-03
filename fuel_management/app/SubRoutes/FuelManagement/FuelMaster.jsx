@@ -18,6 +18,7 @@ const FuelMaster = () => {
   const [fuels, setFuels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
   const [newFuel, setNewFuel] = useState({ 
@@ -60,7 +61,7 @@ const FuelMaster = () => {
 
   const handleEdit = async (fuel) => {
     try {
-        const categoryData = await fetchDropdownTypeList(3, 0, fuel.categoryid); 
+        const categoryData = await fetchDropdownTypeList(3, fuel.categoryid); 
 
         if (categoryData.length > 0) {
             setNewFuel((prev) => ({
@@ -82,6 +83,9 @@ const FuelMaster = () => {
         return;
     }
 
+    if (isSaving) return;
+    setIsSaving(true);
+
     try {
         if (newFuel.id) {
             await updateFuelMaster(newFuel.id, newFuel);
@@ -97,6 +101,8 @@ const FuelMaster = () => {
     } catch (error) {
         setNotification({ message: "Error saving data", type: "error" });
         console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false); 
     }
   };
 
@@ -197,7 +203,6 @@ const FuelMaster = () => {
               <Dropdown 
                   label="Fuel Category"
                   typeId={3} 
-                  parentId={0} 
                   value={newFuel.categoryId} 
                   onChange={(e) => setNewFuel({ ...newFuel, categoryId: e.target.value })} 
               />
