@@ -42,8 +42,10 @@ export default [
 
 
     route(StringRoutes.settings, "./Pages/Settings/index.jsx", [
+      // index("./SubRoutes/Settings/User.jsx"),
       index("./SubRoutes/Settings/User.jsx"),
 
+      route(StringRoutes.register, './SubRoutes/Settings/UserRegistration.jsx'),
       route(StringRoutes.permission, "./SubRoutes/Settings/Permissions.jsx"),
 
     ])

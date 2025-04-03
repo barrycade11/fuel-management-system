@@ -27,6 +27,7 @@ class StringRoutes {
   static incentives = 'global-setup/incentives';
 
   static settings = 'settings';
+  static register = 'register';
   static permission = 'permissions';
 
   /**
