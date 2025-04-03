@@ -6,46 +6,54 @@ const bcrypt = require('bcryptjs');
 const { accountToJson } = require('./SettingService');
 const AccountDetailUpdateSchema = require('./Params/AccountDetailUpdateSchema');
 
-router.get('/', async (_, res) => {
-  try {
+router.post("/", async (req, res) => {
+  const { stations = [] } = req.body;
 
-    const result = await pool.query(`
+  try {
+    if (!Array.isArray(stations) || stations.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Stations list is required and must be a non-empty array.",
+      });
+    }
+
+    // Correctly format query parameters using positional placeholders
+    const result = await pool.query(
+      `
         SELECT 
           usr.id,
           usr.username,
           usr.firstname,
           usr.lastname,
           usr.role_id,
-          rl.name rolename,
+          rl.name AS rolename,
           usrst.stationid,
-          st.name stationname
+          st.name AS stationname,
+          usr.status
         FROM users usr
-        LEFT JOIN userstationassignments usrst
-        ON usr.id = usrst.userid
-        JOIN station st
-        ON usrst.stationid = st.id
-        LEFT JOIN roles rl
-        ON usr.role_id = rl.id
-        WHERE usr.STATUS = true
-    `)
+        LEFT JOIN userstationassignments usrst ON usr.id = usrst.userid
+        JOIN station st ON usrst.stationid = st.id
+        LEFT JOIN roles rl ON usr.role_id = rl.id
+        WHERE usr.STATUS = true AND st.name = ANY($1)
+      `,
+      [stations] // Directly pass the array as a parameter
+    );
 
     const json = await accountToJson(result.rows);
 
     return res.status(200).json({
       success: true,
-      message: "Successfully fetch accounts",
+      message: "Successfully fetched accounts",
       body: json,
-    })
-
-
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error.message,
-    })
+      message: "Internal server error",
+      error: error.message,
+    });
   }
-})
-
+});
 
 /**
  * @description Handles the creation of a new user account and its associated station assignments.
@@ -158,7 +166,6 @@ router.post('/create', async (req, res) => {
  * @param {Object} req - The HTTP request object.
  * @param {Object} req.body - The request payload containing updated user details.
  * @param {string} req.body.username - The username of the account to update.
- * @param {string} req.body.password - The new plain text password of the account (if changing).
  * @param {string} req.body.lastname - The updated last name of the user.
  * @param {string} req.body.firstname - The updated first name of the user.
  * @param {Array<number>} req.body.stationAssignments - Updated list of station IDs assigned to the user.
