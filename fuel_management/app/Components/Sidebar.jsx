@@ -35,11 +35,6 @@ import {
   useDisclosure
 } from "@heroui/react";
 
-// Screen size breakpoints
-const BREAKPOINTS = {
-  MOBILE: 480,   // Small mobile devices
-  TABLET: 1024   // Tablets and smaller laptops
-};
 
 const NavItemWithDropdown = ({
   hdrIcon = null,
@@ -252,36 +247,10 @@ const SidebarContent = ({ compactMode = false }) => {
   );
 };
 
-const Sidebar = () => {
-  const { isOpen, toggleDrawer } = useToggleDrawer();
-  const [screenSize, setScreenSize] = useState('desktop');
+const Sidebar = ({ screenSize = "desktop", drawerSize = "md"}) => {
+  const { isOpen, toggleDrawer, isCompactSidebarOpen, onManageSidebarOpen } = useToggleDrawer();
   const { isOpen: drawerIsOpen, onOpen: openDrawer, onClose: closeDrawer } = useDisclosure();
-  const [drawerSize, setDrawerSize] = useState("md");
 
-  // Check screen size and set appropriate view mode
-  useEffect(() => {
-    const checkScreenSize = () => {
-      const width = window.innerWidth;
-      if (width <= BREAKPOINTS.MOBILE) {
-        setScreenSize('mobile');
-        setDrawerSize("xs");
-      } else if (width <= BREAKPOINTS.TABLET) {
-        setScreenSize('tablet');
-        setDrawerSize("sm");
-      } else {
-        setScreenSize('desktop');
-      }
-    };
-    
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    
-    return () => {
-      window.removeEventListener('resize', checkScreenSize);
-    };
-  }, []);
-
-  // Determine if we should show drawer based on screen size
   const shouldShowDrawer = screenSize === 'mobile' || screenSize === 'tablet';
 
   // For desktop view, show the regular sidebar
@@ -293,10 +262,11 @@ const Sidebar = () => {
   return (
     <>
       <Drawer 
-        isOpen={true} 
-        onClose={closeDrawer}
+        isOpen={isCompactSidebarOpen} 
+        onClose={onManageSidebarOpen}
         placement="left"
         size={drawerSize}
+        radius="sm"
       >
         <DrawerContent>
           {(onClose) => (
