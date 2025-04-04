@@ -672,71 +672,71 @@ const Employee = () => {
             </div>
           </AccordionItem>
           <AccordionItem key="emergency_contacts" aria-label="Emergency Contacts" title="Emergency Contacts">
-          {loadingEmployeeContacts ? (
-            <TableSkeleton columns={4} rows={5}/>
-          ) : isEditingEmployeeContacts ? (
-            <div className="h-screen flex justify-center items-center">
-              <div className="bg-white p-6 w-96 h-full max-w-lg">
-                <h2 className="text-xl font-semibold mb-4">{newEmployeeContacts.id ? "Edit" : "Add"} new</h2>
-                <Dropdown 
-                  label="Relationship to Employee"
-                  typeId={6} 
-                  value={newEmployeeContacts.relationshipId} 
-                  onChange={(e) => setNewEmployeeContacts({ ...newEmployeeContacts, relationshipId: e.target.value })} 
-                />
-                <Input 
-                  className="w-full mb-2" 
-                  label="Name" 
-                  placeholder="Enter name" 
-                  value={newEmployeeContacts.name}
-                  onChange={(e) => setNewEmployeeContacts({ ...newEmployeeContacts, name: e.target.value })}
-                  isRequired
-                />
-                <Input 
-                  className="w-full mb-2" 
-                  label="Contact No." 
-                  placeholder="Enter contact no." 
-                  value={newEmployeeContacts.contactNo}
-                  onChange={(e) => setNewEmployeeContacts({ ...newEmployeeContacts, contactNo: e.target.value })}
-                  isRequired
-                />
-                <Textarea 
-                  className="w-full mb-2" 
-                  label="Details" 
-                  placeholder="Enter Details" 
-                  value={newEmployeeContacts.details}
-                  onChange={(e) => setNewEmployeeContacts({ ...newEmployeeContacts, details: e.target.value })}
-                  isRequired
-                />
-                <div className="flex justify-between items-center w-full mt-2">
-                  {newEmployeeContacts.id ? (
-                    <Button onClick={() => handleDeleteEmployeeContacts(newEmployeeContacts.id)} color="danger">Delete</Button>
-                  ) : (
-                    <div></div> 
-                  )}
-                  <div className="flex space-x-2">
-                    <Button onClick={() => setIsEditingEmployeeContacts(false)} color="default" className="text-[blue]">Close</Button>
-                    <Button 
-                      onClick={handleSaveEmployeeContacts} 
-                      // disabled={isSaving} 
-                      color="primary"
-                    >
-                      {/* {isSaving ? "Saving..." : "Save"} */}
-                      Save
-                    </Button>
+            {loadingEmployeeContacts ? (
+              <TableSkeleton columns={4} rows={5}/>
+            ) : isEditingEmployeeContacts ? (
+              <div className="h-screen flex justify-center items-center">
+                <div className="bg-white p-6 w-96 h-full max-w-lg">
+                  <h2 className="text-xl font-semibold mb-4">{newEmployeeContacts.id ? "Edit" : "Add"} new</h2>
+                  <Dropdown 
+                    label="Relationship to Employee"
+                    typeId={6} 
+                    value={newEmployeeContacts.relationshipId} 
+                    onChange={(e) => setNewEmployeeContacts({ ...newEmployeeContacts, relationshipId: e.target.value })} 
+                  />
+                  <Input 
+                    className="w-full mb-2" 
+                    label="Name" 
+                    placeholder="Enter name" 
+                    value={newEmployeeContacts.name}
+                    onChange={(e) => setNewEmployeeContacts({ ...newEmployeeContacts, name: e.target.value })}
+                    isRequired
+                  />
+                  <Input 
+                    className="w-full mb-2" 
+                    label="Contact No." 
+                    placeholder="Enter contact no." 
+                    value={newEmployeeContacts.contactNo}
+                    onChange={(e) => setNewEmployeeContacts({ ...newEmployeeContacts, contactNo: e.target.value })}
+                    isRequired
+                  />
+                  <Textarea 
+                    className="w-full mb-2" 
+                    label="Details" 
+                    placeholder="Enter Details" 
+                    value={newEmployeeContacts.details}
+                    onChange={(e) => setNewEmployeeContacts({ ...newEmployeeContacts, details: e.target.value })}
+                    isRequired
+                  />
+                  <div className="flex justify-between items-center w-full mt-2">
+                    {newEmployeeContacts.id ? (
+                      <Button onClick={() => handleDeleteEmployeeContacts(newEmployeeContacts.id)} color="danger">Delete</Button>
+                    ) : (
+                      <div></div> 
+                    )}
+                    <div className="flex space-x-2">
+                      <Button onClick={() => setIsEditingEmployeeContacts(false)} color="default" className="text-[blue]">Close</Button>
+                      <Button 
+                        onClick={handleSaveEmployeeContacts} 
+                        // disabled={isSaving} 
+                        color="primary"
+                      >
+                        {/* {isSaving ? "Saving..." : "Save"} */}
+                        Save
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <Table 
-              data={employeeContacts} 
-              columns={employeeContactsColumns} 
-              onEdit={handleEditEmployeeContacts} 
-              onAdd={handleAddEmployeeContacts} 
-              customRender={customRenderEmployeeContacts} 
-            />
-          )}
+            ) : (
+              <Table 
+                data={employeeContacts} 
+                columns={employeeContactsColumns} 
+                onEdit={handleEditEmployeeContacts} 
+                onAdd={handleAddEmployeeContacts} 
+                customRender={customRenderEmployeeContacts} 
+              />
+            )}
           </AccordionItem>
           <AccordionItem key="incentive_log" aria-label="Incentive Log" title="Incentive Log">
             {/* {incentives} */}
