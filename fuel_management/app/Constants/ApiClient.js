@@ -6,6 +6,8 @@ const API_PORT = import.meta.env.API_PORT;
 
 const { token } = useAuth.getState();
 
+// const API_BASE_URL = "http://46.202.164.246:5000"; // Backend URL
+
 const apiClient = axios.create({
   baseURL: `${API_BASE_URL}:${API_PORT}`,
   headers: {

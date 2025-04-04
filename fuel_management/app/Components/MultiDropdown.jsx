@@ -3,12 +3,11 @@ import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, Chip } f
 import { fetchDropdowns, fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
 
 const MultiDropdown = ({ typeId, value, onChange, label, labelPlacement = "outside" }) => {
-  const [options, setOptions] = useState([]); // Stores all dropdown options
-  const [selectedValues, setSelectedValues] = useState([]); // Stores selected items {id, name}
-  const [selectedKeys, setSelectedKeys] = useState(new Set([])); // Stores selected item IDs
-  const [isOpen, setIsOpen] = useState(false); // Dropdown state
+  const [options, setOptions] = useState([]); 
+  const [selectedValues, setSelectedValues] = useState([]); 
+  const [selectedKeys, setSelectedKeys] = useState(new Set([])); 
+  const [isOpen, setIsOpen] = useState(false); 
 
-  // 🔹 Fetch dropdown options when typeId changes
   useEffect(() => {
     const fetchOptions = async () => {
       try {
@@ -22,60 +21,60 @@ const MultiDropdown = ({ typeId, value, onChange, label, labelPlacement = "outsi
     if (typeId) fetchOptions();
   }, [typeId]);
 
-  // 🔹 Handle setting selected values when `value` or `options` change
   useEffect(() => {
     if (!value || value.length === 0) {
       setSelectedValues([]);
       setSelectedKeys(new Set([]));
       return;
     }
-
-    const valueArray = Array.isArray(value) ? value : [value]; // Ensure array format
+  
+    const valueArray = Array.isArray(value) ? value : [value];
     setSelectedKeys(new Set(valueArray.map(id => id.toString())));
-
-    // ✅ If options are available, use them directly
-    const matchedOptions = options.filter(option => 
-      valueArray.includes(option.id) || valueArray.includes(option.id.toString())
-    );
-
-    if (matchedOptions.length > 0) {
-      setSelectedValues(matchedOptions);
-      return;
+  
+    if (options.length > 0) {
+      const matchedOptions = options.filter(option => 
+        valueArray.includes(option.id) || 
+        valueArray.includes(option.id.toString()) ||
+        valueArray.includes(option.subDepartmentId) 
+      );
+  
+      if (matchedOptions.length > 0) {
+        setSelectedValues(matchedOptions);
+        return;
+      }
     }
-
-    // 🔹 Otherwise, fetch selected values from API
+  
     const fetchSelectedValues = async () => {
       try {
         console.log("Fetching selected values for typeId:", typeId, "with IDs:", valueArray);
-
+        
         const results = await Promise.all(
           valueArray.map(async (id) => {
             try {
               const result = await fetchDropdownTypeList(typeId, id);
-              return result;
+              return Array.isArray(result) && result.length > 0 ? result[0] : result;
             } catch (err) {
               console.error(`Error fetching ID ${id}:`, err);
               return null;
             }
           })
         );
-
+  
         const validResults = results.filter(Boolean);
+        console.log("Fetched selected values:", validResults);
         setSelectedValues(validResults);
       } catch (error) {
         console.error("Error fetching selected values:", error);
       }
     };
-
+  
     fetchSelectedValues();
   }, [value, options, typeId]);
 
-  // 🔹 Handle selection change
   const handleSelectionChange = (keys) => {
     const selectedArray = Array.from(keys);
     setSelectedKeys(new Set(selectedArray));
 
-    // ✅ Update selected values immediately from options
     const newSelectedValues = options.filter(option =>
       selectedArray.includes(option.id.toString())
     );
@@ -90,10 +89,17 @@ const MultiDropdown = ({ typeId, value, onChange, label, labelPlacement = "outsi
     <div className="w-full mb-2">
       <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
         <DropdownTrigger>
-          <Button className="w-full justify-between min-h-[56px] bg-default-100 text-left px-3 py-2">
+        <Button 
+          className="w-full justify-between bg-default-100 text-left px-3 py-2"
+          style={{ 
+            height: "auto", 
+            minHeight: "56px",
+            whiteSpace: "normal" 
+          }}
+        >
             <div className="flex flex-col items-start w-full">
               {label && <span className="text-xs text-foreground-700 mb-1">{label}</span>}
-              <div className="flex flex-wrap gap-2 w-full">
+              <div className="flex flex-wrap gap-1 w-full">
                 {selectedValues.length > 0 ? (
                   selectedValues.map((item) => (
                     <Chip key={item.id} className="my-0.5">{item.name}</Chip>

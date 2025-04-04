@@ -18,6 +18,7 @@ const FuelMaster = () => {
   const [fuels, setFuels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
   const [newFuel, setNewFuel] = useState({ 
@@ -34,7 +35,7 @@ const FuelMaster = () => {
     try {
         const data = await fetchFuelMasters();
         setFuels(data);
-        console.log(data);
+        // console.log(data);
     } catch (error) {
         console.error("Error fetching data:", error);
     } finally {
@@ -82,6 +83,9 @@ const FuelMaster = () => {
         return;
     }
 
+    if (isSaving) return;
+    setIsSaving(true);
+
     try {
         if (newFuel.id) {
             await updateFuelMaster(newFuel.id, newFuel);
@@ -97,6 +101,8 @@ const FuelMaster = () => {
     } catch (error) {
         setNotification({ message: "Error saving data", type: "error" });
         console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false); 
     }
   };
 
@@ -134,7 +140,15 @@ const FuelMaster = () => {
     { key: "name", label: "Fuel Name", hidden: false },
     { key: "category", label: "Category", hidden: true },
     { key: "details", label: "Details", hidden: false },
-    { key: "status", label: "Status", hidden: true }
+    { 
+      key: "status", 
+      label: "Status",
+      render: (fuel) => {
+        // console.log("Rendering status:", fuel.status);
+        return fuel.status ? "Active" : "Inactive";
+      },
+      hidden: true
+    }
   ];
 
   const customRender = {
@@ -145,15 +159,12 @@ const FuelMaster = () => {
     ),
     actions: (item) => (
       <Button 
-      onPress={() => handleEdit(item)} 
+      onClick={() => handleEdit(item)} 
       className="bg-blue-200 text-blue-800 rounded-lg hover:bg-blue-300"
       >
         Edit
       </Button>
     ),
-    status: (value) => {
-      return value ? "Active" : "Inactive";
-    }
   };
 
   return (
@@ -192,7 +203,6 @@ const FuelMaster = () => {
               <Dropdown 
                   label="Fuel Category"
                   typeId={3} 
-                  // parentId={0} 
                   value={newFuel.categoryId} 
                   onChange={(e) => setNewFuel({ ...newFuel, categoryId: e.target.value })} 
               />
@@ -225,7 +235,13 @@ const FuelMaster = () => {
                 )}
                 <div className="flex space-x-2">
                   <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
-                  <Button onClick={handleSave} color="primary">Save</Button>
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={isSaving} 
+                    color="primary"
+                  >
+                    {isSaving ? "Saving..." : "Save"}
+                  </Button>
                 </div>
               </div>
             </div>

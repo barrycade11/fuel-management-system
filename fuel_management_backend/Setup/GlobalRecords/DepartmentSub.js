@@ -46,7 +46,7 @@ router.get("/departments/:departmentHdrId/subDepartments/:id", async (req, res) 
   }
 });
 
-router.post("/deparment/:departmentHdrId/subDepartment", async (req, res) => {
+router.post("/department/:departmentHdrId/subDepartment", async (req, res) => {
   const client = await pool.connect();
 
   try {

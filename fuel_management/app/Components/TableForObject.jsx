@@ -8,43 +8,20 @@ import {
   TableRow,
   TableCell, 
   Button, 
-  Input,
-  Autocomplete, 
-  AutocompleteItem
+  Input
 } from "@heroui/react";
 import Plus from "~/Assets/Svg/Plus";
-import { DropdownType } from "~/Constants/Enums";
 import { useAsyncList } from "@react-stately/data";
 
-const HeroUITable = ({ 
-  title, 
-  data, 
-  columns, 
-  onAdd, 
-  onEdit, 
-  customRender, 
-  selectedDropdownKey, 
-  setSelectedDropdownKey 
-}) => {
+const HeroUITable = ({ title, data, columns, onAdd, onEdit, customRender }) => {
   const [search, setSearch] = useState("");
   const [showFilter, setShowFilter] = useState(false);
   const filterRef = useRef(null);
   const settingsButtonRef = useRef(null);
-  const dropdownOptions = Object.entries(DropdownType)
-    .filter(([key, value]) => !isNaN(Number(value))) 
-    .map(([key, value]) => ({
-      label: key.replace(/([A-Z])/g, " $1").trim(), 
-      key: value.toString(),
-  }));
-  const selectedLabel = dropdownOptions.find((opt) => opt.key === selectedDropdownKey)?.label || title;
+
   const [visibleColumns, setVisibleColumns] = useState(
     columns.reduce((acc, col) => ({ ...acc, [col.key]: !col.hidden }), {})
   );
-
-  useEffect(() => {
-    console.log("selectedDropdownKey:", selectedDropdownKey);
-    console.log("selectedLabel:", selectedLabel);
-  }, [selectedDropdownKey]);
 
   // useAsyncList handles sorting automatically
   let list = useAsyncList({
@@ -94,19 +71,8 @@ const HeroUITable = ({
   return (
     <div>
       {/* Header Section */}
-      <div className="flex justify-between items-center gap-3 mb-4 ">
-        <h2 className="text-xl font-semibold">{selectedLabel}</h2>
-        <Autocomplete
-          className="max-w-xs"
-          defaultItems={dropdownOptions}
-          label="Dropdown Type"
-          placeholder="Search an option"
-          size="sm"
-          selectedKey={selectedDropdownKey}
-          onSelectionChange={(key) => setSelectedDropdownKey(key || "1")}
-        >
-          {(item) => <AutocompleteItem key={item.key}>{item.label}</AutocompleteItem>}
-        </Autocomplete>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">{title}</h2>
         <div className="flex items-center space-x-2">
           <div className="relative flex w-72">
             <Input 
@@ -185,7 +151,9 @@ const HeroUITable = ({
                 ?.map((col) => (
                   <TableCell key={col.key}>
                     {(customRender && customRender[col.key] && typeof customRender[col.key] === "function")
-                      ? customRender[col.key](item[col.key], item)
+                      ? customRender[col.key](item, item)
+                      : typeof item[col.key] === 'object' 
+                      ? JSON.stringify(item[col.key]) // Convert object to string
                       : item[col.key] ?? "-"}
                   </TableCell>
                 ))}
