@@ -5,7 +5,8 @@ const TextBoxField = ({
   type = "text",
   name = "",
   placeholder = "",
-  onChange 
+  onChange,
+  value = "",
 }) => {
 
   const handleChange = (e) => {
@@ -24,6 +25,7 @@ const TextBoxField = ({
           placeholder={placeholder}
           type={type}
           radius='none'
+          defaultValue={value}
           
           className='w-full  border border-default-50 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 placeholder-gray-400'
         />

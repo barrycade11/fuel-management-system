@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import UserWithDP from "~/Components/UserWithDP";
 import { ChevronUp, ChevronDown, MoreVertical } from "lucide-react";
+import PrimaryButton from "~/Components/PrimayButton";
 
 
 
@@ -59,18 +60,6 @@ const StatusBadge = ({ status }) => {
     >
       {status ? "Active" : 'Inactive'}
     </span>
-  );
-};
-
-// Action button component
-const ActionButton = ({ label, onClick }) => {
-  return (
-    <button
-      onClick={onClick}
-      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-    >
-      {label}
-    </button>
   );
 };
 
@@ -187,13 +176,7 @@ const SettingsTable = ({
                 </td>
                 <td className="p-3 text-center">
                   <div className="flex items-center justify-center gap-2">
-                    <ActionButton
-                      label="View"
-                      onClick={() => onViewUser(user)}
-                    />
-                    <button className="p-1 hover:bg-gray-100 rounded-full">
-                      <MoreVertical size={16} />
-                    </button>
+                    <PrimaryButton onClick={() => onViewUser(user.id)} variant="flat" fullWidth={false} color="primary" title={"View"} />
                   </div>
                 </td>
               </tr>

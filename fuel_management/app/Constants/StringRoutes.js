@@ -39,7 +39,7 @@ class StringRoutes {
   getCurrentSubRoute = (pathname) => {
     if (!pathname) return;
 
-    const subRoutes = pathname.split('/');
+    const subRoutes = pathname.split('/')
     return subRoutes[subRoutes.length - 1];
   }
 

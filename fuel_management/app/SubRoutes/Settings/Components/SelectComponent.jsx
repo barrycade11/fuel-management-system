@@ -34,7 +34,8 @@ const SelectComponent = ({
 }
 
 const SelectOptionRole = ({
-  onChange
+  onChange,
+  defaultSelectedKeys = [],
 }) => {
   const { data, isLoading, isError, isSuccess } = useRoles();
   if (isLoading) {
@@ -54,6 +55,7 @@ const SelectOptionRole = ({
       radius="none"
       placeholder="Select Role"
       onChange={(e) => onChange(e)}
+      defaultSelectedKeys={defaultSelectedKeys}
       fullWidth className="flex-1">
       {data.body.map((data) => (
         <SelectItem

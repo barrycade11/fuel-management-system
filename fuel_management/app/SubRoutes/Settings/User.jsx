@@ -16,7 +16,8 @@ import StringRoutes from "~/Constants/StringRoutes";
 const User = () => {
   const accountMutation = useAccountMutation();
   const [stationNames, setStationNames] = useState([]);
-  const { selectedStations, accounts, onSetAccounts } = useSettingsState();
+  const { selectedStations, accounts, onSetAccounts, onSetSelectedStations  } = useSettingsState();
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,14 +47,15 @@ const User = () => {
 
   const handleViewUser = (user) => {
     // Navigate to user detail page or open modal
+    navigate(StringRoutes.register + `/${user}`);
   };
 
   const handleSort = (sortConfig) => {
     // You can implement server-side sorting here if needed
   };
 
-  const onManageGetAccounts = () => {
-    accountMutation.mutate(selectedStations, {
+  const onManageGetAccounts = (e) => {
+    accountMutation.mutate(e, {
       onError: (error) => {
         showToast({
           title: "Error",
@@ -72,7 +74,11 @@ const User = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 px-4">
         <div className="md:col-span-1">
           <span className="text-sm text-default-400 font-semibold">Station</span>
-          <SettingsMultiSelectDropdown />
+          <SettingsMultiSelectDropdown
+            onChange={(e) => {
+              onManageGetAccounts(e);
+            }}
+          />
         </div>
 
         <div className="md:cols-span-1 md:col-start-3 justify-end flex flex-row items-end pt-5 md:p-0">
@@ -91,7 +97,7 @@ const User = () => {
           <Button
             radius="none"
             className="rounded-md bg-primary opacity-80 ml-2 text-white font-semibold"
-            onPress={() => navigate(StringRoutes.register)}
+            onPress={() => navigate(StringRoutes.register + "/0")}
           >
             Add New
           </Button>

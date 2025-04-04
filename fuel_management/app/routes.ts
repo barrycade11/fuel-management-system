@@ -45,7 +45,7 @@ export default [
       // index("./SubRoutes/Settings/User.jsx"),
       index("./SubRoutes/Settings/User.jsx"),
 
-      route(StringRoutes.register, './SubRoutes/Settings/UserRegistration.jsx'),
+      route(`${StringRoutes.register}/:id`, './SubRoutes/Settings/UserRegistration.jsx'),
       route(StringRoutes.permission, "./SubRoutes/Settings/Permissions.jsx"),
 
     ])
