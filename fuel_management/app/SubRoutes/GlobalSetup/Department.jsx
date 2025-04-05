@@ -4,7 +4,7 @@ import MultiDropdown from "~/Components/MultiDropdown";
 import Notification from "~/Components/Notification";
 import TableSkeleton from "~/Components/TableSkeleton";
 import DropdownStatus from "~/Components/DropdownStatus";
-import { Textarea, Input, Button } from "@heroui/react";
+import { Textarea, Input, Button, Spinner } from "@heroui/react";
 import { 
   fetchDepartments, 
   fetchDepartmentDetails, 
@@ -18,6 +18,7 @@ const Department = () => {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
   const [newDepartment, setNewDepartment] = useState({ 
@@ -55,7 +56,7 @@ const Department = () => {
   };
 
   const handleEdit = async (department) => {
-    console.log(department)
+    // console.log(departments)
     // Extract the subDepartmentId values from the departmentLin array
     if (department.departmentLin && Array.isArray(department.departmentLin)) {
       const subDepartmentIds = department.departmentLin.map(item => item.subDepartmentId);
@@ -74,10 +75,14 @@ const Department = () => {
 
 
   const handleSave = async () => {
-    if (!newDepartment.name || !newDepartment.details || !newDepartment.subDepartmentId) {
+    // console.log(newDepartment)
+    if (!newDepartment.name || !newDepartment.details || !newDepartment.subDepartmentId.length > 0) {
       setNotification({ message: "All fields are required.", type: "error" });
       return;
     }
+
+    if (isSaving) return;
+    setIsSaving(true);
   
     try {
       const payload = {
@@ -101,10 +106,13 @@ const Department = () => {
     } catch (error) {
       setNotification({ message: "Error saving data", type: "error" });
       console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false); 
     }
   };
 
   const handleDelete = (id) => {
+    console.log(id)
     const handleConfirm = async () => {
         try {
             await deleteDepartment(id);
@@ -216,7 +224,17 @@ const Department = () => {
                 )}
                 <div className="flex space-x-2">
                   <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
-                  <Button onClick={handleSave} color="primary">Save</Button>
+                  {/* <Button onClick={handleSave} color="primary">Save</Button> */}
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={isSaving} 
+                    isLoading={isSaving}
+                    spinner={<Spinner size="sm" variant="wave" color="default" />}
+                    spinnerPlacement="end"
+                    color="primary"
+                  >
+                    {isSaving ? "Saving" : "Save"}
+                  </Button>
                 </div>
               </div>
             </div>

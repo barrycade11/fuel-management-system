@@ -156,14 +156,14 @@ router.post("/department", async (req, res) => {
 router.put("/department/:id", async (req, res) => {
   const client = await pool.connect();
 
-  const { id } = req.params;
-  const { name, subDepartments, details, status } = req.body;
+  // const { id } = req.params;
+  // const { name, subDepartments, details, status } = req.body;
 
-  console.log(id)
-  console.log(req.body)
+  // console.log(id)
+  // console.log(req.body)
   try {
-    // const { id } = req.params;
-    // const { name, subDepartments, details, status } = req.body;
+    const { id } = req.params;
+    const { name, subDepartments, details, status } = req.body;
 
     await client.query("BEGIN");
 

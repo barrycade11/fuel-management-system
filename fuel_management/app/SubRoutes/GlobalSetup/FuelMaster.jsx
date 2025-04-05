@@ -4,7 +4,7 @@ import Dropdown from "~/Components/Dropdown";
 import Notification from "~/Components/Notification";
 import TableSkeleton from "~/Components/TableSkeleton";
 import DropdownStatus from "~/Components/DropdownStatus";
-import { Textarea, Input, Button } from "@heroui/react";
+import { Textarea, Input, Button, Spinner } from "@heroui/react";
 import { 
   fetchFuelMasters, 
   fetchFuelMasterDetails, 
@@ -238,9 +238,12 @@ const FuelMaster = () => {
                   <Button 
                     onClick={handleSave} 
                     disabled={isSaving} 
+                    isLoading={isSaving}
+                    spinner={<Spinner size="sm" variant="wave" color="default" />}
+                    spinnerPlacement="end"
                     color="primary"
                   >
-                    {isSaving ? "Saving..." : "Save"}
+                    {isSaving ? "Saving" : "Save"}
                   </Button>
                 </div>
               </div>
