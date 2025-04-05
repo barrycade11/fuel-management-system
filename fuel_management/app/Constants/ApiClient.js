@@ -12,7 +12,7 @@ const apiClient = axios.create({
   baseURL: `${API_BASE_URL}:${API_PORT}`,
   headers: {
     "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`,
+    // "Authorization": `Bearer ${token}`,
   },
 });
 

@@ -88,8 +88,8 @@ const stationTankPumpRoutes = require("./Setup/Stations/StationTankPump");
 app.use("/Setup/Stations", stationTankPumpRoutes);
 
 // USERS
-const settingsUserRoutes = require("./Settings/Users/User");
-app.use("/Settings/Users", settingsUserRoutes);
+const settingsUserRoutes = require("./Settings/Users");
+app.use("/Settings/Users", ValidateToken, settingsUserRoutes);
 
 // AUTHENTICATION
 const authenticationRoutes = require("./Authentication/Authentication");
