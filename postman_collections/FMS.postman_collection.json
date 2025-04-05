@@ -54,6 +54,34 @@
 			"description": "/Authentication/login  \nautomatically stored token in the postman environment variables"
 		},
 		{
+			"name": "Setup",
+			"item": [
+				{
+					"name": "Stations",
+					"item": [
+						{
+							"name": "/",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{localhosturl}}/Setup/Stations",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Setup",
+										"Stations"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
 			"name": "Settings",
 			"item": [
 				{
@@ -236,6 +264,43 @@
 					"item": [
 						{
 							"name": "/",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"stations\": [\"test\", \"123\"]\r\n\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Settings/Users",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Settings",
+										"Users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/:id",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
 							},
@@ -254,7 +319,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"username\": \"admin123\",\r\n    \"password\": \"test123\",\r\n    \"lastname\": \"testing\",\r\n    \"firstname\": \"testing\",\r\n    \"stationAssignments\": [1],\r\n    \"userRole\": 1,\r\n    \"status\": true\r\n}",
+									"raw": "",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -262,13 +327,20 @@
 									}
 								},
 								"url": {
-									"raw": "{{localhosturl}}/Settings/Users",
+									"raw": "{{localhosturl}}/Settings/Users/:id",
 									"host": [
 										"{{localhosturl}}"
 									],
 									"path": [
 										"Settings",
-										"Users"
+										"Users",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "6"
+										}
 									]
 								}
 							},

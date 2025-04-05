@@ -21,7 +21,7 @@ const User = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (selectedStations.size >= 0 && accounts.length <= 0) {
+    if (selectedStations.size >= 1 && accounts.length >= 0) {
       onManageGetAccounts();
     }
   }, [selectedStations])
@@ -92,7 +92,7 @@ const User = () => {
               </div>
             }
             labelPlacement="outside"
-            placeholder="Search Module"
+            placeholder="Search User"
           />
           <Button
             radius="none"

@@ -3,6 +3,7 @@ import {Button, CircularProgress } from "@heroui/react";
 const PrimaryButton = ({
   title = "",
   onClick = null,
+  type = null,
   isLoading = false,
   fullWidth= true,
   color = 'primary',
@@ -11,6 +12,7 @@ const PrimaryButton = ({
 
   return (
     <Button
+      type={type}
       disabled={isLoading}
       onPress={onClick}
       className="rounded-md"

@@ -6,6 +6,48 @@ const bcrypt = require('bcryptjs');
 const { accountToJson } = require('./SettingService');
 const AccountDetailUpdateSchema = require('./Params/AccountDetailUpdateSchema');
 
+router.get("/:id", async (req, res) => {
+
+  try {
+    // Correctly format query parameters using positional placeholders
+    const result = await pool.query(
+      `
+        SELECT 
+          usr.id,
+          usr.username,
+          usr.firstname,
+          usr.lastname,
+          usr.role_id,
+          rl.name AS rolename,
+          usrst.stationid,
+          st.name AS stationname,
+          usr.status
+        FROM users usr
+        LEFT JOIN userstationassignments usrst ON usr.id = usrst.userid
+        JOIN station st ON usrst.stationid = st.id
+        LEFT JOIN roles rl ON usr.role_id = rl.id
+        WHERE usr.ID = $1 
+      `,
+      [req.params.id] // Directly pass the array as a parameter
+    );
+
+    const json = await accountToJson(result.rows);
+
+    return res.status(200).json({
+      success: true,
+      message: "Successfully fetched accounts",
+      body: json,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+
+})
+
 router.post("/", async (req, res) => {
   const { stations = [] } = req.body;
 
@@ -34,7 +76,7 @@ router.post("/", async (req, res) => {
         LEFT JOIN userstationassignments usrst ON usr.id = usrst.userid
         JOIN station st ON usrst.stationid = st.id
         LEFT JOIN roles rl ON usr.role_id = rl.id
-        WHERE usr.STATUS = true AND st.name = ANY($1)
+        WHERE st.name = ANY($1)
       `,
       [stations] // Directly pass the array as a parameter
     );

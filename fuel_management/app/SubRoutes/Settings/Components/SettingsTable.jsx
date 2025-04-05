@@ -165,7 +165,8 @@ const SettingsTable = ({
                 <td className="p-3 text-center">
                   <UserWithDP
                     name={`${user.firstname} ${user.lastname}`}
-                    avatar={user.avatar}
+                    firstname={user.firstname}
+                    lastname={user.lastname}
                     email={user.email}
                   />
                 </td>
