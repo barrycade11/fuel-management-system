@@ -17,7 +17,11 @@ const enum DropdownType {
     Barangay = 16,
     DiscountCriteria = 17,
     DiscountType = 18,
-    SubDepartment = 19
+    SubDepartment = 19,
+    Pumps = 20,
+    Nozzles = 21, 
+    CashBills = 22,
+    TargetStatus = 23
 }
 
 export { DropdownType }

@@ -3,21 +3,22 @@ import Table from "~/Components/DropdownTable";
 import Notification from "~/Components/Notification";
 import TableSkeleton from "~/Components/TableSkeleton";
 import DropdownStatus from "~/Components/DropdownStatus";
-import { Textarea, Input, Button } from "@heroui/react";
+import { Textarea, Input, Button, Spinner } from "@heroui/react";
 import { 
   fetchDropdowns, 
   createDropdown, 
   updateDropdown, 
   deleteDropdown 
-} from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns"; // Import your API functions
+} from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns"; 
 import { DropdownType } from "~/Constants/Enums";
 
 const DropdownRecord = () => {
   const [dropdownRecords, setDropdownRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [notification, setNotification] = useState(null);
-  const [selectedDropdownKey, setSelectedDropdownKey] = useState("1"); // Default to 1 or whatever ID you want
+  const [selectedDropdownKey, setSelectedDropdownKey] = useState("1"); 
   // const [selectedDropdownLabel, setSelectedDropdownLabel] = useState("");
   const [newDropdownRecord, setNewDropdownRecord] = useState({ 
     name: "", 
@@ -34,13 +35,12 @@ const DropdownRecord = () => {
 
   const selectedDropdownLabel = dropdownOptions.find((opt) => opt.key === selectedDropdownKey)?.label || "Dropdown Record";
 
-  // Fetch dropdown records when the selected dropdown key changes
   const getDropdownRecords = async () => {
-    if (!selectedDropdownKey) return; // Prevent empty fetch
+    if (!selectedDropdownKey) return; 
 
     setLoading(true);
     try {
-      const data = await fetchDropdowns(selectedDropdownKey); // Fetch the records using the API function
+      const data = await fetchDropdowns(selectedDropdownKey); 
       setDropdownRecords(data); 
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -49,16 +49,14 @@ const DropdownRecord = () => {
     }
   };
 
-  // Fetch the dropdown records when the component mounts or selectedDropdownKey changes
   useEffect(() => {
     getDropdownRecords();
   }, [selectedDropdownKey]);
 
   useEffect(() => {
-    setNewDropdownRecord({ name: "", status: true }); // Reset form when switching dropdowns
+    setNewDropdownRecord({ name: "", status: true }); 
   }, [selectedDropdownKey]);
   
-  // Handle adding a new dropdown record
   const handleAdd = () => {
     setNewDropdownRecord({ 
       name: "", 
@@ -68,18 +66,19 @@ const DropdownRecord = () => {
     setIsEditing(true);
   };
 
-  // Handle editing an existing dropdown record
   const handleEdit = async (dropdownRecord) => {
     setNewDropdownRecord(dropdownRecord);
     setIsEditing(true);
   };
 
-  // Handle saving a new or updated dropdown record
   const handleSave = async () => {
     if (!newDropdownRecord.name) {
       setNotification({ message: "All fields are required.", type: "error" });
       return;
     }
+
+    if (isSaving) return;
+    setIsSaving(true);
 
     try {
       if (newDropdownRecord.id) {
@@ -96,6 +95,8 @@ const DropdownRecord = () => {
     } catch (error) {
       setNotification({ message: "Error saving data", type: "error" });
       console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false); 
     }
   };
 
@@ -202,7 +203,16 @@ const DropdownRecord = () => {
                 )}
                 <div className="flex space-x-2">
                   <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
-                  <Button onClick={handleSave} color="primary">Save</Button>
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={isSaving} 
+                    isLoading={isSaving}
+                    spinner={<Spinner size="sm" variant="wave" color="default" />}
+                    spinnerPlacement="end"
+                    color="primary"
+                  >
+                    {isSaving ? "Saving" : "Save"}
+                  </Button>
                 </div>
               </div>
           </div>

@@ -42,8 +42,8 @@ const HeroUITable = ({
   );
 
   useEffect(() => {
-    console.log("selectedDropdownKey:", selectedDropdownKey);
-    console.log("selectedLabel:", selectedLabel);
+    // console.log("selectedDropdownKey:", selectedDropdownKey);
+    // console.log("selectedLabel:", selectedLabel);
   }, [selectedDropdownKey]);
 
   // useAsyncList handles sorting automatically

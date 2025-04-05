@@ -27,6 +27,14 @@ const fetchDropdownTypeList = async (typeId, id) => {
     }
 };
 
+const fetchCustomDropdownTypeList = (customOptions, valueArray) => {
+    if (!customOptions || customOptions.length === 0) {
+        return [];
+    }
+    
+    return customOptions.filter(option => valueArray.includes(option.id.toString()));
+};
+
 const createDropdown = async (typeId, data) => {
     try {
         const response = await apiClient.post(`${endPoints.GlobalRecords}/Dropdown/${typeId}`, data);
@@ -63,6 +71,7 @@ const deleteDropdown = async (typeId, id) => {
 export {
     fetchDropdowns,
     fetchDropdownTypeList,
+    fetchCustomDropdownTypeList,
     createDropdown,
     updateDropdown,
     deleteDropdown,
