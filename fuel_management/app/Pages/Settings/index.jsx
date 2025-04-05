@@ -16,7 +16,7 @@ const Settings = () => {
               to={null} // Ensure this points to the "settings" route
               end // This makes sure it's active only for the exact "settings" route
               className={({ isActive }) =>
-                stringRoutes.getCurrentSubRoute(pathname).includes(StringRoutes.settings)
+                stringRoutes.getCurrentSubRoute(pathname).includes(StringRoutes.settings) && stringRoutes.getRootRoute(pathname).includes(StringRoutes.settings)
                   ? "border-b-2 pb-3 border-primary font-semibold text-primary"
                   : "text-gray-500 pb-3"
               }
@@ -26,7 +26,7 @@ const Settings = () => {
             <NavLink
               to={'permissions'} // Points to "settings/permissions"
               className={({ isActive }) =>
-                stringRoutes.getCurrentSubRoute(pathname).includes(StringRoutes.permission)
+                stringRoutes.getCurrentSubRoute(pathname).includes(StringRoutes.permission) 
                   ? "border-b-2 pb-3 border-primary font-semibold text-primary"
                   : "text-gray-500 pb-3"
               }
