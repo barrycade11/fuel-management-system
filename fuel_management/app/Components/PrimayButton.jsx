@@ -3,17 +3,21 @@ import {Button, CircularProgress } from "@heroui/react";
 const PrimaryButton = ({
   title = "",
   onClick = null,
+  type = null,
   isLoading = false,
   fullWidth= true,
-  color = 'primary'
+  color = 'primary',
+  variant = 'solid' // 
 }) => {
 
   return (
     <Button
+      type={type}
       disabled={isLoading}
-      onClick={onClick}
+      onPress={onClick}
       className="rounded-md"
       fullWidth={fullWidth}
+      variant="solid"
       color={color}>
       { isLoading ? <CircularProgress size='sm' aria-label="Loading..."/> : title } 
     </Button>

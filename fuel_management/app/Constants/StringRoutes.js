@@ -27,6 +27,7 @@ class StringRoutes {
   static incentives = 'global-setup/incentives';
 
   static settings = 'settings';
+  static register = 'register';
   static permission = 'permissions';
 
   /**
@@ -38,7 +39,7 @@ class StringRoutes {
   getCurrentSubRoute = (pathname) => {
     if (!pathname) return;
 
-    const subRoutes = pathname.split('/');
+    const subRoutes = pathname.split('/')
     return subRoutes[subRoutes.length - 1];
   }
 
