@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import Table from "~/Components/Table";
 import Dropdown from "~/Components/Dropdown";
 import Notification from "~/Components/Notification";
+import TableSkeleton from "~/Components/TableSkeleton";
+import DropdownStatus from "~/Components/DropdownStatus";
+import { Textarea, Input, Button, Spinner } from "@heroui/react";
 import { 
   fetchFuelMasters, 
   fetchFuelMasterDetails, 
@@ -15,6 +18,7 @@ const FuelMaster = () => {
   const [fuels, setFuels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
   const [newFuel, setNewFuel] = useState({ 
@@ -79,6 +83,9 @@ const FuelMaster = () => {
         return;
     }
 
+    if (isSaving) return;
+    setIsSaving(true);
+
     try {
         if (newFuel.id) {
             await updateFuelMaster(newFuel.id, newFuel);
@@ -94,6 +101,8 @@ const FuelMaster = () => {
     } catch (error) {
         setNotification({ message: "Error saving data", type: "error" });
         console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false); 
     }
   };
 
@@ -149,12 +158,12 @@ const FuelMaster = () => {
       </span>
     ),
     actions: (item) => (
-      <button
-        onClick={() => handleEdit(item)} 
-        className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
+      <Button 
+      onClick={() => handleEdit(item)} 
+      className="bg-blue-200 text-blue-800 rounded-lg hover:bg-blue-300"
       >
         Edit
-      </button>
+      </Button>
     ),
   };
 
@@ -169,67 +178,73 @@ const FuelMaster = () => {
           onCancel={notification.onCancel}  
         />}
       {loading ? (
-        <p>Loading...</p>
+        // <p>Loading...</p>
+        <TableSkeleton columns={4} rows={5}/>
       ) : isEditing ? (
           <div className="h-screen flex justify-center items-center">
             <div className="bg-white p-6 w-96 h-full max-w-lg">
               <h2 className="text-xl font-semibold mb-4">{newFuel.id ? "Edit" : "Add"} Fuel</h2>
-              <label className="block text-sm font-medium">Fuel Code</label>
-              <input
-                type="text"
+              <Input 
+                className="w-full mb-2" 
+                label="Fuel Code" 
+                placeholder="Enter fuel code" 
                 value={newFuel.code}
                 onChange={(e) => setNewFuel({ ...newFuel, code: e.target.value })}
-                className="w-full mb-2 p-2 border rounded" 
+                isRequired
               />
-              <label className="block text-sm font-medium">Fuel Name</label>
-              <input
-                type="text"
+              <Input 
+                className="w-full mb-2" 
+                label="Fuel Name" 
+                placeholder="Enter fuel name" 
                 value={newFuel.name}
                 onChange={(e) => setNewFuel({ ...newFuel, name: e.target.value })}
-                className="w-full mb-2 p-2 border rounded"
+                isRequired
               />
-              <label className="block text-sm font-medium">Fuel Category</label>
               <Dropdown 
+                  label="Fuel Category"
                   typeId={3} 
                   value={newFuel.categoryId} 
                   onChange={(e) => setNewFuel({ ...newFuel, categoryId: e.target.value })} 
               />
-              <label className="block text-sm font-medium">Details</label>
-              <textarea
+              <Textarea 
+                className="w-full mb-2" 
+                label="Details" 
+                placeholder="Enter Details" 
                 value={newFuel.details}
                 onChange={(e) => setNewFuel({ ...newFuel, details: e.target.value })}
-                className="w-full mb-2 p-2 border rounded"
+                isRequired
               />
-              <label className="block text-sm font-medium">Assign Color</label>
-              <input
+              <Input 
                 type="color"
+                className="w-full mb-2 cursor-pointer" 
+                label="Assign Color" 
                 value={newFuel.color}
                 onChange={(e) => setNewFuel({ ...newFuel, color: e.target.value })}
-                className="w-full h-12 cursor-pointer"
+                isRequired
               />
-              <label className="block text-sm font-medium">Status</label>
-              <select
-                value={newFuel.status}
-                onChange={(e) => setNewFuel({ ...newFuel, status: e.target.value })}
-                className="w-full mb-4 p-2 border rounded"
-              >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
-              <div className="flex justify-between items-center w-full">
+              <DropdownStatus
+                className="w-full mb-2"
+                value={Boolean(newFuel.status)} 
+                onChange={(val) => setNewFuel({ ...newFuel, status: val })} 
+              />
+              <div className="flex justify-between items-center w-full mt-2">
                 {newFuel.id ? (
-                  <button 
-                    onClick={() => handleDelete(newFuel.id)} 
-                    className="text-red-500"
-                  >
-                    Delete...
-                  </button>
+                  <Button onClick={() => handleDelete(newFuel.id)} color="danger">Delete</Button>
                 ) : (
                   <div></div> 
                 )}
                 <div className="flex space-x-2">
-                  <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-gray-300 text-blue-500 rounded-lg">Close</button>
-                  <button onClick={handleSave} className="px-4 py-2 bg-blue-500 text-white rounded-lg">Save</button>
+                  <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={isSaving} 
+                    isLoading={isSaving}
+                    spinner={<Spinner size="sm" variant="wave" color="default" />}
+                    spinnerPlacement="end"
+                    color="primary"
+                  >
+                    {isSaving ? "Saving" : "Save"}
+                  </Button>
                 </div>
               </div>
             </div>

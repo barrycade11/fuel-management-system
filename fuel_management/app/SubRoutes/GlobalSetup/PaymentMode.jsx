@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import Table from "~/Components/Table";
 import Dropdown from "~/Components/Dropdown";
 import Notification from "~/Components/Notification";
+import TableSkeleton from "~/Components/TableSkeleton";
+import DropdownStatus from "~/Components/DropdownStatus";
+import { Textarea, Input, Button, Spinner } from "@heroui/react";
 import { 
   fetchPaymentModes, 
   fetchPaymentModeDetails, 
@@ -14,6 +17,7 @@ const PaymentMode = () => {
   const [paymentModes, setPaymentModes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
   const [newPaymentMode, setNewPaymentMode] = useState({  
@@ -67,6 +71,9 @@ const PaymentMode = () => {
         return;
     }
 
+    if (isSaving) return;
+    setIsSaving(true);
+
     try {
         if (newPaymentMode.id) {
             await updatePaymentMode(newPaymentMode.id, newPaymentMode);
@@ -82,6 +89,8 @@ const PaymentMode = () => {
     } catch (error) {
         setNotification({ message: "Error saving data", type: "error" });
         console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false); 
     }
   };
 
@@ -131,13 +140,16 @@ const PaymentMode = () => {
 
   const customRender = {
     actions: (item) => (
-      <button
-        onClick={() => handleEdit(item)} 
-        className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
+      <Button 
+      onPress={() => handleEdit(item)} 
+      className="bg-blue-200 text-blue-800 rounded-lg hover:bg-blue-300"
       >
         Edit
-      </button>
+      </Button>
     ),
+    status: (value) => {
+      return value ? "Active" : "Inactive";
+    }
   };
   
   return (
@@ -151,54 +163,60 @@ const PaymentMode = () => {
           onCancel={notification.onCancel}  
         />}
       {loading ? (
-        <p>Loading...</p>
+        // <p>Loading...</p>
+        <TableSkeleton columns={5} rows={5}/>
       ) : isEditing ? (
           <div className="h-screen flex justify-center items-center">
             <div className="bg-white p-6 w-96 h-full max-w-lg">
               <h2 className="text-xl font-semibold mb-4">{newPaymentMode.id ? "Edit" : "Add"} Payment Mode</h2>
-              <label className="block text-sm font-medium">Payment Code</label>
-              <input
-                type="text"
+              <Input 
+                className="w-full mb-2" 
+                label="Payment Code" 
+                placeholder="Enter fuel code" 
                 value={newPaymentMode.code}
                 onChange={(e) => setNewPaymentMode({ ...newPaymentMode, code: e.target.value })}
-                className="w-full mb-2 p-2 border rounded"
+                isRequired
               />
-              <label className="block text-sm font-medium">Payment Name</label>
-              <input
-                type="text"
+              <Input 
+                className="w-full mb-2" 
+                label="Payment Name" 
+                placeholder="Enter fuel name" 
                 value={newPaymentMode.name}
                 onChange={(e) => setNewPaymentMode({ ...newPaymentMode, name: e.target.value })}
-                className="w-full mb-2 p-2 border rounded"
+                isRequired
               />
-              <label className="block text-sm font-medium">Details</label>
-              <textarea
+              <Textarea 
+                className="w-full mb-2" 
+                label="Details" 
+                placeholder="Enter Details" 
                 value={newPaymentMode.details}
                 onChange={(e) => setNewPaymentMode({ ...newPaymentMode, details: e.target.value })}
-                className="w-full mb-2 p-2 border rounded"
+                isRequired
               />
               <label className="block text-sm font-medium">Status</label>
-              <select
-                value={newPaymentMode.status}
-                onChange={(e) => setNewPaymentMode({ ...newPaymentMode, status: e.target.value })}
-                className="w-full mb-4 p-2 border rounded"
-              >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
-              <div className="flex justify-between items-center w-full">
+              <DropdownStatus
+                className="w-full mb-2"
+                value={Boolean(newPaymentMode.status)} 
+                onChange={(val) => setNewPaymentMode({ ...newPaymentMode, status: val })} 
+              />
+              <div className="flex justify-between items-center w-full mt-2">
                 {newPaymentMode.id ? (
-                  <button 
-                    onClick={() => handleDelete(newPaymentMode.id)} 
-                    className="text-red-500"
-                  >
-                    Delete...
-                  </button>
+                  <Button onClick={() => handleDelete(newPaymentMode.id)} color="danger">Delete</Button>
                 ) : (
                   <div></div> 
                 )}
                 <div className="flex space-x-2">
-                  <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-gray-300 text-blue-500 rounded-lg">Close</button>
-                  <button onClick={handleSave} className="px-4 py-2 bg-blue-500 text-white rounded-lg">Save</button>
+                  <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={isSaving} 
+                    isLoading={isSaving}
+                    spinner={<Spinner size="sm" variant="wave" color="default" />}
+                    spinnerPlacement="end"
+                    color="primary"
+                  >
+                    {isSaving ? "Saving" : "Save"}
+                  </Button>
                 </div>
               </div>
             </div>

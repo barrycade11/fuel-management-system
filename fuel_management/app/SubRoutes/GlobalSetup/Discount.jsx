@@ -1,27 +1,45 @@
 import { useEffect, useState } from "react";
 import Table from "~/Components/Table";
 import Dropdown from "~/Components/Dropdown";
+import MultiDropdown from "~/Components/MultiDropdown";
 import Notification from "~/Components/Notification";
+import TableSkeleton from "~/Components/TableSkeleton";
+import DropdownStatus from "~/Components/DropdownStatus";
+import { Textarea, Input, Button, DatePicker, Spinner } from "@heroui/react";
 import { 
   fetchDiscounts, 
   fetchDiscountDetails, 
   createDiscount, 
   updateDiscount, 
-  deleteDiscount  
+  deleteDiscount 
 } from "~/Hooks/Setup/GlobalRecords/Discount/useDiscounts";
-import { ClockIcon } from "lucide-react";
+import {
+  fetchDepartments
+} from "~/Hooks/Setup/GlobalRecords/Department/useDepartments"
+import { fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
+import { parseZonedDateTime, parseAbsolute, parseAbsoluteToLocal } from "@internationalized/date";
 
 const Discount = () => {
   const [discounts, setDiscounts] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [newDiscount, setNewDiscount] = useState({  
+  const [newDiscount, setNewDiscount] = useState({ 
+    code: "", 
     name: "", 
-    startTime: "00:00",
-    endTime: "00:00",
+    applicabilityId: [], 
     details: "", 
+    criteriaId: "",
+    qualifierValue: "",
+    discountTypeId: "",
+    discountValue: "",
+    chargeToId: "",
+    startDate: null,
+    endDate: null,
+    maxLimit: "",
     status: true
   });
 
@@ -29,70 +47,151 @@ const Discount = () => {
     setLoading(true);
     try {
         const data = await fetchDiscounts();
-
-        const formattedData = data.map(discount => ({
-            ...discount,
-            startTime: discount.starttime, 
-            endTime: discount.endtime  
-        }));
-
-        setDiscounts(formattedData);
-        // console.log(formattedData);
+        setDiscounts(data);
+        // console.log(data);
     } catch (error) {
         console.error("Error fetching data:", error);
     } finally {
         setLoading(false);
     }
-};
+  };
+
   useEffect(() => {
       getDiscounts();
-  }, []);
+  }, [departments]);
+
+  const getDepartments = async () => {
+    setLoading(true);
+    try {
+        const data = await fetchDepartments();
+        setDepartments(data);
+        // console.log(data);
+    } catch (error) {
+        console.error("Error fetching data:", error);
+    } finally {
+        setLoading(false);
+    }
+  };
 
   const handleAdd = () => {
     setNewDiscount({ 
+      code: "", 
       name: "", 
-      startTime: "00:00",
-      endTime: "00:00", 
+      applicabilityId: [], 
       details: "", 
+      criteriaId: "",
+      qualifierValue: "",
+      discountTypeId: "",
+      discountValue: "",
+      chargeToId: "",
+      startDate: null,
+      endDate: null,
+      maxLimit: "",
       status: true
     });
+    getDepartments();
     setIsEditing(true);
   };
 
   const handleEdit = async (discount) => {
+    // console.log(discount);
     try {
-        setNewDiscount((prev) => ({
-          ...prev,
-          ...discount
-        }));
+      getDepartments();
 
+      const [criteriaData, discountTypeData, chargeToData] = await Promise.all([
+        fetchDropdownTypeList(17, discount.criteriaId),
+        fetchDropdownTypeList(18, discount.discountTypeId),
+        fetchDropdownTypeList(1, discount.chargeToId),
+      ]);
+      
+      if (discount.discountLin && Array.isArray(discount.discountLin)) {
+
+        const applicabilityIds = discount.discountLin.map(item => 
+          parseInt(item.applicabilityId, 10)
+        );
+        
+        setNewDiscount(prev => ({
+          ...prev,
+          ...discount,
+          applicabilityId: applicabilityIds,
+          startDate: parseAbsoluteToLocal(discount.startDate),
+          endDate: parseAbsoluteToLocal(discount.endDate)
+        }));
+        
+        // console.log(newDiscount);
+        
         setIsEditing(true);
+      }
     } catch (error) {
-        console.error("Error fetching data:", error);
+      console.error("Error fetching discount data:", error);
     }
   };
 
+
   const handleSave = async () => {
-    if (!newDiscount.name || !newDiscount.startTime || !newDiscount.endTime || !newDiscount.details) {
-        setNotification({ message: "All fields are required.", type: "error" });
-        return;
+    if (!newDiscount.code || 
+      !newDiscount.name || 
+      !newDiscount.criteriaId || 
+      !newDiscount.qualifierValue || 
+      !newDiscount.discountTypeId || 
+      !newDiscount.discountValue || 
+      !newDiscount.chargeToId || 
+      !newDiscount.maxLimit || 
+      !newDiscount.startDate || 
+      !newDiscount.endDate || 
+      !newDiscount.details ||
+      !newDiscount.status ||
+      !newDiscount.applicabilityId.length > 0 
+    ) {
+      setNotification({ message: "All fields are required.", type: "error" });
+      return;
     }
 
+    if (isSaving) return;
+    setIsSaving(true);
+
+    // const payload = {
+    //   ...newDiscount,
+    //   applicability: newDiscount.applicabilityId.map(id => ({ applicabilityId: id })), 
+    //   startDate: formatDate(newDiscount.startDate),
+    //   endDate: formatDate(newDiscount.endDate)
+    // };
+
+    const payload = {
+      code: newDiscount.code,
+      name: newDiscount.name,
+      criteriaId: parseInt(newDiscount.criteriaId, 10), 
+      qualifierValue: parseInt(newDiscount.qualifierValue, 10),
+      discountTypeId: parseInt(newDiscount.discountTypeId, 10),
+      discountValue: parseInt(newDiscount.discountValue, 10),
+      chargeToId: parseInt(newDiscount.chargeToId, 10),
+      maxLimit: parseInt(newDiscount.maxLimit, 10),
+      startDate: formatDate(newDiscount.startDate), 
+      endDate: formatDate(newDiscount.endDate),
+      details: newDiscount.details,
+      status: newDiscount.status ?? true, 
+      applicabilities: newDiscount.applicabilityId.map(id => ({ applicabilityId: id })), 
+
+    };
+
+    // console.log(payload)
     try {
-        if (newDiscount.id) {
-            await updateDiscount(newDiscount.id, newDiscount);
-        } else {
-            const response = await createDiscount(newDiscount);
-            setDiscounts([...discounts, response[0]]); 
-        }
-
-        setIsEditing(false);
-        setNotification({ message: "Save successful", type: "success" });
-
-        getDiscounts(); 
+      if (newDiscount.id) {
+        // console.log(newDiscount.id)
+        await updateDiscount(newDiscount.id, payload);
+      } else {
+        const response = await createDiscount(payload);
+        setDiscounts([...discounts, response[0]]);
+      }
+  
+      setIsEditing(false);
+      setNotification({ message: "Save successful", type: "success" });
+      getDiscounts();
     } catch (error) {
-        setNotification({ message: "Error saving data", type: "error" });
-        console.error("Error saving data:", error);
+      setNotification({ message: "Error saving data", type: "error" });
+      console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false); 
     }
   };
 
@@ -124,32 +223,50 @@ const Discount = () => {
     }));
   };
 
+  const formatDate = (dateObj) => {
+    if (!dateObj || !dateObj.year || !dateObj.month || !dateObj.day) return null;
+    return `${dateObj.year}-${String(dateObj.month).padStart(2, "0")}-${String(dateObj.day).padStart(2, "0")}`;
+  };
+
   const columns = [
     { key: "id", label: "No.", hidden: true },
+    { key: "code", label: "Discount Code", hidden: false },
     { key: "name", label: "Discount Name", hidden: false },
-    { key: "startTime", label: "Start Time", hidden: false },
-    { key: "endTime", label: "End Time", hidden: false },
+    { key: "discountLin", label: "Applicability", hidden: false },
+    { key: "criteria", label: "Criteria", hidden: true },
+    { key: "qualifierValue", label: "Qualifier Value", hidden: true },
+    { key: "discountType", label: "Discount Type", hidden: false },
+    { key: "discountValue", label: "Discount Value", hidden: true },
+    { key: "chargeTo", label: "Charge To", hidden: true },
+    { key: "maxLimit", label: "Max Limit", hidden: true },
+    { key: "startDate", label: "Start Date", hidden: true },
+    { key: "endDate", label: "End Date", hidden: true },
     { key: "details", label: "Details", hidden: true },
-    { 
-      key: "status", 
-      label: "Status",
-      render: (discount) => {
-        // console.log("Rendering status:", discount.status);
-        return discount.status ? "Active" : "Inactive";
-      },
-      hidden: true
-    }
+    { key: "status", label: "Status", hidden: false }
   ];
 
   const customRender = {
+    discountLin: (discountLinArray) => {
+      // console.log(discountLinArray)
+      if (!Array.isArray(discountLinArray) || discountLinArray.length === 0) {
+        return "N/A";
+      }
+    
+      return discountLinArray.map(sub => sub.applicability || `ID: ${sub.applicabilityId}`).join(", ");
+    },
+    startDate: (item) => formatDate(item),
+    endDate: (item) => formatDate(item),
     actions: (item) => (
-      <button
-        onClick={() => handleEdit(item)} 
-        className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
+      <Button 
+      onPress={() => handleEdit(item)} 
+      className="bg-blue-200 text-blue-800 rounded-lg hover:bg-blue-300"
       >
         Edit
-      </button>
+      </Button>
     ),
+    status: (value) => {
+      return value ? "Active" : "Inactive";
+    }
   };
 
   return (
@@ -163,77 +280,170 @@ const Discount = () => {
           onCancel={notification.onCancel}  
         />}
       {loading ? (
-        <p>Loading...</p>
+        // <p>Loading...</p>
+        <TableSkeleton columns={5} rows={5}/>
       ) : isEditing ? (
-          <div className="h-screen flex justify-center items-center">
-            <div className="bg-white p-6 w-96 h-full max-w-lg">
+          <div className="h-full flex justify-center items-center">
+            <div className="bg-white w-full h-full max-w-lg">
               <h2 className="text-xl font-semibold mb-4">{newDiscount.id ? "Edit" : "Add"} Discount</h2>
-              <label className="block text-sm font-medium">Discount Name</label>
-              <input
-                type="text"
+              <Input 
+                className="w-full mb-2" 
+                label="Discount Code" 
+                placeholder="Enter discount code" 
+                value={newDiscount.code}
+                onChange={(e) => setNewDiscount({ ...newDiscount, code: e.target.value })}
+                isRequired
+              />
+              <Input 
+                className="w-full mb-2" 
+                label="Discount Name" 
+                placeholder="Enter discount name" 
                 value={newDiscount.name}
                 onChange={(e) => setNewDiscount({ ...newDiscount, name: e.target.value })}
-                className="w-full mb-2 p-2 border rounded"
+                isRequired
+              />
+              <MultiDropdown 
+                label="Applicability"
+                customOptions={departments.map(dep => ({
+                  id: dep.id,
+                  name: dep.name
+                }))}
+                isMultiline
+                value={newDiscount.applicabilityId} 
+                onChange={(e) => setNewDiscount({ 
+                  ...newDiscount, 
+                  applicabilityId: e.target.value.map(id => parseInt(id, 10)) 
+                })} 
               />
               <div className="flex space-x-4">
                 <div className="flex flex-col w-full">
-                  <label className="text-sm font-medium mb-1">Start Discount</label>
-                  <div className="relative flex items-center border rounded-lg px-2 py-1">
-                    <TimePicker
-                      value={newDiscount.startTime} 
-                      onChange={(time) => setNewDiscount({ ...newDiscount, startTime: time })}
-                      disableClock={true} 
-                      clearIcon={null} 
-                      format="HH:mm" 
-                      className="w-full bg-transparent border-none focus:outline-none"
-                    />
-                    <ClockIcon className="absolute right-2 text-gray-500 w-5 h-5" />
+                  <div className="relative flex items-center rounded-lg">
+                  <Dropdown 
+                    label="Criteria"
+                    typeId={17} 
+                    value={newDiscount.criteriaId} 
+                    onChange={(e) => setNewDiscount({ ...newDiscount, criteriaId: e.target.value })} 
+                  />
                   </div>
                 </div>
                 <div className="flex flex-col w-full">
-                  <label className="text-sm font-medium mb-1">End Discount</label>
-                  <div className="relative flex items-center border rounded-lg px-2 py-1">
-                    <TimePicker
-                      value={newDiscount.endTime} 
-                      onChange={(time) => setNewDiscount({ ...newDiscount, endTime: time })}
-                      disableClock={true} 
-                      clearIcon={null} 
-                      format="HH:mm" 
-                      className="w-full bg-transparent border-none focus:outline-none"
-                    />
-                    <ClockIcon className="absolute right-2 text-gray-500 w-5 h-5" />
+                  <div className="relative flex items-center rounded-lg">
+                  <Input 
+                    className="w-full mb-2" 
+                    label="Qualifier Value" 
+                    placeholder="Enter qualifier value" 
+                    value={newDiscount.qualifierValue}
+                    onChange={(e) => setNewDiscount({ ...newDiscount, qualifierValue: e.target.value })}
+                    isRequired
+                  />
                   </div>
                 </div>
               </div>
-              <label className="block text-sm font-medium">Details</label>
-              <textarea
+              <div className="flex space-x-4">
+                <div className="flex flex-col w-full">
+                  <div className="relative flex items-center rounded-lg">
+                  <Dropdown 
+                    label="Discount Type"
+                    typeId={18} 
+                    value={newDiscount.discountTypeId} 
+                    onChange={(e) => setNewDiscount({ ...newDiscount, discountTypeId: e.target.value })} 
+                  />
+                  </div>
+                </div>
+                <div className="flex flex-col w-full">
+                  <div className="relative flex items-center rounded-lg">
+                  <Input 
+                    className="w-full mb-2" 
+                    label="Discount Value" 
+                    placeholder="Enter discount value" 
+                    value={newDiscount.discountValue}
+                    onChange={(e) => setNewDiscount({ ...newDiscount, discountValue: e.target.value })}
+                    isRequired
+                  />
+                  </div>
+                </div>
+              </div>
+              <div className="flex space-x-4">
+                <div className="flex flex-col w-full">
+                  <div className="relative flex items-center rounded-lg">
+                  <Dropdown 
+                    label="Charge To"
+                    typeId={1} 
+                    value={newDiscount.chargeToId} 
+                    onChange={(e) => setNewDiscount({ ...newDiscount, chargeToId: e.target.value })} 
+                  />
+                  </div>
+                </div>
+                <div className="flex flex-col w-full">
+                  <div className="relative flex items-center rounded-lg">
+                  <Input 
+                    className="w-full mb-2" 
+                    label="Max Limit" 
+                    placeholder="Enter max limit" 
+                    value={newDiscount.maxLimit}
+                    onChange={(e) => setNewDiscount({ ...newDiscount, maxLimit: e.target.value })}
+                    isRequired
+                  />
+                  </div>
+                </div>
+              </div>
+              <div className="flex space-x-4 mb-2">
+                <div className="flex flex-col w-full">
+                  <div className="relative flex items-center rounded-lg">
+                    <DatePicker  
+                      isRequired 
+                      label="Start Date" 
+                      placeholder="Pick a date" 
+                      granularity="day"
+                      value={newDiscount.startDate} 
+                      onChange={(date) => setNewDiscount({ ...newDiscount, startDate: date })}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col w-full">
+                  <div className="relative flex items-center rounded-lg">
+                    <DatePicker  
+                      isRequired 
+                      label="End Date" 
+                      placeholder="Pick a date" 
+                      granularity="day"
+                      value={newDiscount.endDate} 
+                      onChange={(date) => setNewDiscount({ ...newDiscount, endDate: date })}
+                    />
+                  </div>
+                </div>
+              </div>
+              <Textarea 
+                className="w-full mb-2" 
+                label="Details" 
+                placeholder="Enter Details" 
                 value={newDiscount.details}
                 onChange={(e) => setNewDiscount({ ...newDiscount, details: e.target.value })}
-                className="w-full mb-2 p-2 border rounded"
+                isRequired
               />
-              <label className="block text-sm font-medium">Status</label>
-              <select
-                value={newDiscount.status}
-                onChange={(e) => setNewDiscount({ ...newDiscount, status: e.target.value })}
-                className="w-full mb-4 p-2 border rounded"
-              >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
-              <div className="flex justify-between items-center w-full">
+              <DropdownStatus
+                className="w-full mb-2"
+                value={Boolean(newDiscount.status)} 
+                onChange={(val) => setNewDiscount({ ...newDiscount, status: val })} 
+              />
+              <div className="flex justify-between items-center w-full mt-2">
                 {newDiscount.id ? (
-                  <button 
-                    onClick={() => handleDelete(newDiscount.id)} 
-                    className="text-red-500"
-                  >
-                    Delete...
-                  </button>
+                  <Button onClick={() => handleDelete(newDiscount.id)} color="danger">Delete</Button>
                 ) : (
                   <div></div> 
                 )}
                 <div className="flex space-x-2">
-                  <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-gray-300 text-blue-500 rounded-lg">Close</button>
-                  <button onClick={handleSave} className="px-4 py-2 bg-blue-500 text-white rounded-lg">Save</button>
+                  <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={isSaving} 
+                    isLoading={isSaving}
+                    spinner={<Spinner size="sm" variant="wave" color="default" />}
+                    spinnerPlacement="end"
+                    color="primary"
+                  >
+                    {isSaving ? "Saving" : "Save"}
+                  </Button>
                 </div>
               </div>
             </div>

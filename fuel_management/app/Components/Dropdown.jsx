@@ -34,7 +34,7 @@ const Dropdown = ({ typeId, value, onChange, label }) => {
     } else {
       setSelectedValue("");
     }
-  }, [value, typeId]);
+  }, [typeId, value]);
 
   const handleSelectionChange = (keys) => {
     const selectedKey = Array.from(keys)[0];

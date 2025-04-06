@@ -1,8 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Check, AlertCircle } from "lucide-react";
+import { Button, Spinner } from "@heroui/react";
 
 const Notification = ({ message, type, onClose, onConfirm, onCancel }) => {
   const timerRef = useRef(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (type !== "delete") { 
@@ -12,6 +14,18 @@ const Notification = ({ message, type, onClose, onConfirm, onCancel }) => {
     return () => clearTimeout(timerRef.current); 
   }, [type, onClose]); 
 
+  const handleDelete = async () => {
+    if (onConfirm) {
+      setIsDeleting(true);
+      try {
+        await onConfirm();
+      } finally {
+        setIsDeleting(false);
+      }
+    } else {
+      console.error("onConfirm is undefined!");
+    }
+  };
 
   return (
     <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg text-white shadow-lg 
@@ -26,31 +40,25 @@ const Notification = ({ message, type, onClose, onConfirm, onCancel }) => {
 
         {type === "delete" ? (
           <div className="flex space-x-2">
-            <button 
-              onClick={() => {
-                if (onConfirm) {
-                  onConfirm();
-                } else {
-                  console.error("onConfirm is undefined!");
-                }
-              }} 
-              className="bg-red-800 px-3 py-1 rounded"
+            <Button 
+              onClick={handleDelete} 
+              disabled={isDeleting}
+              isLoading={isDeleting}
+              spinner={<Spinner size="sm" variant="wave" color="default" />}
+              spinnerPlacement="end"
+              color="danger"
+              className="bg-red-800 px-3 py-1 rounded text-white"
             >
-              Delete
-            </button>
-
-            <button 
-              onClick={() => {
-                if (onCancel) {
-                  onCancel();
-                } else {
-                  console.error("onCancel is undefined!");
-                }
-              }} 
-              className="bg-red-700 px-3 py-1 rounded"
+              {isDeleting ? "Deleting" : "Delete"}
+            </Button>
+            <Button 
+              onClick={onCancel}
+              disabled={isDeleting}
+              color="default"
+              className="bg-red-700 px-3 py-1 rounded text-white"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         ) : (
           <button onClick={onClose} className="ml-4">✕</button>

@@ -1,26 +1,29 @@
 import { useEffect, useState } from "react";
-import Table from "~/Components/Table";
-import Dropdown from "~/Components/Dropdown";
+import Table from "~/Components/TableForObject";
+import MultiDropdown from "~/Components/MultiDropdown";
 import Notification from "~/Components/Notification";
+import TableSkeleton from "~/Components/TableSkeleton";
+import DropdownStatus from "~/Components/DropdownStatus";
+import { Textarea, Input, Button, Spinner } from "@heroui/react";
 import { 
   fetchDepartments, 
   fetchDepartmentDetails, 
   createDepartment, 
   updateDepartment, 
-  deleteDepartment  
+  deleteDepartment 
 } from "~/Hooks/Setup/GlobalRecords/Department/useDepartments";
-import { ClockIcon } from "lucide-react";
+import { fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
 
 const Department = () => {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
-  const [newDepartment, setNewDepartment] = useState({  
+  const [newDepartment, setNewDepartment] = useState({ 
     name: "", 
-    startTime: "00:00",
-    endTime: "00:00",
+    subDepartmentId: [], 
     details: "", 
     status: true
   });
@@ -29,21 +32,15 @@ const Department = () => {
     setLoading(true);
     try {
         const data = await fetchDepartments();
-
-        const formattedData = data.map(department => ({
-            ...department,
-            startTime: department.starttime, 
-            endTime: department.endtime  
-        }));
-
-        setDepartments(formattedData);
-        // console.log(formattedData);
+        setDepartments(data);
+        // console.log("test", data);
     } catch (error) {
         console.error("Error fetching data:", error);
     } finally {
         setLoading(false);
     }
-};
+  };
+
   useEffect(() => {
       getDepartments();
   }, []);
@@ -51,52 +48,71 @@ const Department = () => {
   const handleAdd = () => {
     setNewDepartment({ 
       name: "", 
-      startTime: "00:00",
-      endTime: "00:00", 
+      subDepartmentId: [], 
       details: "", 
-      status: true
+      status: true 
     });
     setIsEditing(true);
   };
 
   const handleEdit = async (department) => {
-    try {
-        setNewDepartment((prev) => ({
-          ...prev,
-          ...department
-        }));
-
-        setIsEditing(true);
-    } catch (error) {
-        console.error("Error fetching data:", error);
-    }
+    // console.log(departments)
+    // Extract the subDepartmentId values from the departmentLin array
+    if (department.departmentLin && Array.isArray(department.departmentLin)) {
+      const subDepartmentIds = department.departmentLin.map(item => item.subDepartmentId);
+      
+      // Update your state with the extracted IDs
+      setNewDepartment(prev => ({
+        ...prev,
+        ...department,
+        subDepartmentId: subDepartmentIds // This should match what your MultiDropdown expects
+      }));
+      
+      setIsEditing(true);
+    };
   };
+  
+
 
   const handleSave = async () => {
-    if (!newDepartment.name || !newDepartment.startTime || !newDepartment.endTime || !newDepartment.details) {
-        setNotification({ message: "All fields are required.", type: "error" });
-        return;
+    // console.log(newDepartment)
+    if (!newDepartment.name || !newDepartment.details || !newDepartment.subDepartmentId.length > 0) {
+      setNotification({ message: "All fields are required.", type: "error" });
+      return;
     }
 
+    if (isSaving) return;
+    setIsSaving(true);
+  
     try {
-        if (newDepartment.id) {
-            await updateDepartment(newDepartment.id, newDepartment);
-        } else {
-            const response = await createDepartment(newDepartment);
-            setDepartments([...departments, response[0]]); 
-        }
+      const payload = {
+        ...newDepartment,
+        subDepartments: newDepartment.subDepartmentId.map(id => ({ subDepartmentId: id })), 
+      };
+  
+      // console.log(payload)
 
-        setIsEditing(false);
-        setNotification({ message: "Save successful", type: "success" });
+      if (newDepartment.id) {
+        await updateDepartment(newDepartment.id, payload);
+      } else {
+        const response = await createDepartment(payload);
+        setDepartments([...departments, response[0]]);
+      }
 
-        getDepartments(); 
+  
+      setIsEditing(false);
+      setNotification({ message: "Save successful", type: "success" });
+      getDepartments();
     } catch (error) {
-        setNotification({ message: "Error saving data", type: "error" });
-        console.error("Error saving data:", error);
+      setNotification({ message: "Error saving data", type: "error" });
+      console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false); 
     }
   };
 
   const handleDelete = (id) => {
+    console.log(id)
     const handleConfirm = async () => {
         try {
             await deleteDepartment(id);
@@ -127,29 +143,32 @@ const Department = () => {
   const columns = [
     { key: "id", label: "No.", hidden: true },
     { key: "name", label: "Department Name", hidden: false },
-    { key: "startTime", label: "Start Time", hidden: false },
-    { key: "endTime", label: "End Time", hidden: false },
+    { key: "subdepartments", label: "Sub Department", hidden: false },
     { key: "details", label: "Details", hidden: true },
-    { 
-      key: "status", 
-      label: "Status",
-      render: (department) => {
-        // console.log("Rendering status:", department.status);
-        return department.status ? "Active" : "Inactive";
-      },
-      hidden: true
-    }
+    { key: "status", label: "Status", hidden: true }
   ];
 
   const customRender = {
+    subdepartments: (row) => {
+      // console.log("row:", row); 
+      
+      if (!row || !Array.isArray(row.departmentLin) || row.departmentLin.length === 0) {
+        return "N/A";
+      }
+  
+      return row.departmentLin.map(sub => sub.subDepartment || "Unnamed").join(", ");
+    },
     actions: (item) => (
-      <button
-        onClick={() => handleEdit(item)} 
-        className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
+      <Button 
+      onPress={() => handleEdit(item)} 
+      className="bg-blue-200 text-blue-800 rounded-lg hover:bg-blue-300"
       >
         Edit
-      </button>
+      </Button>
     ),
+    status: (value) => {
+      return value ? "Active" : "Inactive";
+    }
   };
 
   return (
@@ -163,77 +182,59 @@ const Department = () => {
           onCancel={notification.onCancel}  
         />}
       {loading ? (
-        <p>Loading...</p>
+        // <p>Loading...</p>
+        <TableSkeleton columns={3} rows={5}/>
       ) : isEditing ? (
           <div className="h-screen flex justify-center items-center">
             <div className="bg-white p-6 w-96 h-full max-w-lg">
               <h2 className="text-xl font-semibold mb-4">{newDepartment.id ? "Edit" : "Add"} Department</h2>
-              <label className="block text-sm font-medium">Department Name</label>
-              <input
-                type="text"
+              <Input 
+                className="w-full mb-2" 
+                label="Department Name" 
+                placeholder="Enter department name" 
                 value={newDepartment.name}
                 onChange={(e) => setNewDepartment({ ...newDepartment, name: e.target.value })}
-                className="w-full mb-2 p-2 border rounded"
+                isRequired
               />
-              <div className="flex space-x-4">
-                <div className="flex flex-col w-full">
-                  <label className="text-sm font-medium mb-1">Start Department</label>
-                  <div className="relative flex items-center border rounded-lg px-2 py-1">
-                    <TimePicker
-                      value={newDepartment.startTime} 
-                      onChange={(time) => setNewDepartment({ ...newDepartment, startTime: time })}
-                      disableClock={true} 
-                      clearIcon={null} 
-                      format="HH:mm" 
-                      className="w-full bg-transparent border-none focus:outline-none"
-                    />
-                    <ClockIcon className="absolute right-2 text-gray-500 w-5 h-5" />
-                  </div>
-                </div>
-                <div className="flex flex-col w-full">
-                  <label className="text-sm font-medium mb-1">End Department</label>
-                  <div className="relative flex items-center border rounded-lg px-2 py-1">
-                    <TimePicker
-                      value={newDepartment.endTime} 
-                      onChange={(time) => setNewDepartment({ ...newDepartment, endTime: time })}
-                      disableClock={true} 
-                      clearIcon={null} 
-                      format="HH:mm" 
-                      className="w-full bg-transparent border-none focus:outline-none"
-                    />
-                    <ClockIcon className="absolute right-2 text-gray-500 w-5 h-5" />
-                  </div>
-                </div>
-              </div>
-              <label className="block text-sm font-medium">Details</label>
-              <textarea
+              <MultiDropdown 
+                  label="Sub Department"
+                  typeId={19} 
+                  isMultiline
+                  value={newDepartment.subDepartmentId} 
+                  onChange={(e) => setNewDepartment({ ...newDepartment, subDepartmentId: e.target.value })} 
+              />
+              <Textarea 
+                className="w-full mb-2" 
+                label="Details" 
+                placeholder="Enter Details" 
                 value={newDepartment.details}
                 onChange={(e) => setNewDepartment({ ...newDepartment, details: e.target.value })}
-                className="w-full mb-2 p-2 border rounded"
+                isRequired
               />
-              <label className="block text-sm font-medium">Status</label>
-              <select
-                value={newDepartment.status}
-                onChange={(e) => setNewDepartment({ ...newDepartment, status: e.target.value })}
-                className="w-full mb-4 p-2 border rounded"
-              >
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-              </select>
-              <div className="flex justify-between items-center w-full">
+              <DropdownStatus
+                className="w-full mb-2"
+                value={Boolean(newDepartment.status)} 
+                onChange={(val) => setNewDepartment({ ...newDepartment, status: val })} 
+              />
+              <div className="flex justify-between items-center w-full mt-2">
                 {newDepartment.id ? (
-                  <button 
-                    onClick={() => handleDelete(newDepartment.id)} 
-                    className="text-red-500"
-                  >
-                    Delete...
-                  </button>
+                  <Button onClick={() => handleDelete(newDepartment.id)} color="danger">Delete</Button>
                 ) : (
                   <div></div> 
                 )}
                 <div className="flex space-x-2">
-                  <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-gray-300 text-blue-500 rounded-lg">Close</button>
-                  <button onClick={handleSave} className="px-4 py-2 bg-blue-500 text-white rounded-lg">Save</button>
+                  <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
+                  {/* <Button onClick={handleSave} color="primary">Save</Button> */}
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={isSaving} 
+                    isLoading={isSaving}
+                    spinner={<Spinner size="sm" variant="wave" color="default" />}
+                    spinnerPlacement="end"
+                    color="primary"
+                  >
+                    {isSaving ? "Saving" : "Save"}
+                  </Button>
                 </div>
               </div>
             </div>

@@ -6,8 +6,11 @@ import {
   TableBody,
   TableColumn,
   TableRow,
-  TableCell
-} from "@heroui/table";
+  TableCell, 
+  Button, 
+  Input
+} from "@heroui/react";
+import Plus from "~/Assets/Svg/Plus";
 import { useAsyncList } from "@react-stately/data";
 
 const HeroUITable = ({ title, data, columns, onAdd, onEdit, customRender }) => {
@@ -71,24 +74,27 @@ const HeroUITable = ({ title, data, columns, onAdd, onEdit, customRender }) => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">{title}</h2>
         <div className="flex items-center space-x-2">
-          <div className="relative flex bg-gray-100 rounded-lg px-3 py-2 w-72 border">
-            <input
-              type="text"
+          <div className="relative flex w-72">
+            <Input 
+              className="flex-grow bg-transparent focus:outline-none" 
               placeholder="Search Table"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-grow bg-transparent focus:outline-none"
+              endContent={
+                <>
+                <div className="p-1 rounded-lg">
+                  <SearchIcon size={18} />
+                </div>
+                 <button
+                 ref={settingsButtonRef}
+                 onClick={() => setShowFilter((prev) => !prev)}
+                 className="p-1 rounded-lg hover:bg-gray-200 relative"
+               >
+                 <SettingsIcon size={18} />
+               </button>
+               </>
+              }
             />
-            <div className="p-1 rounded-lg">
-              <SearchIcon size={18} />
-            </div>
-            <button
-              ref={settingsButtonRef}
-              onClick={() => setShowFilter((prev) => !prev)}
-              className="p-1 rounded-lg hover:bg-gray-200 relative"
-            >
-              <SettingsIcon size={18} />
-            </button>
             {showFilter && (
               <div
                 ref={filterRef}
@@ -113,12 +119,10 @@ const HeroUITable = ({ title, data, columns, onAdd, onEdit, customRender }) => {
               </div>
             )}
           </div>
-          <button
-                    onClick={onAdd}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                    >
-                + Add new
-                </button>
+          <Button onClick={onAdd} color="primary">
+            <Plus color="#ffffff" />
+            <span className="text-[18px]">Add new</span>
+          </Button>
         </div>
       </div>
 

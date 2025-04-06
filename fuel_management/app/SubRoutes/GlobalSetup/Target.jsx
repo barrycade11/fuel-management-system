@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Table from "~/Components/Table";
 // import Dropdown from "~/Components/Dropdown";
 import Notification from "~/Components/Notification";
+import TableSkeleton from "~/Components/TableSkeleton";
 // import { 
 //   fetchTargets, 
 //   fetchTargetDetails, 
@@ -213,7 +214,8 @@ const Target = () => {
           onCancel={notification.onCancel}  
         />}
       {loading ? (
-        <p>Loading...</p>
+        // <p>Loading...</p>
+        <TableSkeleton columns={5} rows={5}/>
       ) : isEditing ? (
         <>
         <div className="grid grid-cols-10 gap-3 mb-4">

@@ -1,4 +1,4 @@
-import React, { Children, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   UserIcon,
   LayoutDashboardIcon,
@@ -13,13 +13,29 @@ import {
   SettingsIcon,
   ChevronDown,
   ChevronUp,
-  Users
+  Users,
+  Menu,
+  X
 } from 'lucide-react'
 import useToggleDrawer from '~/Hooks/Sidenav/useToggleDrawer'
 import useAuth from '~/Hooks/Auth/useAuth';
 import { useLocation, useNavigate, NavLink } from 'react-router';
 import StringRoutes from '~/Constants/StringRoutes';
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, useToast, dropdown } from "@heroui/react";
+import { 
+  Dropdown, 
+  DropdownTrigger, 
+  DropdownMenu, 
+  DropdownItem, 
+  Button, 
+  useToast, 
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+  DrawerFooter,
+  useDisclosure
+} from "@heroui/react";
+
 
 const NavItemWithDropdown = ({
   hdrIcon = null,
@@ -34,7 +50,6 @@ const NavItemWithDropdown = ({
   const toggleDropdown = () => {
     setDropdownOpen(state => !state);
   } 
-  //isActive ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-blue-50'
 
   return (
     <li className='flex flex-col '>
@@ -88,7 +103,7 @@ const NavItem = ({ icon, text, active = false, indented = false, url = "" }) => 
       <NavLink
         to={url}
         className={({ isActive }) =>
-          `cursor-pointer flex items-center px-4 py-2   ${isActive ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-blue-50'}`
+          `cursor-pointer flex items-center px-4 py-2 ${isActive ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-blue-50'}`
         }
       >
         <span className="mr-3">{icon}</span>
@@ -161,12 +176,11 @@ const AdminNavItem = () => {
   )
 }
 
-
-/*
- * Sidebar sample 
- * */
-const Sidebar = () => {
-  const { isOpen } = useToggleDrawer();
+const SidebarContent = ({ compactMode = false }) => {
+  const { isOpen, toggleDrawer } = useToggleDrawer();
+  
+  // Force isOpen to true when in compact mode (for drawer view)
+  const displayOpen = compactMode ? true : isOpen;
 
   return (
     <div className="bg-blue-50 flex flex-col h-full">
@@ -179,9 +193,9 @@ const Sidebar = () => {
           />
           <div
             style={{
-              zIndex: isOpen ? '1' : '-1',
-              transform: isOpen ? 'translateX(0px)' : 'translateX(-10px)',
-              opacity: isOpen ? 1 : 0,
+              zIndex: displayOpen ? '1' : '-1',
+              transform: displayOpen ? 'translateX(0px)' : 'translateX(-10px)',
+              opacity: displayOpen ? 1 : 0,
               transition: 'transform 0.3s ease, opacity 0.3s ease',
             }}
           >
@@ -223,7 +237,7 @@ const Sidebar = () => {
           />
         </ul>
 
-        <ul >
+        <ul>
           <NavItemWithDropdown
             hdrIcon={<SettingsIcon size={18} />}
             text='Settings'
@@ -242,9 +256,42 @@ const Sidebar = () => {
         </ul>
       </nav>
     </div>
-  )
-}
+  );
+};
 
+const Sidebar = ({ screenSize = "desktop", drawerSize = "md"}) => {
+  const { isOpen, toggleDrawer, isCompactSidebarOpen, onManageSidebarOpen } = useToggleDrawer();
+  const { isOpen: drawerIsOpen, onOpen: openDrawer, onClose: closeDrawer } = useDisclosure();
 
-export default Sidebar
+  const shouldShowDrawer = screenSize === 'mobile' || screenSize === 'tablet';
 
+  // For desktop view, show the regular sidebar
+  if (!shouldShowDrawer) {
+    return <SidebarContent />;
+  }
+
+  // For mobile and tablet view, show the drawer and toggle button
+  return (
+    <>
+      <Drawer 
+        isOpen={isCompactSidebarOpen} 
+        onClose={onManageSidebarOpen}
+        placement="left"
+        size={drawerSize}
+        radius="sm"
+      >
+        <DrawerContent>
+          {(onClose) => (
+            <>
+              <DrawerBody className="p-0">
+                <SidebarContent compactMode={true} />
+              </DrawerBody>
+            </>
+          )}
+        </DrawerContent>
+      </Drawer>
+    </>
+  );
+};
+
+export default Sidebar;
