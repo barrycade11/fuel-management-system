@@ -44,6 +44,8 @@ exports.userToJson = (rows) => {
         username: row.username,
         role_id: row.role_id,
         rolename: row.rolename,
+        firstname: row.firstname,
+        lastname: row.lastname,
         permissions: [],
       };
       acc.push(user);

@@ -5,6 +5,8 @@ const pool = require("../Config/Connection");
 const loginSchema = require("./Params/LoginSchema");
 const { createToken, saveToken, userToJson } = require("./AuthService");
 const bcrypt = require('bcryptjs');
+const ChangePasswordSchema = require("./Params/ChangePasswordSchema");
+const ValidateToken = require("../Middleware/TokenValidation");
 
 /**
  * POST /login
@@ -57,6 +59,8 @@ router.post("/login", async (req, res) => {
                 usr.id,
                 usr.username,
                 usr.role_id,
+                usr.firstname,
+                usr.lastname,
                 rl.name as rolename,
                 mdl.id AS moduleid,
                 mdl.name as modulename,
@@ -95,6 +99,73 @@ router.post("/login", async (req, res) => {
     console.error("Error in /login route:", err.message);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
-}); 
+});
+
+
+
+/**
+ * POST /change-password
+ * Handles update of user password.
+ * @async
+ * @function
+ * @param {Object} req - Express request object.
+ * @param {Object} req.body - Incoming request body containing login credentials.
+ * @param {string} req.body.password- 
+ * @param {string} req.body.newPassword- 
+ * @param {string} req.body.confirmPassword- 
+ * @param {Object} res - Express response object.
+ * @returns {Object} JSON response indicating success or failure
+ */
+router.post('/change-password', ValidateToken, async (req, res) => {
+  try {
+    // Validate request body
+    const { error, value } = ChangePasswordSchema.validate(req.body);
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details.map((err) => err.message),
+      });
+    }
+
+    // Fetch user from database
+    const userResult = await pool.query(`
+      SELECT * FROM users WHERE username = $1
+    `, [req.user.username]);
+
+    const user = userResult.rows[0];
+
+    // Check if old password is correct
+    const passwordMatch = await bcrypt.compare(value.password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Incorrect input of old password",
+      });
+    }
+
+    // Hash new password
+    const saltRounds = 8;
+    const hashPassword = await bcrypt.hash(value.newPassword, saltRounds);
+
+    // Update password in database
+    await pool.query(`
+      UPDATE users SET password = $1 WHERE username = $2
+    `, [hashPassword, user.username]);
+
+    return res.status(200).json({
+      succes: true,
+      message: "Successfully updated your password",
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      succes: false,
+      message: error.message,
+    });
+  }
+});
+
 
 module.exports = router;
