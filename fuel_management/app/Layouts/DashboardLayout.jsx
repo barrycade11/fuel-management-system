@@ -1,12 +1,9 @@
-
 import Sidebar from "~/Components/Sidebar";
 import Navbar from "~/Components/Navbar";
 import { Outlet } from "react-router";
 import useToggleDrawer from "~/Hooks/Sidenav/useToggleDrawer";
 import useAuth from "~/Hooks/Auth/useAuth";
-import { useEffect } from "react";
 import { useNavigate } from "react-router";
-import useToggleDrawer from '~/Hooks/Sidenav/useToggleDrawer'
 import { useEffect, useState } from "react";
 
 // Screen size breakpoints
