@@ -49,6 +49,43 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "/change-password",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"password\": \"test123\",\r\n    \"newPassword\": \"password\",\r\n    \"confirmPassword\": \"password\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhosturl}}/Authentication/change-password",
+							"host": [
+								"{{localhosturl}}"
+							],
+							"path": [
+								"Authentication",
+								"change-password"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"description": "/Authentication/login  \nautomatically stored token in the postman environment variables"
