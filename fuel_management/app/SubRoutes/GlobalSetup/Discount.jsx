@@ -94,7 +94,7 @@ const Discount = () => {
   };
 
   const handleEdit = async (discount) => {
-    // console.log(discount);
+    console.log(discount);
     try {
       getDepartments();
 
@@ -254,8 +254,16 @@ const Discount = () => {
     
       return discountLinArray.map(sub => sub.applicability || `ID: ${sub.applicabilityId}`).join(", ");
     },
-    startDate: (item) => formatDate(item),
-    endDate: (item) => formatDate(item),
+    startDate: (item) => {
+      if (!item) return '';
+      const date = new Date(item);
+      return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`;
+    },
+    endDate: (item) => {
+      if (!item) return '';
+      const date = new Date(item);
+      return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`;
+    },
     actions: (item) => (
       <Button 
       onPress={() => handleEdit(item)} 

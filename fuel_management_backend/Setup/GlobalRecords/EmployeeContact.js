@@ -9,7 +9,8 @@ router.get("/employee/:employeeId/contacts", async (req, res) => {
       SELECT      a.id,
                   a.relationshipId,
                   b.name relationship,
-                  a.contactNo,
+                  a.name,
+                  a.contactNo contactNo2,
                   a.details
       FROM        employeeContact a
       INNER JOIN  dropdown b
@@ -32,7 +33,7 @@ router.get("/employee/:employeeId/contacts/:id", async (req, res) => {
       SELECT      a.id,
                   a.relationshipId,
                   b.name relationship,
-                  a.contactNo,
+                  a.contactNo contactNo2,
                   a.details
       FROM        employeeContact a
       INNER JOIN  dropdown b
@@ -54,7 +55,7 @@ router.post("/employee/:employeeId/contact", async (req, res) => {
 
   try {
     const { employeeId } = req.params;
-    const { relationshipId, name, contactNo, details, status } = req.body;
+    const { relationshipId, name, contactNo2, details, status } = req.body;
 
     await client.query("BEGIN");
 
@@ -68,9 +69,9 @@ router.post("/employee/:employeeId/contact", async (req, res) => {
                     details,
                     status
                   )
-      VALUES      ($1, $2, $3, $4, $5)
+      VALUES      ($1, $2, $3, $4, $5, $6)
       RETURNING   id
-    `, [employeeId, relationshipId, name, contactNo, details, status]);
+    `, [employeeId, relationshipId, name, contactNo2, details, status]);
     
     await client.query("COMMIT");
 
@@ -78,6 +79,7 @@ router.post("/employee/:employeeId/contact", async (req, res) => {
   }
   catch (err) {
     await client.query("ROLLBACK");
+    console.log(err)
 
     res.status(500).json({ error: "Database query error" });
   }
@@ -133,6 +135,34 @@ router.delete("/employee/:employeeId/contact/:id", async (req, res) => {
       WHERE       employeeId = $1
                   AND id = $2
     `, [employeeId, id]);
+
+    await client.query("COMMIT");
+
+    res.status(201).json(result.rows);
+  }
+  catch (err) {
+    await client.query("ROLLBACK");
+
+    res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
+  }
+});
+
+router.delete("/employee/:employeeId/delete", async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const { employeeId } = req.params;
+    
+    await client.query("BEGIN")
+    
+    const result = await client.query(`
+      DELETE
+      FROM        employeeContact
+      WHERE       employeeId = $1
+    `, [employeeId]);
 
     await client.query("COMMIT");
 

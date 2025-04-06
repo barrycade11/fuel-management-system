@@ -16,8 +16,7 @@ import {
   fetchEmployeeContactDetails, 
   createEmployeeContact, 
   updateEmployeeContact, 
-  deleteEmployeeContact,
-  deleteEmployeeContactsByEmployeeId
+  deleteEmployeeContact  
 } from "~/Hooks/Setup/GlobalRecords/EmployeeContact/useEmployeeContacts";
 import { 
   fetchEmployeePhotos, 
@@ -40,11 +39,11 @@ import {
   Accordion, 
   AccordionItem,
   DatePicker,
-  Textarea,
-  Spinner
+  Textarea
 } from "@heroui/react";
-import { CalendarDate, parseZonedDateTime, parseAbsolute, parseAbsoluteToLocal } from "@internationalized/date";
+import { CalendarDate, parseAbsoluteToLocal } from '@internationalized/date';
 import { fetchDropdowns, fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
+import { parse } from "path";
 
 const Employee = () => {
   const [relationships, setRelationships] = useState([]); 
@@ -57,7 +56,6 @@ const Employee = () => {
   const [loadingEmployeeContacts, setLoadingEmployeeContacts] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingEmployeeContacts, setIsEditingEmployeeContacts] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
   const [image, setImage] = useState(null);
@@ -105,7 +103,7 @@ const Employee = () => {
 
   useEffect(() => {
     getEmployees();
-  }, []);
+  }, [generatedCode, departments, stations]);
 
   // Departments
   const getDepartments = async () => {
@@ -171,119 +169,62 @@ const Employee = () => {
         contactNo: "",
         email: ""
       });
-      if (!generatedCode) await getGeneratedCode();
-      if (departments.length === 0) await getDepartments();
-      if (stations.length === 0) await getStations();
+      getGeneratedCode();
+      getDepartments();
+      getStations();
       setIsEditing(true);
   };
-
-  useEffect(() => {
-    if (newEmployee.birthDate) {
-      const today = new CalendarDate(
-        new Date().getFullYear(),
-        new Date().getMonth() + 1,
-        new Date().getDate()
-      );
-      
-      let age = today.year - newEmployee.birthDate.year;
-      
-      const hasBirthdayOccurred = 
-        today.month > newEmployee.birthDate.month || 
-        (today.month === newEmployee.birthDate.month && today.day >= newEmployee.birthDate.day);
-      
-      if (!hasBirthdayOccurred) {
-        age--;
-      }
-      
-      // Only update if the age is different to avoid infinite loops
-      if (newEmployee.age !== age) {
-        setNewEmployee(prev => ({
-          ...prev,
-          age: age
-        }));
-      }
-    }
-  }, [newEmployee.birthDate]);
+  
 
   const handleEdit = async (employee) => {
-    // console.log(employee)
-    setIsEditing(true);
-
     try {
       getGeneratedCode();
       getDepartments();
       getStations();
-      
-      const rawContacts = await fetchEmployeeContacts(employee.id);
-      const contacts = rawContacts.map(c => ({
-        ...c,
-        contactNo2: c.contactno2,
-      }));
-
       const [genderData, civilStatusData, provinceData, 
         cityData, barangayData, designationData, employeeStausData
       ] = await Promise.all([
-        fetchDropdownTypeList(4, employee.genderid),
-        fetchDropdownTypeList(5, employee.civilstatusid),
-        fetchDropdownTypeList(14, employee.provinceid),
-        fetchDropdownTypeList(15, employee.cityid),
-        fetchDropdownTypeList(16, employee.barangayid),
-        fetchDropdownTypeList(2, employee.designationid),
-        fetchDropdownTypeList(7, employee.employeestatusid)
+        fetchDropdownTypeList(4, employee.genderId),
+        fetchDropdownTypeList(5, employee.civilStatusId),
+        fetchDropdownTypeList(14, employee.provinceId),
+        fetchDropdownTypeList(15, employee.cityId),
+        fetchDropdownTypeList(16, employee.barangayId),
+        fetchDropdownTypeList(2, employee.designationId),
+        fetchDropdownTypeList(7, employee.statusId),
       ]);
 
       setNewEmployee(prev => ({
         ...prev, 
         ...employee, 
-        firstName: employee.firstname,
-        middleName: employee.middlename,
-        lastName: employee.lastname,
-        genderId: employee.genderid,
-        civilStatusId: employee.civilstatusid,
-        provinceId: employee.provinceid,
-        cityId: employee.cityid,
-        barangayId: employee.barangayid,
-        stationId: employee.stationid,
-        departmentId: employee.departmentid,
-        designationId: employee.designationid,
-        employeeStatusId: employee.employeestatusid,
-        contactNo: employee.contactno,
-        birthDate: parseAbsoluteToLocal(employee.birthdate),
-        dateHired: parseAbsoluteToLocal(employee.datehired),
-        employeeContacts: contacts
+        birthDate: parseAbsoluteToLocal(employee.birthDate),
+        dateHired: parseAbsoluteToLocal(employee.dateHired)
       }));
 
-      // console.log(contacts)
-
-      if (contacts && contacts.length > 0) {
-        // Fetch relationship names for each contact
-        const contactsWithRelationships = await Promise.all(
-          contacts.map(async (contact) => {
-            try {
-              const relationshipData = await fetchDropdownTypeList(6, contact.relationshipid);
-              return {
-                ...contact,
-                relationshipId: Number(contact.relationshipid),
-                relationship: relationshipData?.[0]?.name || "Unknown"
-              };
-            } catch (error) {
-              console.error("Error fetching relationship data:", error);
-              return {
-                ...contact,
-                relationshipId: Number(contact.relationshipid),
-                relationship: "Unknown"
-              };
-            }
-          })
-        );
-        
-        setEmployeeContacts(contactsWithRelationships);
-      } else {
-        setEmployeeContacts([]);
-      }
+      // setNewEmployee({
+      //   code: employee.code,
+      //   firstName: employee.firstName,
+      //   middleName: employee.middleName,
+      //   lastName: employee.lastName,
+      //   birthDate: employee.birthDate ? new Date(employee.birthDate) : null,
+      //   age: employee.age || "",
+      //   genderId: employee.genderId,
+      //   civilStatusId: employee.civilStatusId,
+      //   address: employee.address,
+      //   provinceId: employee.provinceId,
+      //   cityId: employee.cityId,
+      //   barangayId: employee.barangayId,
+      //   dateHired: employee.dateHired ? new Date(employee.dateHired) : null,
+      //   stationId: employee.stationId,
+      //   departmentId: employee.departmentId,
+      //   designationId: employee.designationId,
+      //   employeeStatusId: employee.employeeStatusId,
+      //   contactNo: employee.contactNo,
+      //   email: employee.email
+      // });
   
+      setIsEditing(true);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error fetching employee data:", error);
     }
   };
 
@@ -300,9 +241,6 @@ const Employee = () => {
     }
     // console.log(newEmployee)
 
-    if (isSaving) return;
-    setIsSaving(true);
-
     const formatDate = (dateObj) => {
       if (!dateObj || !dateObj.year || !dateObj.month || !dateObj.day) return null;
       return `${dateObj.year}-${String(dateObj.month).padStart(2, "0")}-${String(dateObj.day).padStart(2, "0")}`;
@@ -312,14 +250,14 @@ const Employee = () => {
       firstName: newEmployee.firstName,
       middleName: newEmployee.middleName,
       lastName: newEmployee.lastName,
-      birthdate: formatDate(newEmployee.birthDate),
+      birthDate: formatDate(newEmployee.birthDate),
       genderId: parseInt(newEmployee.genderId, 10), 
       civilStatusId: parseInt(newEmployee.civilStatusId, 10),
       address: newEmployee.address, 
       provinceId: parseInt(newEmployee.provinceId, 10),
       cityId: parseInt(newEmployee.cityId, 10),
       barangayId: parseInt(newEmployee.barangayId, 10),
-      datehired: formatDate(newEmployee.dateHired), 
+      dateHired: formatDate(newEmployee.dateHired), 
       stationId: parseInt(newEmployee.stationId, 10),
       departmentId: parseInt(newEmployee.departmentId, 10),
       designationId: parseInt(newEmployee.designationId, 10),
@@ -334,7 +272,7 @@ const Employee = () => {
         let employeeId;
 
         if (newEmployee.id) {
-            await updateEmployee(newEmployee.id, payload);
+            await updateEmployee(newEmployee.id, newEmployee);
             employeeId = newEmployee.id;
         } else {
             const response = await createEmployee(payload);
@@ -342,19 +280,22 @@ const Employee = () => {
             setEmployees([...employees, response]); 
         }
 
-        // console.log(employeeId)
-        // console.log(employeeContacts)
+        // if (employeeId) {
+        //     await createEmployeeContact(employeeId, employeeContacts);
+        // }
 
-        if (employeeId && Array.isArray(employeeContacts)) {
-          await deleteEmployeeContactsByEmployeeId(employeeId);
-        
-          if (employeeContacts.length > 0) {
-            await Promise.all(
-              employeeContacts.map(contact => createEmployeeContact(employeeId, contact))
-            );
-          }
-        }
-        
+
+        // if (savedEmployee?.id) {
+
+        //   const contactsWithEmployeeId = employeeContacts.map(contact => ({
+        //       ...contact,
+        //       employeeId: savedEmployee.id
+        //   }));
+
+        //   console.log(contactsWithEmployeeId)
+          // console.log(employeeContacts)
+          // await createEmployeeContact(20, employeeContacts);
+        // }
 
         setIsEditing(false);
         setNotification({ message: "Save successful", type: "success" });
@@ -363,8 +304,6 @@ const Employee = () => {
     } catch (error) {
         setNotification({ message: "Error saving data", type: "error" });
         console.error("Error saving data:", error);
-    } finally {
-      setIsSaving(false); 
     }
   };
 
@@ -396,42 +335,20 @@ const Employee = () => {
     }));
   };
 
-  const formatDate = (dateObj) => {
-    if (!dateObj || !dateObj.year || !dateObj.month || !dateObj.day) return null;
-    return `${dateObj.year}-${String(dateObj.month).padStart(2, "0")}-${String(dateObj.day).padStart(2, "0")}`;
-  };
-  
   const columns = [
     { key: "id", label: "No.", hidden: true },
     { key: "code", label: "Employee Code", hidden: false },
-    { key: "fullname", label: "Employee Name", hidden: false },
-    { key: "birthdate", label: "Birth Date", hidden: true },
-    { key: "gender", label: "Gender", hidden: true },
-    { key: "civilstatus", label: "Civil Status", hidden: true },
-    { key: "address", label: "Address", hidden: true },
-    { key: "province", label: "Province", hidden: true },
-    { key: "city", label: "City", hidden: true },
-    { key: "barangay", label: "Barangay", hidden: true },
-    { key: "datehired", label: "Date Hired", hidden: true },
-    { key: "station", label: "Station", hidden: true },
+    { key: "firstName", label: "Employee Name", hidden: false },
+    { key: "middleName", label: "Employee Name", hidden: false },
+    { key: "lastName", label: "Employee Name", hidden: false },
     { key: "department", label: "Department", hidden: false },
     { key: "designation", label: "Designation", hidden: false },
-    { key: "employeestatus", label: "Employee Status", hidden: true },
-    { key: "contactno", label: "Contact No.", hidden: true },
-    { key: "email", label: "Email", hidden: true }
+    { key: "contactNo", label: "Contact No.", hidden: false },
+    { key: "email", label: "Email", hidden: false },
+    { key: "employeeStatus", label: "Employee Status", hidden: false }
   ];
 
   const customRender = {
-    birthdate: (item) => {
-      if (!item) return '';
-      const date = new Date(item);
-      return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`;
-    },
-    datehired: (item) => {
-      if (!item) return '';
-      const date = new Date(item);
-      return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`;
-    },
     actions: (item) => (
       <button
         onClick={() => handleEdit(item)} 
@@ -453,7 +370,6 @@ const Employee = () => {
   };
 
   const getEmployeeContacts = async () => {
-    // console.log(employees)
     if (!employees.id) {
       // console.log("Employee ID is not available, skipping fetch for contacts.");
       setLoadingEmployeeContacts(false); 
@@ -508,11 +424,9 @@ const Employee = () => {
     setNewEmployeeContacts(prev => ({
         ...prev,
         ...employeeContact,
-        contactno2: employeeContact.contactNo, 
         relationshipId: Number(employeeContact.relationshipId), 
         relationship: relationships.find(r => r.id === Number(employeeContact.relationshipId))?.name || "Loading...",
     }));
-    console.log(employeeContact)
 
     try {
         const relationshipData = await fetchDropdownTypeList(6, employeeContact.relationshipId);
@@ -547,11 +461,7 @@ const Employee = () => {
 
         updatedContacts = updatedContacts.map(contact =>
           contact.id === newEmployeeContacts.id
-            ? { ...newEmployeeContacts, 
-              relationship: relationshipName,
-              contactno2: newEmployeeContacts.contactNo2
-              
-            }
+            ? { ...newEmployeeContacts, relationship: relationshipName }
             : contact
         );
       } else {
@@ -563,8 +473,7 @@ const Employee = () => {
           ...newEmployeeContacts, 
           id: tempId, 
           relationshipId: parseInt(newEmployeeContacts.relationshipId, 10),
-          relationship: relationshipName,
-          contactno2: newEmployeeContacts.contactNo2
+          relationship: relationshipName  
         };
 
         updatedContacts = [...updatedContacts, newContact];
@@ -609,10 +518,10 @@ const Employee = () => {
   };
 
   const employeeContactsColumns = [
-    // { key: "id", label: "No.", hidden: true },
+    { key: "id", label: "No.", hidden: true },
     { key: "relationship", label: "Relationship to Employee", hidden: false },
     { key: "name", label: "Name", hidden: false },
-    { key: "contactno2", label: "Contact No.", hidden: false }, 
+    { key: "contactNo", label: "Contact No.", hidden: false }, 
     { key: "details", label: "Details", hidden: true },
   ];
 
@@ -717,25 +626,29 @@ const Employee = () => {
                   isRequired 
                   label="Date of Birth" 
                   placeholder="Pick a date" 
-                  granularity="day"
                   value={newEmployee.birthDate} 
                   onChange={(date) => {
+                    // Calculate age based on the selected date using @internationalized/date
                     const today = new CalendarDate(
                       new Date().getFullYear(),
                       new Date().getMonth() + 1,
                       new Date().getDate()
                     );
                     
+                    // Get years difference
                     let age = today.year - date.year;
                     
+                    // Check if birthday has occurred this year
                     const hasBirthdayOccurred = 
                       today.month > date.month || 
                       (today.month === date.month && today.day >= date.day);
                     
+                    // Adjust age if birthday hasn't occurred yet this year
                     if (!hasBirthdayOccurred) {
                       age--;
                     }
                     
+                    // Update both birthDate and age in the state
                     setNewEmployee({ 
                       ...newEmployee, 
                       birthDate: date,
@@ -814,7 +727,6 @@ const Employee = () => {
                   isRequired 
                   label="Date Hired" 
                   placeholder="Pick a date" 
-                  granularity="day"
                   value={newEmployee.dateHired} 
                   onChange={(date) => setNewEmployee({ ...newEmployee, dateHired: date })}
                   className="max-w-[284px]"
@@ -912,8 +824,8 @@ const Employee = () => {
                     className="w-full mb-2" 
                     label="Contact No." 
                     placeholder="Enter contact no." 
-                    value={newEmployeeContacts.contactNo2}
-                    onChange={(e) => setNewEmployeeContacts({ ...newEmployeeContacts, contactNo2: e.target.value })}
+                    value={newEmployeeContacts.contactNo}
+                    onChange={(e) => setNewEmployeeContacts({ ...newEmployeeContacts, contactNo: e.target.value })}
                     isRequired
                   />
                   <Textarea 
@@ -973,20 +885,9 @@ const Employee = () => {
             ) : (
               <div></div> 
             )}
-            <Button 
-              onClick={handleSave} 
-              disabled={isSaving} 
-              isLoading={isSaving}
-              spinner={<Spinner size="sm" variant="wave" color="default" />}
-              spinnerPlacement="end"
-              color="primary"
-              className="w-min rounded-md font-semibold text-base text-white"
-            >
-              {isSaving ? "Saving" : "Save"}
-            </Button>
-            {/* <Button onClick={handleSave} color="primary" className="w-min rounded-md font-semibold text-base text-white">
+            <Button onClick={handleSave} color="primary" className="w-min rounded-md font-semibold text-base text-white">
                 Save
-            </Button> */}
+            </Button>
             <Button className="w-min rounded-md font-semibold text-base text-blue-600 bg-blue-200">
                 View History
             </Button>
