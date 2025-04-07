@@ -18,6 +18,7 @@ import {
   X
 } from 'lucide-react'
 import useToggleDrawer from '~/Hooks/Sidenav/useToggleDrawer'
+import useAuth from '~/Hooks/Auth/useAuth';
 import { useLocation, useNavigate, NavLink } from 'react-router';
 import StringRoutes from '~/Constants/StringRoutes';
 import { 
@@ -120,6 +121,17 @@ const NavItem = ({ icon, text, active = false, indented = false, url = "" }) => 
 
 const AdminNavItem = () => {
   const { isOpen } = useToggleDrawer();
+  const { user, onSetClearToken } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    navigate('/')
+    onSetClearToken();
+  }
+
+  const handleChangePassword = () => {
+    navigate(StringRoutes.changePassword);
+  }
 
   return (
     <Dropdown>
@@ -136,7 +148,7 @@ const AdminNavItem = () => {
             }}
           >
             <div className="flex items-center">
-              <span className="font-medium text-gray-700">Alice Feeney</span>
+              <span className="font-medium text-gray-700">{user.firstname + ' ' + user.lastname}</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-4 w-4 ml-1"
@@ -152,13 +164,13 @@ const AdminNavItem = () => {
                 />
               </svg>
             </div>
-            <p className="text-xs text-gray-600">Admin</p>
+            <p className="text-xs text-gray-600">{user.rolename}</p>
           </div>
         </li>
       </DropdownTrigger>
-      <DropdownMenu aria-label="Static Actions">
-        <DropdownItem key="new">Logout</DropdownItem>
-        <DropdownItem key="copy">Change Password</DropdownItem>
+      <DropdownMenu  aria-label="Static Actions">
+        <DropdownItem onPress={handleLogout} key="new">Logout</DropdownItem>
+        <DropdownItem onPress={handleChangePassword}>Change Password</DropdownItem>
       </DropdownMenu>
     </Dropdown>
   )

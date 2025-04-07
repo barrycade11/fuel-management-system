@@ -2,6 +2,9 @@
  * A class that provides string routes and utility methods for route management.
  */
 class StringRoutes {
+
+  static changePassword = '/change-password';
+
   static dev = 'dev';
   static dashboard = 'dashboard';
   static salesTransactions = 'sales-transactions';

@@ -8,6 +8,7 @@ export default [
     */
 
   index("./Pages/Login/index.jsx"),
+  route(StringRoutes.changePassword, "./SubRoutes/Auth/ChangePassword.jsx"),
 
   layout("./Layouts/DashboardLayout.jsx", [
     //initial dashboard page

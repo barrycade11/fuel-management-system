@@ -1,7 +1,9 @@
 import Sidebar from "~/Components/Sidebar";
 import Navbar from "~/Components/Navbar";
 import { Outlet } from "react-router";
-import useToggleDrawer from '~/Hooks/Sidenav/useToggleDrawer'
+import useToggleDrawer from "~/Hooks/Sidenav/useToggleDrawer";
+import useAuth from "~/Hooks/Auth/useAuth";
+import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 
 // Screen size breakpoints
@@ -10,11 +12,21 @@ const BREAKPOINTS = {
   TABLET: 1024   // Tablets and smaller laptops
 };
 
-//layout for the whole admin dashboard
+// Layout for the admin dashboard
 const DashboardLayout = () => {
+  const { token } = useAuth();
+  const navigate = useNavigate();
   const { isOpen, onManageScreenSize } = useToggleDrawer();
   const [screenSize, setScreenSize] = useState('desktop');
   const [drawerSize, setDrawerSize] = useState("md");
+
+  // Redirect to home if token is present
+  useEffect(() => {
+    if (token === null) {
+      navigate("/");
+    }
+  }, [token, navigate]); // Added useEffect for better navigation handling
+
   // Check screen size and set appropriate view mode
   useEffect(() => {
     const checkScreenSize = () => {
@@ -48,7 +60,8 @@ const DashboardLayout = () => {
         <Outlet />
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default DashboardLayout;
+

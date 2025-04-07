@@ -6,12 +6,14 @@ const useAuth = create(
     (set, get) => ({
       token: null,
       user: null,
+      onSetClearToken: () => {
+        set({ token: null });
+      },
       onSetUserDetails: (data, token = null) => {
         set({
           token: token,
           user: data
         })
-        console.log(get().user);
       },
     }),
     {

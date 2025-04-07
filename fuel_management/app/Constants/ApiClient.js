@@ -16,4 +16,21 @@ const apiClient = axios.create({
   },
 });
 
+apiClient.interceptors.request.use(
+  (config) => {
+    const { token } = useAuth.getState();
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => {
+    console.error("Error in request interceptor:", error);
+    return Promise.reject(error);
+  }
+);
+
 export { apiClient };
+
