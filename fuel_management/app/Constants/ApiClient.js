@@ -14,3 +14,4 @@ const apiClient = axios.create({
   },
 });
 
+export { apiClient };
