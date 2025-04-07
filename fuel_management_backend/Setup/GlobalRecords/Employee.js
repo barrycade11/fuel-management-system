@@ -60,7 +60,7 @@ router.get("/employees", async (req, res) => {
                   a.employeeStatusId,
                   j.name employeeStatus,
                   a.contactNo,
-                  a.email
+                  a.email 
       FROM        employee a
       INNER JOIN  dropdown b
               ON  a.genderId = b.id
