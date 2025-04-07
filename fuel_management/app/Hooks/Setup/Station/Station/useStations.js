@@ -1,13 +1,15 @@
 import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
+import { useQuery } from "@tanstack/react-query";
 
-export const fetchStations = async () => {
-    try {
-        const response = await apiClient.get(`${endPoints.GlobalRecords}/Stations`);
+const useFetchStations = () => {
+  return useQuery({
+    queryKey: ['stations'],
+    queryFn: async () => {
+      const response = await apiClient.get(`${endPoints.Station}/stations`);
+      return response.data;
+    }
+  })
+}
 
-        return response.data;
-    }
-    catch (error) {
-        throw error;
-    }
-};
+export default useFetchStations;

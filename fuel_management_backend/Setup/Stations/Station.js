@@ -62,11 +62,15 @@ router.get("/stations", async (req, res) => {
               ON  a.barangayId = d.id
                   AND d.dropdownTypeId = 16
     `);
-    res.status(201).json(result.rows);
+    return res.status(201).json({
+      success: true,
+      message: "Successfully fetched stations",
+      body: result.rows,
+    });
   }
   catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Database query error" });
+    return res.status(500).json({ success: false, message: "Database query error" });
+    // res.status(500).json({ error: "Database query error" });
   }
 });
 

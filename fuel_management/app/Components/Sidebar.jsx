@@ -15,19 +15,20 @@ import {
   ChevronUp,
   Users,
   Menu,
-  X
+  X,
+  UsersIcon
 } from 'lucide-react'
 import useToggleDrawer from '~/Hooks/Sidenav/useToggleDrawer'
 import useAuth from '~/Hooks/Auth/useAuth';
 import { useLocation, useNavigate, NavLink } from 'react-router';
 import StringRoutes from '~/Constants/StringRoutes';
-import { 
-  Dropdown, 
-  DropdownTrigger, 
-  DropdownMenu, 
-  DropdownItem, 
-  Button, 
-  useToast, 
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Button,
+  useToast,
   Drawer,
   DrawerContent,
   DrawerHeader,
@@ -43,20 +44,20 @@ const NavItemWithDropdown = ({
   children
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const { isOpen }  = useToggleDrawer(); 
-  const stringRoutes = new StringRoutes(); 
+  const { isOpen } = useToggleDrawer();
+  const stringRoutes = new StringRoutes();
   const { pathname } = useLocation()
 
   const toggleDropdown = () => {
     setDropdownOpen(state => !state);
-  } 
+  }
 
   return (
-    <li className='flex flex-col '>
+    <li className='flex flex-col py-1 '>
       <NavLink
         to={'#'}
         className={({ isActive }) =>
-          `px-4 py-2 flex flex-row items-center text-gray-800 cursor-pointer ${stringRoutes.getRootRoute(pathname).includes(StringRoutes.settings)? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-blue-50'}`
+          `px-4 py-2 flex flex-row items-center text-gray-800 cursor-pointer ${stringRoutes.getRootRoute(pathname).includes(StringRoutes.settings) ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-blue-50'}`
         }
         onClick={toggleDropdown}
       >
@@ -168,7 +169,7 @@ const AdminNavItem = () => {
           </div>
         </li>
       </DropdownTrigger>
-      <DropdownMenu  aria-label="Static Actions">
+      <DropdownMenu aria-label="Static Actions">
         <DropdownItem onPress={handleLogout} key="new">Logout</DropdownItem>
         <DropdownItem onPress={handleChangePassword}>Change Password</DropdownItem>
       </DropdownMenu>
@@ -178,7 +179,7 @@ const AdminNavItem = () => {
 
 const SidebarContent = ({ compactMode = false }) => {
   const { isOpen, toggleDrawer } = useToggleDrawer();
-  
+
   // Force isOpen to true when in compact mode (for drawer view)
   const displayOpen = compactMode ? true : isOpen;
 
@@ -239,7 +240,7 @@ const SidebarContent = ({ compactMode = false }) => {
 
         <ul>
           <NavItemWithDropdown
-            hdrIcon={<SettingsIcon size={18} />}
+            hdrIcon={<UsersIcon size={18} />}
             text='Settings'
           >
             <NavLink
@@ -248,18 +249,44 @@ const SidebarContent = ({ compactMode = false }) => {
               <span className='mr-3'>
                 <Users size={18} />
               </span>
-              <span>
+              <span className='text-sm text-default-600'>
                 Users
               </span>
             </NavLink>
           </NavItemWithDropdown>
+
+          <NavItemWithDropdown
+            text="Setup"
+            hdrIcon={<SettingsIcon color='black' size={18} />}>
+            <NavLink
+              to={StringRoutes.stationList}
+              className='flex items-center py-2 '>
+              <span className='mr-3'>
+                <Users size={18} />
+              </span>
+              <span className='text-sm text-default-600'>
+                Stations
+              </span>
+            </NavLink>
+            <NavLink
+              to={null}
+              className='flex items-center py-2'>
+              <span className='mr-3'>
+                <Users size={18} />
+              </span>
+              <span className='text-sm text-default-600'>
+                Global Records
+              </span>
+            </NavLink>
+          </NavItemWithDropdown>
+
         </ul>
       </nav>
     </div>
   );
 };
 
-const Sidebar = ({ screenSize = "desktop", drawerSize = "md"}) => {
+const Sidebar = ({ screenSize = "desktop", drawerSize = "md" }) => {
   const { isOpen, toggleDrawer, isCompactSidebarOpen, onManageSidebarOpen } = useToggleDrawer();
   const { isOpen: drawerIsOpen, onOpen: openDrawer, onClose: closeDrawer } = useDisclosure();
 
@@ -273,8 +300,8 @@ const Sidebar = ({ screenSize = "desktop", drawerSize = "md"}) => {
   // For mobile and tablet view, show the drawer and toggle button
   return (
     <>
-      <Drawer 
-        isOpen={isCompactSidebarOpen} 
+      <Drawer
+        isOpen={isCompactSidebarOpen}
         onClose={onManageSidebarOpen}
         placement="left"
         size={drawerSize}
