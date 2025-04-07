@@ -56,10 +56,22 @@ const deleteEmployeeContact = async (employeeId, id) => {
     }
 };
 
+const deleteEmployeeContactsByEmployeeId = async (employeeId) => {
+    try {
+        const response = await apiClient.delete(`${endPoints.GlobalRecords}/Employee/${employeeId}/delete`);
+
+        return response.data;
+    }
+    catch (error) {
+        throw error;
+    }
+};
+
 export { 
     fetchEmployeeContacts, 
     fetchEmployeeContactDetails, 
     createEmployeeContact, 
     updateEmployeeContact, 
-    deleteEmployeeContact 
+    deleteEmployeeContact,
+    deleteEmployeeContactsByEmployeeId 
 };

@@ -34,6 +34,17 @@ const createEmployee = async (data) => {
     }
 };
 
+const generateEmployeeCode = async () => {
+    try {
+        const response = await apiClient.get(`${endPoints.GlobalRecords}/Employee/generate-emp-code/`);
+
+        return response.data;
+    }
+    catch (error) {
+        throw error;
+    }
+}
+
 const updateEmployee = async (id, data) => {
     try {
         const response = await apiClient.put(`${endPoints.GlobalRecords}/Employee/${id}`, data);
@@ -60,6 +71,7 @@ export {
     fetchEmployees, 
     fetchEmployeeDetails, 
     createEmployee, 
+    generateEmployeeCode, 
     updateEmployee, 
     deleteEmployee 
 };
