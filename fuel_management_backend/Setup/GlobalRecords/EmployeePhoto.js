@@ -1,6 +1,23 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../../Config/Connection");
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); 
+  },
+  filename: (req, file, cb) => {
+    const fileName = `EMP-${req.params.employeeId}${path.extname(file.originalname)}`;
+    cb(null, fileName); 
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, 
+}).single('photo');
 
 router.get("/employee/:employeeId/photo", async (req, res) => {
   try {
@@ -37,12 +54,21 @@ router.get("/employee/:employeeId/photo/:id", async (req, res) => {
   }
 });
 
-router.post("/employee/:employeeId/photo", async (req, res) => {
+router.post("/employee/:employeeId/photo", upload, async (req, res) => {
   const client = await pool.connect();
 
+  const { employeeId } = req.params;
+  const { file } = req;
+
+  if (!file) {
+    return res.status(400).json({ message: "No file uploaded" });
+  }
+
   try {
-    const { employeeId } = req.params;
-    const { photo } = req.body;
+    // const { employeeId } = req.params;
+    // const { file } = req;
+
+    const photoPath = file.path;
 
     await client.query("BEGIN");
 
@@ -54,7 +80,7 @@ router.post("/employee/:employeeId/photo", async (req, res) => {
                   )
       VALUES      ($1, $2)
       RETURNING   id
-    `, [employeeId, photo]);
+    `, [employeeId, photoPath]);
     
     await client.query("COMMIT");
 
@@ -62,7 +88,7 @@ router.post("/employee/:employeeId/photo", async (req, res) => {
   }
   catch (err) {
     await client.query("ROLLBACK");
-
+    console.log(err)
     res.status(500).json({ error: "Database query error" });
   }
   finally {
@@ -70,12 +96,15 @@ router.post("/employee/:employeeId/photo", async (req, res) => {
   }
 });
 
-router.put("/employee/:employeeId/photo/:id", async (req, res) => {
+router.put("/employee/:employeeId/photo/:id", upload, async (req, res) => {
   const client = await pool.connect();
 
   try {
     const { employeeId, id } = req.params;
-    const { photo } = req.body;
+    const { file } = req;
+
+    const photoPath = file.path;
+
     
     await client.query("BEGIN")
     
@@ -84,7 +113,7 @@ router.put("/employee/:employeeId/photo/:id", async (req, res) => {
       SET         photo = $3
       WHERE       employeeId = $1
                   AND id = $2
-    `, [employeeId, id, photo]);
+    `, [employeeId, id, photoPath]);
 
     await client.query("COMMIT");
 

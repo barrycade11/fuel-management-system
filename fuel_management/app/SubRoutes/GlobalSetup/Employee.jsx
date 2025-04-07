@@ -61,6 +61,7 @@ const Employee = () => {
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
   const [image, setImage] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [newEmployee, setNewEmployee] = useState({  
     code: generatedCode.code, 
     firstName: "",
@@ -82,11 +83,7 @@ const Employee = () => {
     contactNo: "", 
     email: ""
   });
-  const [newEmployeeContacts, setNewEmployeeContacts] = useState({  
-    code: generatedCode.code, 
-    firstName: "",
-    middleName: "",
-  });
+  const [newEmployeeContacts, setNewEmployeeContacts] = useState([]);
 
   // Employees 
   const getEmployees = async () => {
@@ -137,44 +134,49 @@ const Employee = () => {
 
   // Generated code
   const getGeneratedCode = async () => {
-    setLoading(true);
     try {
-        const data = await generateEmployeeCode();
-        // console.log(data);
-
-        setGeneratedCode(data);
+      const data = await generateEmployeeCode(); 
+  
+      setGeneratedCode(data); 
+      return data; 
     } catch (error) {
-        console.error("Error fetching data:", error);
-    } finally {
-        setLoading(false);
+      console.error("Error generating code:", error);
+      return null;
     }
-  }
+  };
 
   const handleAdd = async () => {
-      setNewEmployee({
-        code: generatedCode.code, 
-        middleName: "",
-        lastName: "",
-        birthDate: null,
-        age: "",
-        genderId: "",
-        civilStatusId: "",
-        address: "",
-        provinceId: "",
-        cityId: "",
-        barangayId: "",
-        dateHired: null,
-        stationId: "",
-        departmentId: "",
-        designationId: "",
-        employeeStatusId: "",
-        contactNo: "",
-        email: ""
-      });
-      if (!generatedCode) await getGeneratedCode();
-      if (departments.length === 0) await getDepartments();
-      if (stations.length === 0) await getStations();
-      setIsEditing(true);
+    let codeData = generatedCode;
+
+    if (!codeData || !codeData.code) {
+      codeData = await getGeneratedCode();
+    }
+  
+    setNewEmployee({
+      code: codeData.code,
+      middleName: "",
+      lastName: "",
+      birthDate: null,
+      age: "",
+      genderId: "",
+      civilStatusId: "",
+      address: "",
+      provinceId: "",
+      cityId: "",
+      barangayId: "",
+      dateHired: null,
+      stationId: "",
+      departmentId: "",
+      designationId: "",
+      employeeStatusId: "",
+      contactNo: "",
+      email: ""
+    });
+  
+    if (departments.length === 0) await getDepartments();
+    if (stations.length === 0) await getStations();
+    
+    setIsEditing(true);
   };
 
   useEffect(() => {
@@ -220,6 +222,10 @@ const Employee = () => {
         contactNo2: c.contactno2,
       }));
 
+      const employeePhotos = await fetchEmployeePhotos(employee.id);
+      const mainPhoto = employeePhotos[0] ? employeePhotos[0].photo : null;
+      const photoId = employeePhotos[0] ? employeePhotos[0].id : null;
+
       const [genderData, civilStatusData, provinceData, 
         cityData, barangayData, designationData, employeeStausData
       ] = await Promise.all([
@@ -250,9 +256,19 @@ const Employee = () => {
         contactNo: employee.contactno,
         birthDate: parseAbsoluteToLocal(employee.birthdate),
         dateHired: parseAbsoluteToLocal(employee.datehired),
-        employeeContacts: contacts
+        employeeContacts: contacts,
+        photo: mainPhoto, 
+        photoId: photoId
       }));
 
+      if (mainPhoto) {
+        const fixedPath = mainPhoto.replace(/\\/g, '/');
+        setImage(`http://localhost:5000/global-setup/${fixedPath}`);
+        setImageFile(mainPhoto);
+      } else {
+        setImage(null); 
+      }
+      
       // console.log(contacts)
 
       if (contacts && contacts.length > 0) {
@@ -298,6 +314,12 @@ const Employee = () => {
         setNotification({ message: "All fields are required.", type: "error" });
         return;
     }
+
+    if (!imageFile && !image) {
+      setNotification({ message: "Please upload a photo.", type: "error" });
+      return;
+    }
+
     // console.log(newEmployee)
 
     if (isSaving) return;
@@ -325,21 +347,34 @@ const Employee = () => {
       designationId: parseInt(newEmployee.designationId, 10),
       employeeStatusId: parseInt(newEmployee.employeeStatusId, 10),
       contactNo: newEmployee.contactNo,
-      email: newEmployee.email
+      email: newEmployee.email,
+      id: newEmployee.photoId,
+      photo: imageFile.mainPhoto
     };
 
-    console.log(payload)
+    // console.log(payload)
+
+    const formData = new FormData();
+    formData.append("photo", imageFile);
 
     try {        
         let employeeId;
 
+        // console.log(imageFile)
+
         if (newEmployee.id) {
             await updateEmployee(newEmployee.id, payload);
             employeeId = newEmployee.id;
+            console.log(employeeId)
+            console.log(newEmployee.photoId)
+            await updateEmployeePhoto(employeeId, newEmployee.photoId, formData); 
+            
         } else {
             const response = await createEmployee(payload);
             employeeId = response.id; 
             setEmployees([...employees, response]); 
+                
+            await createEmployeePhoto(employeeId, formData); 
         }
 
         // console.log(employeeId)
@@ -354,7 +389,11 @@ const Employee = () => {
             );
           }
         }
-        
+
+        // if (imageFile && employeeId) {
+        //   const response = await createEmployeePhoto(employeeId, formData); 
+        //   console.log(response);
+        // }
 
         setIsEditing(false);
         setNotification({ message: "Save successful", type: "success" });
@@ -631,9 +670,10 @@ const Employee = () => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImage(URL.createObjectURL(file));
+      setImageFile(file); 
+      setImage(URL.createObjectURL(file)); 
     }
-  };
+  }
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
@@ -661,12 +701,20 @@ const Employee = () => {
                     <span className="text-gray-500 text-sm">No Image</span>
                   )}
                 </div>
-                <Input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" id="upload" />
+
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="upload"
+                />
+
                 <label
                   htmlFor="upload"
                   className="px-3 py-1 bg-gray-100 text-[blue] rounded cursor-pointer text-sm"
                 >
-                  Select image...
+                  {image ? 'Change image...' : 'Select image...'}
                 </label>
                 
               </div>
@@ -984,9 +1032,6 @@ const Employee = () => {
             >
               {isSaving ? "Saving" : "Save"}
             </Button>
-            {/* <Button onClick={handleSave} color="primary" className="w-min rounded-md font-semibold text-base text-white">
-                Save
-            </Button> */}
             <Button className="w-min rounded-md font-semibold text-base text-blue-600 bg-blue-200">
                 View History
             </Button>
