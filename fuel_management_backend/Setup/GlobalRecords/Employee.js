@@ -2,15 +2,42 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../../Config/Connection");
 
+router.get("/employee/generate-emp-code", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT code FROM employee
+      WHERE code LIKE 'EMP-%'
+      ORDER BY id DESC
+      LIMIT 1
+    `);
+
+    let newCode = "EMP-00001"; 
+
+    if (result.rows.length > 0) {
+      const lastCode = result.rows[0].code; 
+      const lastNumber = parseInt(lastCode.split('-')[1], 10);
+      const nextNumber = lastNumber + 1;
+
+      newCode = `EMP-${nextNumber.toString().padStart(5, '0')}`;
+    }
+
+    res.status(200).json({ code: newCode });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database query error" });
+  }
+});
+
 router.get("/employees", async (req, res) => {
   try {
-    const { typeId } = req.params;
+    // const { typeId } = req.params;
     const result = await pool.query(`
       SELECT      a.id,
                   a.code,
                   a.firstName,
                   a.middleName, 
                   a.lastName,
+                  CONCAT_WS(' ', a.firstName, a.middleName, a.lastName) AS fullName,
                   a.birthDate,
                   a.genderId,
                   b.name gender,
@@ -33,7 +60,7 @@ router.get("/employees", async (req, res) => {
                   a.employeeStatusId,
                   j.name employeeStatus,
                   a.contactNo,
-                  a.email
+                  a.email 
       FROM        employee a
       INNER JOIN  dropdown b
               ON  a.genderId = b.id
@@ -50,9 +77,9 @@ router.get("/employees", async (req, res) => {
       INNER JOIN  dropdown f
               ON  a.barangayId = f.id
                   AND f.dropdownTypeId = 16
-      INNER JOIN  stationHdr g
+      INNER JOIN  station g
               ON  a.stationId = g.id
-      INNER JOIN  departmentHdr h
+      INNER JOIN  departmenthdr h
               ON  a.departmentId = h.id
       INNER JOIN  dropdown i
               ON  a.designationId = i.id
@@ -60,7 +87,8 @@ router.get("/employees", async (req, res) => {
       INNER JOIN  dropdown j
               ON  a.employeeStatusId = j.id
                   AND j.dropdownTypeId = 7
-    `, [typeId]);
+    `);
+    // console.log(result.rows);
     res.status(201).json(result.rows);
   }
   catch (err) {
@@ -71,7 +99,7 @@ router.get("/employees", async (req, res) => {
 
 router.get("/employees/:id", async (req, res) => {
   try {
-    const { typeId, id } = req.params;
+    const { id } = req.params;
     const result = await pool.query(`
       SELECT      a.id,
                   a.code,
@@ -141,9 +169,25 @@ router.post("/employee", async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { code, firstName, middleName, lastName, birthDate, genderId, civilStatusId, address, provinceId, cityId, barangayId, dateHired, stationId, departmentId, designationId, employeeStatusId, contactNo, email } = req.body;
+    const { firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email } = req.body;
     
     await client.query("BEGIN");
+
+    const codeResult = await client.query(`
+      SELECT code FROM employee
+      WHERE code LIKE 'EMP-%'
+      ORDER BY id DESC
+      LIMIT 1
+    `);
+
+    let newCode = "EMP-00001";
+
+    if (codeResult.rows.length > 0) {
+      const lastCode = codeResult.rows[0].code; 
+      const lastNumber = parseInt(lastCode.split('-')[1], 10);
+      const nextNumber = lastNumber + 1;
+      newCode = `EMP-${nextNumber.toString().padStart(5, '0')}`;
+    }
     
     const result = await client.query(`
       INSERT INTO employee
@@ -168,8 +212,10 @@ router.post("/employee", async (req, res) => {
                     email
                   )
       VALUES      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-    `, [code, firstName, middleName, lastName, birthDate, genderId, civilStatusId, address, provinceId, cityId, barangayId, dateHired, stationId, departmentId, designationId, employeeStatusId, contactNo, email]);
+    `, [newCode, firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email]);
     
+    // console.log(result.rows)
+
     await client.query("COMMIT");
     
     res.status(201).json(result.rows);
@@ -185,10 +231,13 @@ router.post("/employee", async (req, res) => {
 
 router.put("/employee/:id", async (req, res) => {
   const client = await pool.connect();
-
+  const { firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email } = req.body;
+  // console.log(req.body)
+  const { id } = req.params;
+  // console.log(id)
   try {
     const { id } = req.params;
-    const { code, firstName, middleName, lastName, birthDate, genderId, civilStatusId, address, provinceId, cityId, barangayId, dateHired, stationId, departmentId, designationId, employeeStatusId, contactNo, email } = req.body;
+    // const { firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email } = req.body;
     
     await client.query("BEGIN");
     
@@ -198,7 +247,7 @@ router.put("/employee/:id", async (req, res) => {
                   middleName = $3,
                   lastName = $4,
                   birthDate = $5,
-                  genderId = $6
+                  genderId = $6,
                   civilStatusId = $7,
                   address = $8,
                   provinceId = $9,
@@ -212,7 +261,7 @@ router.put("/employee/:id", async (req, res) => {
                   contactNo = $17,
                   email = $18
       WHERE       id = $1
-    `, [id, code, firstName, middleName, lastName, birthDate, genderId, civilStatusId, address, provinceId, cityId, barangayId, dateHired, stationId, departmentId, designationId, employeeStatusId, contactNo, email]);
+    `, [id, firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email]);
     
     await client.query("COMMIT");
     
@@ -221,6 +270,7 @@ router.put("/employee/:id", async (req, res) => {
   catch (err) {
     await client.query("ROLLBACK");
 
+    console.log(err)
     res.status(500).json({ error: "Database query error" });
   }
   finally {

@@ -10,7 +10,7 @@ export const useFetchStationIdAndName = () => {
   return useQuery({
     queryKey: ['stationidname'],
     queryFn: async () => {
-      const response = await apiClient.get(endPoints.Station);
+      const response = await apiClient.get(endPoints.Stations);
       return response.data;
     }
   })

@@ -240,7 +240,25 @@ const SidebarContent = ({ compactMode = false }) => {
 
         <ul>
           <NavItemWithDropdown
-            hdrIcon={<UsersIcon size={18} />}
+            hdrIcon={<SettingsIcon size={18} />}
+            text='Setup'
+          >
+            <NavLink
+              to={StringRoutes.globalSetup}
+              className='flex items-center pt-1 '>
+              <span className='mr-3'>
+                <Users size={18} />
+              </span>
+              <span>
+                Global Records
+              </span>
+            </NavLink>
+          </NavItemWithDropdown>
+        </ul>
+
+        <ul>
+          <NavItemWithDropdown
+            hdrIcon={<SettingsIcon size={18} />}
             text='Settings'
           >
             <NavLink
