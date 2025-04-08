@@ -104,6 +104,10 @@ app.use("/Settings", ValidateToken, rolesRoutes);
 const permissionRoutes  = require("./Settings/Permissions");
 app.use("/Settings/Permissions", ValidateToken, permissionRoutes);
 
+//locations PH addresses
+const locationRoutes = require('./Locations/Address') ;
+app.use('/Locations', ValidateToken, locationRoutes);
+
 /*NO ACTUAL PURPOSE JUST FOR TESTING, CHECK ONLY IF SERVER RESPONSE*/
 app.use("/testing/token", ValidateToken, async (req, res) => {
     res.status(201).json({
