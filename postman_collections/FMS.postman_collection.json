@@ -30,7 +30,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"username\": \"jmdelacruz\",\r\n    \"password\": \"password\"\r\n}",
+							"raw": "{\r\n    \"username\": \"admin\",\r\n    \"password\": \"password\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -585,6 +585,106 @@
 									"key": "roleid",
 									"value": "33"
 								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Setup",
+			"item": [
+				{
+					"name": "Stations",
+					"item": [
+						{
+							"name": "stations",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{localhosturl}}/Setup/Stations/stations",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Setup",
+										"Stations",
+										"stations"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Locations",
+			"item": [
+				{
+					"name": "/Provinces",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localhosturl}}/Locations/provinces/",
+							"host": [
+								"{{localhosturl}}"
+							],
+							"path": [
+								"Locations",
+								"provinces",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/city-municipality",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"code\": \"043400000\",\r\n    \"name\": \"Laguna\",\r\n    \"regionCode\": \"040000000\",\r\n    \"islandGroupCode\": \"luzon\",\r\n    \"psgc10DigitCode\": \"0403400000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhosturl}}/Locations/city-municipality",
+							"host": [
+								"{{localhosturl}}"
+							],
+							"path": [
+								"Locations",
+								"city-municipality"
 							]
 						}
 					},
