@@ -7,7 +7,7 @@ const TextBoxField = ({
   placeholder = "",
   onChange,
   value = "",
-  endContent = null // get JSX.Element
+  endContent = null, // get JSX.Element
 }) => {
 
   const handleChange = (e) => {

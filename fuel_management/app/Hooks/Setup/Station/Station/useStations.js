@@ -6,7 +6,7 @@ const useFetchStations = () => {
   return useQuery({
     queryKey: ['stations'],
     queryFn: async () => {
-      const response = await apiClient.get(`${endPoints.Station}/stations`);
+      const response = await apiClient.get(`${endPoints.Stations}/stations`);
       return response.data;
     }
   })

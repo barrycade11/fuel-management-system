@@ -1,4 +1,5 @@
-import { Form, Input } from '@heroui/react';
+import { Form, Input, Autocomplete, AutocompleteItem, Progress } from '@heroui/react';
+import { AutoCompleteBarangays, AutoCompleteCityMunicipality, AutoCompleteProvince } from './AutoCompleteFields';
 
 const StationTextFieldBox = ({
   label = "",
@@ -37,6 +38,8 @@ const StationTextFieldBox = ({
   );
 }
 
+
+
 const StationFormDetails = () => {
   return (
     <div className='flex flex-col border border-default-200 rounded-sm '>
@@ -63,14 +66,11 @@ const StationFormDetails = () => {
             label="Street Address" />
         </div>
 
-        <StationTextFieldBox
-          label="Province" />
+        <AutoCompleteProvince />
 
-        <StationTextFieldBox
-          label="City/Municipality" />
+        <AutoCompleteCityMunicipality />
 
-        <StationTextFieldBox
-          label="Barangay" />
+        <AutoCompleteBarangays />
 
         <StationTextFieldBox
           label="Opening Time" />

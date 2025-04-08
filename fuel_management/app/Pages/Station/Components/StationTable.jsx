@@ -1,6 +1,6 @@
 import PrimaryButton from "~/Components/PrimayButton"
 import { CircularProgress } from "@heroui/react"
-import useFetchStations from "~/Hooks/Setup/Station/Station/useStations";
+import { useFetchStations  } from "~/Hooks/Setup/Station/Station/useStations";
 import TableSkeleton from "~/Components/TableSkeleton";
 
 
@@ -50,7 +50,7 @@ const StationTable = () => {
         </thead>
         <tbody>
           {
-            data && data.body.map((item) => (
+            data && Array.isArray(data.body) && data.body.map((item) => (
               < TableRow key={item} >
                 <td align="center" className="whitespace-nowrap">{item.code}</td>
                 <td align="center" className="whitespace-nowrap">{item.name}</td>
@@ -66,8 +66,6 @@ const StationTable = () => {
 
             ))
           }
-
-
         </tbody>
       </table>
     </div >
