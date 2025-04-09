@@ -1,13 +1,14 @@
 import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
+import { useMutation } from "@tanstack/react-query";
 
-export const createStation = async (data) => {
-    try {
-        const response = await apiClient.post(`${endPoints.GlobalRecords}/Station`, data);
-
-        return response.data;
+const useAddStationMutation = () => {
+  return useMutation({
+    mutationFn: async (params) => {
+      const response = await apiClient.post(`${endPoints.Stations}/station`, params)
+      return response.data;
     }
-    catch (error) {
-        throw error;
-    }
+  })
 };
+
+export default useAddStationMutation;
