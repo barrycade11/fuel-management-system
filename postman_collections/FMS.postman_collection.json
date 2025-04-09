@@ -616,6 +616,68 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "/station",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"stationCode\": \"STN-123\",\r\n    \"stationName\": \"Debug Station\",\r\n    \"details\": \"Test details\",\r\n    \"address\": \"123 Debug Street\",\r\n    \"openingTime\": \"08:00\",\r\n    \"closingTime\": \"18:00\",\r\n    \"pumps\": \"5\",\r\n    \"nozzles\": \"10\",\r\n    \"fillingPosition\": \"4\",\r\n    \"posStations\": \"2\",\r\n    \"shipToNumber\": 65465,\r\n    \"province\": \"Laguna\",\r\n    \"city\": \"City Of Cabuyao\",\r\n    \"barangay\": \"Butong\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Setup/Stations/station",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Setup",
+										"Stations",
+										"station"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Global Records",
+					"item": [
+						{
+							"name": "/departments",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{localhosturl}}/Setup/GlobalRecords/departments",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Setup",
+										"GlobalRecords",
+										"departments"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				}
@@ -685,6 +747,43 @@
 							"path": [
 								"Locations",
 								"city-municipality"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/barangays",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"code\": \"043404000\",\r\n    \"name\": \"City of Cabuyao\",\r\n    \"oldName\": \"\",\r\n    \"isCapital\": false,\r\n    \"isCity\": true,\r\n    \"isMunicipality\": false,\r\n    \"provinceCode\": \"043400000\",\r\n    \"districtCode\": false,\r\n    \"regionCode\": \"040000000\",\r\n    \"islandGroupCode\": \"luzon\",\r\n    \"psgc10DigitCode\": \"0403404000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhosturl}}/Locations/barangays",
+							"host": [
+								"{{localhosturl}}"
+							],
+							"path": [
+								"Locations",
+								"barangays"
 							]
 						}
 					},
