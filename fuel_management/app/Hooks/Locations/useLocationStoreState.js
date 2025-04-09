@@ -22,7 +22,7 @@ const useLocationStoreState = create((set, get) => ({
   bError: null,
   bIsError: false,
   onSetBarangays: (items) => {
-    set({ barangays: items, bIsError: true, bIsLoading: false, bError: null })
+    set({ barangays: items, bIsError: false, bIsLoading: false, bError: null })
   },
   onSetBarangayLoading: (load) => {
     set({ bIsLoading: load })

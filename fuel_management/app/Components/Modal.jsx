@@ -21,7 +21,7 @@ const HeroUIModal = ({ isOpen, onOpenChange, title, children, footer, size = "md
           <>
             <ModalHeader>{title}</ModalHeader>
             <ModalBody>{children}</ModalBody>
-            <ModalFooter>
+            <ModalFooter className="p-0">
               {footer || (
                 <>
                   {/* <Button color="danger" variant="light" onPress={onClose}>

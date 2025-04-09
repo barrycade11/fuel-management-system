@@ -1,29 +1,33 @@
-import { Button } from "@heroui/react"
+import { Button, } from "@heroui/react"
 import { PlusIcon } from "lucide-react"
-
-const deparments = [
-  {
-    id: 1,
-    name: "Forecourt",
-  },
-  {
-    id: 1,
-    name: "Shop",
-  },
-  {
-    id: 1,
-    name: "SHOC",
-  },
-]
+import HeroUIModal from "~/Components/Modal"
+import { useState, useRef } from 'react';
+import DeparmentModal from "./DepartmentModal";
+import useStationStore from "~/Hooks/Setup/Station/Station/useStationStore";
 
 const TanksDepartmentTable = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { saveDepartments, onDepartmentOnView } = useStationStore();
+
+  const handleViewing = (type = null, id = null) => {
+    if (type === "edit") {
+      setIsOpen(true);
+      onDepartmentOnView(true, id);
+      return
+    }
+  }
+
   return (
     <div className="col-span-2 px-7">
       <div className="flex flex-row justify-between  items-center">
-        <span className="text-md font-semibold text-default-600">Departments</span>
+        <span className="text-md font-semibold text-default-400">Departments</span>
         <Button
           className="font-semibold"
           color="primary"
+          onPress={() => {
+            setIsOpen(true)
+            onDepartmentOnView(false, null);
+          }}
           radius="sm">
           <PlusIcon size={15} />
           Add New
@@ -40,12 +44,13 @@ const TanksDepartmentTable = () => {
           </thead>
           <tbody>
             {
-              deparments.map((dep, index) => {
+              saveDepartments.length > 0 && saveDepartments.map((dep, index) => {
                 return (
                   <tr key={index} className="text-sm border border-b-default-200 font-semibold text-default-600 h-[40px]">
                     <td align="center">{dep.name}</td>
                     <td align="center">
                       <Button
+                        onPress={() => handleViewing('edit', dep.id)}
                         radius="none"
                         color="default"
                         className="bg-primary-200 text-primary font-bold m-1"
@@ -62,10 +67,15 @@ const TanksDepartmentTable = () => {
         </table>
       </div>
 
+      <DeparmentModal
+        onOpenChange={() => {
+          setIsOpen(false)
+          onDepartmentOnView(false, null);
+        }}
+        isOpen={isOpen} />
+
     </div>
-
   )
-
 }
 
 export default TanksDepartmentTable

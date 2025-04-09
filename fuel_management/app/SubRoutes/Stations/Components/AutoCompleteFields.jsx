@@ -7,9 +7,15 @@ import useLocationStoreState from "~/Hooks/Locations/useLocationStoreState";
 export const AutoCompleteProvince = () => {
   const { isLoading, isError, data, error } = useGetProvinces();
   const getCityMutate = useGetCitiesMunicipalities();
-  const { onSetCitiesMunicipalities, onSetError, onSetIsLoading } = useLocationStoreState();
+  const { onSetCitiesMunicipalities, onSetBarangays, onSetError, onSetIsLoading } = useLocationStoreState();
 
   const handleChange = (val) => {
+    if(!val) {
+      onSetCitiesMunicipalities([]);
+      onSetBarangays([]);
+      return;
+    }
+
     const selected = data.body.find(i => i.code === val);
     onManageCitiesMunicipalities(selected);
   }
@@ -29,6 +35,8 @@ export const AutoCompleteProvince = () => {
 
   return (
     <Autocomplete
+      isRequired={true}
+      name="province"
       isLoading={isLoading}
       errorMessage={"Something went wrong"}
       aria-labelledby='none'
@@ -80,6 +88,8 @@ export const AutoCompleteCityMunicipality = () => {
 
   return (
     <Autocomplete
+      isRequired={true}
+      name="city"
       isLoading={isLoading}
       isInvalid={error !== null}
       errorMessage={error !== null ? error.message : null}
@@ -110,6 +120,8 @@ export const AutoCompleteBarangays = () => {
 
   return (
     <Autocomplete
+      isRequired={true}
+      name="barangay"
       isLoading={bIsLoading}
       isInvalid={bError !== null}
       errorMessage={bError !== null ? error.message : null}
