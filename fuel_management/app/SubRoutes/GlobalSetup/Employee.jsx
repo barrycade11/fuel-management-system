@@ -4,34 +4,24 @@ import Dropdown from "~/Components/Dropdown";
 import Notification from "~/Components/Notification";
 import TableSkeleton from "~/Components/TableSkeleton";
 import { 
-  fetchEmployees, 
-  fetchEmployeeDetails, 
-  createEmployee, 
-  generateEmployeeCode, 
-  updateEmployee, 
-  deleteEmployee  
-} from "~/Hooks/Setup/GlobalRecords/Employee/useEmployees";
+  useGetGlobalRecords, 
+  useGetGlobalRecordById, 
+  useAddGlobalRecord, 
+  useUpdateGlobalRecord, 
+  useDeleteGlobalRecord 
+} from "~/Hooks/Setup/GlobalRecords/useGlobalRecordsApi";
 import { 
   fetchEmployeeContacts, 
-  fetchEmployeeContactDetails, 
-  createEmployeeContact, 
-  updateEmployeeContact, 
-  deleteEmployeeContact,
-  deleteEmployeeContactsByEmployeeId
+  useAddEmployeeContactsByEmployeeId,
+  useDeleteEmployeeContactsByEmployeeId
 } from "~/Hooks/Setup/GlobalRecords/EmployeeContact/useEmployeeContacts";
 import { 
-  fetchEmployeePhotos, 
-  fetchEmployeePhotoDetails, 
-  createEmployeePhoto, 
-  updateEmployeePhoto, 
-  deleteEmployeePhoto 
+  fetchEmployeePhoto, 
+  useAddEmployeePhotoByEmployeeId, 
+  useDeleteEmployeePhotoByEmployeeId 
 } from "~/Hooks/Setup/GlobalRecords/EmployeePhoto/useEmployeePhotos";
-import {
-  fetchStations
-} from "~/Hooks/Setup/Station/Station/useStations";
-import {
-  fetchDepartments
-} from "~/Hooks/Setup/GlobalRecords/Department/useDepartments";
+import { useGenerateEmployeeCode } from "~/Hooks/Setup/GlobalRecords/Employee/useEmployees";
+import { useGetStationRecords } from "~/Hooks/Setup/Station/useStationRecordsApi";
 import {
   Select,
   SelectItem, 
@@ -47,13 +37,92 @@ import { CalendarDate, parseZonedDateTime, parseAbsolute, parseAbsoluteToLocal }
 import { fetchDropdowns, fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
 
 const Employee = () => {
+  // Fetch Employees 
+  const { 
+    data: employees, 
+    isLoading: isLoadingEmployees, 
+    error: errorEmployees 
+  } = useGetGlobalRecords('Employees');
+  
+  // Fetch Generated Code 
+  const { 
+    data: generatedCode, 
+    isLoading: isLoadingGeneratedCode, 
+    error: errorGeneratingCode 
+  } = useGenerateEmployeeCode('Employee');
+
+  // Fetch Departments 
+  const { 
+    data: departments, 
+    isLoading: isLoadingDepartments, 
+    error: errorDepartments 
+  } = useGetGlobalRecords('Departments');
+
+  // Fetch Stations 
+  const { 
+    data: stations, 
+    isLoading: isLoadingStations, 
+    error: errorStations 
+  } = useGetStationRecords('Stations');
+
+  // Add Employee 
+  const { 
+    mutateAsync: addEmployee, 
+    isLoading: isAdding, 
+    isSuccess: isAddSuccess, 
+    error: addError 
+  } = useAddGlobalRecord('Employee');
+
+  // Update Employee 
+  const { 
+    mutateAsync: updateEmployee, 
+    isLoading: isUpdating, 
+    isSuccess: isUpdateSuccess, 
+    error: updateError 
+  } = useUpdateGlobalRecord('Employee');
+
+  // Delete Employee 
+  const { 
+    mutateAsync: deleteEmployee, 
+    isLoading: isDeleting, 
+    isSuccess: isDeleteSuccess, 
+    error: deleteError 
+  } = useDeleteGlobalRecord('Employee');
+
+  // Add Employee Contacts 
+  const { 
+    mutateAsync: addEmployeeContact, 
+    isLoading: isAddingEmployeeContact, 
+    isSuccess: isAddEmployeeContactSuccess, 
+    error: addErrorEmployeeContact 
+  } = useAddEmployeeContactsByEmployeeId('Employee');
+
+  // Delete Employee Contacts 
+  const { 
+    mutateAsync: deleteEmployeeContact, 
+    isLoading: isDeletingEmployeeContact, 
+    isSuccess: isDeleteEmployeeContactSuccess, 
+    error: deleteErrorEmployeeContact 
+  } = useDeleteEmployeeContactsByEmployeeId('Employee');
+
+  // Add Employee Photo 
+  const { 
+    mutateAsync: addEmployeePhoto, 
+    isLoading: isAddingEmployeePhoto, 
+    isSuccess: isAddEmployeePhotoSuccess, 
+    error: addErrorEmployeePhoto 
+  } = useAddEmployeePhotoByEmployeeId('Employee');
+
+  // Delete Employee Photo 
+  const { 
+    mutateAsync: deleteEmployeePhoto, 
+    isLoading: isDeletingEmployeePhoto, 
+    isSuccess: isDeleteEmployeePhotoSuccess, 
+    error: deleteErrorEmployeePhoto 
+  } = useDeleteEmployeePhotoByEmployeeId('Employee');
+
   const [relationships, setRelationships] = useState([]); 
-  const [employees, setEmployees] = useState([]);
-  const [departments, setDepartments] = useState([]);
-  const [stations, setStations] = useState([]);
-  const [generatedCode, setGeneratedCode] = useState([]);
-  const [employeeContacts, setEmployeeContacts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [employeeContacts, setEmployeeContacts] = useState([]); 
   const [loadingEmployeeContacts, setLoadingEmployeeContacts] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingEmployeeContacts, setIsEditingEmployeeContacts] = useState(false);
@@ -63,7 +132,7 @@ const Employee = () => {
   const [image, setImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [newEmployee, setNewEmployee] = useState({  
-    code: generatedCode.code, 
+    code: generatedCode?.code || "", 
     firstName: "",
     middleName: "",
     lastName: "",
@@ -85,72 +154,8 @@ const Employee = () => {
   });
   const [newEmployeeContacts, setNewEmployeeContacts] = useState([]);
 
-  // Employees 
-  const getEmployees = async () => {
-    setLoading(true);
-    try {
-        const data = await fetchEmployees();
-        // console.log(data);
-
-        setEmployees(data);
-    } catch (error) {
-        console.error("Error fetching data:", error);
-    } finally {
-        setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    getEmployees();
-  }, []);
-
-  // Departments
-  const getDepartments = async () => {
-    setLoading(true);
-    try {
-        const data = await fetchDepartments();
-        setDepartments(data);
-        // console.log(data);
-    } catch (error) {
-        console.error("Error fetching data:", error);
-    } finally {
-        setLoading(false);
-    }
-  }
-
-  // Stations
-  const getStations = async () => {
-    setLoading(true);
-    try {
-        const data = await fetchStations();
-        setStations(data);
-        // console.log(data);
-    } catch (error) {
-        console.error("Error fetching data:", error);
-    } finally {
-        setLoading(false);
-    }
-  }
-
-  // Generated code
-  const getGeneratedCode = async () => {
-    try {
-      const data = await generateEmployeeCode(); 
-  
-      setGeneratedCode(data); 
-      return data; 
-    } catch (error) {
-      console.error("Error generating code:", error);
-      return null;
-    }
-  };
-
   const handleAdd = async () => {
     let codeData = generatedCode;
-
-    if (!codeData || !codeData.code) {
-      codeData = await getGeneratedCode();
-    }
   
     setNewEmployee({
       code: codeData.code,
@@ -173,9 +178,10 @@ const Employee = () => {
       email: ""
     });
   
-    if (departments.length === 0) await getDepartments();
-    if (stations.length === 0) await getStations();
-    
+    setImage(null);
+    setImageFile(null);
+    setEmployeeContacts([])
+    setLoadingEmployeeContacts(false);
     setIsEditing(true);
   };
 
@@ -197,7 +203,6 @@ const Employee = () => {
         age--;
       }
       
-      // Only update if the age is different to avoid infinite loops
       if (newEmployee.age !== age) {
         setNewEmployee(prev => ({
           ...prev,
@@ -207,25 +212,25 @@ const Employee = () => {
     }
   }, [newEmployee.birthDate]);
 
+
   const handleEdit = async (employee) => {
-    // console.log(employee)
     setIsEditing(true);
 
-    try {
-      getGeneratedCode();
-      getDepartments();
-      getStations();
-      
+    try {   
+
+      // Fetch Contacts 
       const rawContacts = await fetchEmployeeContacts(employee.id);
       const contacts = rawContacts.map(c => ({
         ...c,
         contactNo2: c.contactno2,
       }));
 
-      const employeePhotos = await fetchEmployeePhotos(employee.id);
+      // Fetch Photo 
+      const employeePhotos = await fetchEmployeePhoto(employee.id);
       const mainPhoto = employeePhotos[0] ? employeePhotos[0].photo : null;
       const photoId = employeePhotos[0] ? employeePhotos[0].id : null;
 
+      // Fetch Dropdowns 
       const [genderData, civilStatusData, provinceData, 
         cityData, barangayData, designationData, employeeStausData
       ] = await Promise.all([
@@ -261,18 +266,16 @@ const Employee = () => {
         photoId: photoId
       }));
 
+
       if (mainPhoto) {
         const fixedPath = mainPhoto.replace(/\\/g, '/');
-        setImage(`http://localhost:5000/global-setup/${fixedPath}`);
+        setImage(`http://localhost:5000/global-setup/${fixedPath}`); // Change the path on live
         setImageFile(mainPhoto);
       } else {
         setImage(null); 
       }
-      
-      // console.log(contacts)
 
       if (contacts && contacts.length > 0) {
-        // Fetch relationship names for each contact
         const contactsWithRelationships = await Promise.all(
           contacts.map(async (contact) => {
             try {
@@ -300,6 +303,8 @@ const Employee = () => {
   
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      setLoadingEmployeeContacts(false);
     }
   };
 
@@ -319,8 +324,6 @@ const Employee = () => {
       setNotification({ message: "Please upload a photo.", type: "error" });
       return;
     }
-
-    // console.log(newEmployee)
 
     if (isSaving) return;
     setIsSaving(true);
@@ -347,12 +350,8 @@ const Employee = () => {
       designationId: parseInt(newEmployee.designationId, 10),
       employeeStatusId: parseInt(newEmployee.employeeStatusId, 10),
       contactNo: newEmployee.contactNo,
-      email: newEmployee.email,
-      id: newEmployee.photoId,
-      photo: imageFile.mainPhoto
+      email: newEmployee.email
     };
-
-    // console.log(payload)
 
     const formData = new FormData();
     formData.append("photo", imageFile);
@@ -360,45 +359,51 @@ const Employee = () => {
     try {        
         let employeeId;
 
-        // console.log(imageFile)
-
         if (newEmployee.id) {
-            await updateEmployee(newEmployee.id, payload);
-            employeeId = newEmployee.id;
-            console.log(employeeId)
-            console.log(newEmployee.photoId)
-            await updateEmployeePhoto(employeeId, newEmployee.photoId, formData); 
+            // Existing Employee 
+            employeeId = newEmployee.id; 
+
+            // Update Employee 
+            const response = await updateEmployee({ id: employeeId, payload });
+
+            // Delete and Add new Contacts 
+            if (employeeId && Array.isArray(employeeContacts)) {
+              await deleteEmployeeContact(employeeId);
+            
+              if (employeeContacts.length > 0) {
+                await Promise.all(
+                  employeeContacts.map(contact => addEmployeeContact({ id: employeeId, payload: contact }))
+                );
+              }
+            }
+
+            // Delete and Add new Image 
+            if (employeeId && imageFile) {
+              await deleteEmployeePhoto(employeeId);
+              const response = await addEmployeePhoto({ id: employeeId, payload: formData }); 
+            }
             
         } else {
-            const response = await createEmployee(payload);
+            // New Employee 
+            const response = await addEmployee(payload);
             employeeId = response.id; 
-            setEmployees([...employees, response]); 
-                
-            await createEmployeePhoto(employeeId, formData); 
+
+            // Add Employee 
+            if (employeeContacts.length > 0) {
+              await Promise.all(
+                employeeContacts.map(contact => addEmployeeContact({ id: employeeId, payload: contact }))
+              );
+            }
+
+            // Add Photo 
+            if (employeeId && imageFile) {
+              const response = await addEmployeePhoto({ id: employeeId, payload: formData }); 
+            }
         }
-
-        // console.log(employeeId)
-        // console.log(employeeContacts)
-
-        if (employeeId && Array.isArray(employeeContacts)) {
-          await deleteEmployeeContactsByEmployeeId(employeeId);
-        
-          if (employeeContacts.length > 0) {
-            await Promise.all(
-              employeeContacts.map(contact => createEmployeeContact(employeeId, contact))
-            );
-          }
-        }
-
-        // if (imageFile && employeeId) {
-        //   const response = await createEmployeePhoto(employeeId, formData); 
-        //   console.log(response);
-        // }
 
         setIsEditing(false);
         setNotification({ message: "Save successful", type: "success" });
 
-        getEmployees(); 
     } catch (error) {
         setNotification({ message: "Error saving data", type: "error" });
         console.error("Error saving data:", error);
@@ -410,12 +415,13 @@ const Employee = () => {
   const handleDelete = (id) => {
     const handleConfirm = async () => {
         try {
+            // Delete all records if Employee is deleted 
             await deleteEmployee(id);
+            await deleteEmployeeContact(id);
+            await deleteEmployeePhoto(id);
 
             setIsEditing(false);
             setNotification({ message: "Record deleted successfully!", type: "success" });
-            getEmployees(); 
-            setEmployees((prevEmployees) => prevEmployees.filter(employee => employee.id !== id)); 
         } catch (error) {
             setNotification({ message: "Failed to delete record.", type: "error" });
             console.error("Error deleting record:", error);
@@ -491,46 +497,9 @@ const Employee = () => {
     }
   };
 
-  const getEmployeeContacts = async () => {
-    // console.log(employees)
-    if (!employees.id) {
-      // console.log("Employee ID is not available, skipping fetch for contacts.");
-      setLoadingEmployeeContacts(false); 
-      return; 
-    }
-  
-    setLoadingEmployeeContacts(true);
-    try {
-      const data = await fetchEmployeeContacts(employees.id);
-      const transformedContacts = data.map(contact => {
-
-        const relationship = contact.relationshipId
-          ? relationships.find(r => r.id === contact.relationshipId)
-          : null;
-  
-        return { 
-          ...contact, 
-          relationship: relationship ? relationship.name : "Unknown" 
-        };
-      });
-  
-      setEmployeeContacts(transformedContacts);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoadingEmployeeContacts(false);
-    }
-  };
-
   useEffect(() => {
     getRelationships();
   }, []);
-
-  useEffect(() => {
-    if (relationships.length > 0) {
-      getEmployeeContacts(); 
-    }
-  }, [relationships]);
 
   const handleAddEmployeeContacts = () => {
     setNewEmployeeContacts({
@@ -570,6 +539,7 @@ const Employee = () => {
   };
 
   const handleSaveEmployeeContacts = async () => {
+    // Temporary Contact 
     try {
       let updatedContacts = [...employeeContacts];
 
@@ -648,7 +618,6 @@ const Employee = () => {
   };
 
   const employeeContactsColumns = [
-    // { key: "id", label: "No.", hidden: true },
     { key: "relationship", label: "Relationship to Employee", hidden: false },
     { key: "name", label: "Name", hidden: false },
     { key: "contactno2", label: "Contact No.", hidden: false }, 
@@ -685,8 +654,7 @@ const Employee = () => {
           onConfirm={notification.onConfirm} 
           onCancel={notification.onCancel}  
         />}
-      {loading ? (
-        // <p>Loading...</p>
+      {isLoadingEmployees ? (
         <TableSkeleton columns={5} rows={5}/>
       ) : isEditing ? (
         <>
@@ -982,10 +950,8 @@ const Employee = () => {
                       <Button onClick={() => setIsEditingEmployeeContacts(false)} color="default" className="text-[blue]">Close</Button>
                       <Button 
                         onClick={handleSaveEmployeeContacts} 
-                        // disabled={isSaving} 
                         color="primary"
                       >
-                        {/* {isSaving ? "Saving..." : "Save"} */}
                         Save
                       </Button>
                     </div>

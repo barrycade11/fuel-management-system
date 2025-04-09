@@ -1,7 +1,8 @@
 import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
-const fetchEmployeePhotos = async (employeeId) => {
+const fetchEmployeePhoto = async (employeeId) => {
     try {
         const response = await apiClient.get(`${endPoints.GlobalRecords}/Employee/${employeeId}/Photo`);
 
@@ -12,62 +13,52 @@ const fetchEmployeePhotos = async (employeeId) => {
     }
 };
 
-const fetchEmployeePhotoDetails = async (employeeId, id) => {
-    try {
-        const response = await apiClient.get(`${endPoints.GlobalRecords}/Employee/${employeeId}/Photos/${id}`);
-
-        return response.data;
-    }
-    catch (error) {
-        throw error;
-    }
-};
-
-const createEmployeePhoto = async (employeeId, data) => {
-    try {
-        const response = await apiClient.post(`${endPoints.GlobalRecords}/Employee/${employeeId}/Photo`, data, {
-            headers: {
-                "Content-Type": "multipart/form-data",  
+const useAddEmployeePhotoByEmployeeId = (resource) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: async ({ id, payload}) => {
+        const response = await apiClient.post(`${endPoints.GlobalRecords}/${resource}/${id}/Photo`, payload, 
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",  
+                }
             },
-        });
-        // console.log(response)
+        );
         return response.data;
-    }
-    catch (error) {
-        throw error;
-    }
+      },
+      onSuccess: (data) => {
+        console.log(`Added ${resource} photo successfully:`, data);
+        queryClient.invalidateQueries([`${resource}s`]);
+      },
+      onError: (error) => {
+        console.error(`Failed to add ${resource} photo:`, error);
+      },
+    });
 };
 
-const updateEmployeePhoto = async (employeeId, id, data) => {
-    try {
-        const response = await apiClient.put(`${endPoints.GlobalRecords}/Employee/${employeeId}/Photo/${id}`, data, {
-            headers: {
-                "Content-Type": "multipart/form-data",  
-            },
-        })
-        // console.log(response)
+const useDeleteEmployeePhotoByEmployeeId = (resource) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id) => {
+        const response = await apiClient.delete(`${endPoints.GlobalRecords}/${resource}/${id}/Photo/delete`);
         return response.data;
-    }
-    catch (error) {
-        throw error;
-    }
-};
-
-const deleteEmployeePhoto = async (employeeId, id) => {
-    try {
-        const response = await apiClient.delete(`${endPoints.GlobalRecords}/Employee/${employeeId}/Photo/${id}`);
-
-        return response.data;
-    }
-    catch (error) {
-        throw error;
-    }
+        },
+        onSuccess: (data) => {
+        console.log(`Deleted ${resource} photo successfully:`, data);
+        queryClient.invalidateQueries([`${resource}s`]);
+        },
+        onError: (error) => {
+        console.error(`Failed to delete ${resource} photo:`, error);
+        },
+    });
 };
 
 export { 
-    fetchEmployeePhotos, 
-    fetchEmployeePhotoDetails, 
-    createEmployeePhoto, 
-    updateEmployeePhoto, 
-    deleteEmployeePhoto 
+    fetchEmployeePhoto, 
+    useAddEmployeePhotoByEmployeeId,
+    useDeleteEmployeePhotoByEmployeeId
+    // fetchEmployeePhotoDetails, 
+    // createEmployeePhoto, 
+    // updateEmployeePhoto, 
+    // deleteEmployeePhoto 
 };
