@@ -58,7 +58,7 @@ app.use("/Setup/GlobalRecords", customerVehicleRoutes);
 
 // STATION
 const stationRoutes = require("./Setup/Stations/Station");
-app.use("/Setup/Stations", stationRoutes);
+app.use("/Setup/Stations", ValidateToken, stationRoutes);
 
 // STATION DEPARTMENT
 const stationDepartmentRoutes = require("./Setup/Stations/StationDepartment");
@@ -103,6 +103,10 @@ app.use("/Settings", ValidateToken, rolesRoutes);
 // PERMISSIONS ROUTES
 const permissionRoutes  = require("./Settings/Permissions");
 app.use("/Settings/Permissions", ValidateToken, permissionRoutes);
+
+//locations PH addresses
+const locationRoutes = require('./Locations/Address') ;
+app.use('/Locations', ValidateToken, locationRoutes);
 
 /*NO ACTUAL PURPOSE JUST FOR TESTING, CHECK ONLY IF SERVER RESPONSE*/
 app.use("/testing/token", ValidateToken, async (req, res) => {

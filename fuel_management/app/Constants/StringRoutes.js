@@ -33,6 +33,9 @@ class StringRoutes {
   static register = 'register';
   static permission = 'permissions';
 
+  static stationList = 'station/list';
+  static stationDetail = 'details';
+
   /**
    * Retrieves the current sub-route from a given pathname.
    *

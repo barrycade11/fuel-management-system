@@ -75,17 +75,21 @@ const Login = () => {
             <FMSLogo />
           </div>
           <Form onSubmit={onManageLogin} className="flex flex-col flex-1 items-stretch">
-            <TextBoxField
-              label="Username"
-              placeholder="Enter your username"
-              onChange={(e) => onChange("username", e.target.value)} // Pass 'key' and value to onChange
-            />
-            <TextBoxField
-              label="Password"
-              placeholder="Enter your password"
-              type="password"
-              onChange={(e) => onChange("password", e.target.value)} // Pass 'key' and value to onChange
-            />
+            <div className="py-2">
+              <TextBoxField
+                label="Username"
+                placeholder="Enter your username"
+                onChange={(e) => onChange("username", e.target.value)} // Pass 'key' and value to onChange
+              />
+            </div>
+            <div className="py-2">
+              <TextBoxField
+                label="Password"
+                placeholder="Enter your password"
+                type="password"
+                onChange={(e) => onChange("password", e.target.value)} // Pass 'key' and value to onChange
+              />
+            </div>
             <div className="pt-5">
               <PrimaryButton
                 type="submit"
