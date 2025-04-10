@@ -47,6 +47,7 @@ const SalesTransactions = () => {
                     <>
                         {openAdd === true ?
                             <DailySalesInput
+                                setOpenAdd={setOpenAdd}
                                 selectedMode={selectedMode}
                                 effectivityDate={effectivityDate}
                                 selectedStation={selectedStation}

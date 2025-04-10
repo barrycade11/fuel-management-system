@@ -516,7 +516,7 @@ router.post("/dailySalesInputForecourt", upload.single("pos"), async (req, res) 
         await client.query("COMMIT");
 
         console.log("success: "+savedMainId)
-        res.status(201).json({success: true, message: savedMainId});
+        res.status(201).json({success: true, message: "successfully saved with an id of "+savedMainId});
     }
     catch (err) {
         console.log(err)

@@ -1,4 +1,4 @@
-import apiClient from "~/Constants/ApiClient";
+import {apiClient} from "~/Constants/ApiClient";
 
 const useGetOtherProducts = async (startDate, endDate, locations) => {
     try {

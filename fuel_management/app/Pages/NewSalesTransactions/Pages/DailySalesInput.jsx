@@ -9,6 +9,7 @@ import { useUploadDailySalesInputForecourt } from "~/Hooks/Sales/useUploadDailyS
 import { useUploadDailySalesInputSelect } from "~/Hooks/Sales/useUploadDailySalesSelect"
 
 const DailySalesInput = ({ 
+    setOpenAdd,
     selectedMode,
     effectivityDate,
     selectedStation,
@@ -264,10 +265,12 @@ const DailySalesInput = ({
             
             if (selectedMode==1) {
                 const res = await useUploadDailySalesInputForecourt(data)
-                console.log(res.data)
+                alert(res.message)
+                setOpenAdd(false)
             } else if (selectedMode==2) {
                 const res = await useUploadDailySalesInputSelect(data)
-                console.log(res.data)
+                alert(res.message)
+                setOpenAdd(false)
             }
         } catch (err) {
             console.log(err)

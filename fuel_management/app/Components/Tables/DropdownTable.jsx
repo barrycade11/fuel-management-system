@@ -13,7 +13,7 @@ const DropdownTable = (props) => {
                         </th>
                         {Locations.map((location, index) => (
                             <th key={index} scope="col" className="px-6 py-3">
-                                {location}
+                                {location?.description}
                             </th>
                         ))}
                     </tr>
