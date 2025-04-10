@@ -54,7 +54,7 @@ export default [
 
         route(StringRoutes.stationList, "./Pages/Station/index.jsx", [
             index("./Pages/Station/StationList.jsx"),
-            route('details', "./Pages/Station/StationDetails.jsx", [
+            route('details/:id?', "./Pages/Station/StationDetails.jsx", [
                 index("./SubRoutes/Stations/InitialPage.jsx"),
             ])
         ]),
