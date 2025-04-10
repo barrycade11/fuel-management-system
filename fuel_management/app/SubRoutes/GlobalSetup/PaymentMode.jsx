@@ -4,7 +4,7 @@ import Dropdown from "~/Components/Dropdown";
 import Notification from "~/Components/Notification";
 import TableSkeleton from "~/Components/TableSkeleton";
 import DropdownStatus from "~/Components/DropdownStatus";
-import { Textarea, Input, Button, Spinner } from "@heroui/react";
+import { Textarea, Input, Button } from "@heroui/react";
 import { 
   fetchPaymentModes, 
   fetchPaymentModeDetails, 
@@ -17,7 +17,6 @@ const PaymentMode = () => {
   const [paymentModes, setPaymentModes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
   const [newPaymentMode, setNewPaymentMode] = useState({  
@@ -71,9 +70,6 @@ const PaymentMode = () => {
         return;
     }
 
-    if (isSaving) return;
-    setIsSaving(true);
-
     try {
         if (newPaymentMode.id) {
             await updatePaymentMode(newPaymentMode.id, newPaymentMode);
@@ -89,8 +85,6 @@ const PaymentMode = () => {
     } catch (error) {
         setNotification({ message: "Error saving data", type: "error" });
         console.error("Error saving data:", error);
-    } finally {
-      setIsSaving(false); 
     }
   };
 
@@ -207,16 +201,7 @@ const PaymentMode = () => {
                 )}
                 <div className="flex space-x-2">
                   <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
-                  <Button 
-                    onClick={handleSave} 
-                    disabled={isSaving} 
-                    isLoading={isSaving}
-                    spinner={<Spinner size="sm" variant="wave" color="default" />}
-                    spinnerPlacement="end"
-                    color="primary"
-                  >
-                    {isSaving ? "Saving" : "Save"}
-                  </Button>
+                  <Button onClick={handleSave} color="primary">Save</Button>
                 </div>
               </div>
             </div>

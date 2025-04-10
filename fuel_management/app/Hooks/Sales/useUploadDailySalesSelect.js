@@ -1,9 +1,9 @@
-import apiClient from "~/Constants/ApiClient";
+import {apiClient} from "~/Constants/ApiClient";
 
-export const useUploadDailySales = async (data) => {
+export const useUploadDailySalesInputSelect = async (data) => {
     try {
         const response = await apiClient.post(
-            `/Sales/POS-Upload`,
+            `/SelectSales/dailySalesInputSelect`,
             data,
             {
                 headers: {

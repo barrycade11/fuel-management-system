@@ -8,11 +8,13 @@ import TanksDashboard from "./Pages/TanksDashboard";
 import KPIDashboard from "./Pages/KPIDashboard";
 import PMTDRDashboard from "./Pages/PMDTR";
 import Tabs from "~/Components/Tabs";
+import moment from "moment";
+import { parseDate } from "@internationalized/date";
 
 const Dashboard = () => {
     const [activeTab, setActiveTab] = useState(DashboardTabs[0]);
-    const [startDate, setStartDate] = useState(null);
-    const [endDate, setEndDate] = useState(null);
+    const [startDate, setStartDate] = useState(parseDate('1900-01-01'));
+    const [endDate, setEndDate] = useState(parseDate(moment(Date.now()).format('YYYY-MM-DD')));
   
     return (
         <>
@@ -20,7 +22,7 @@ const Dashboard = () => {
                 title="Dashboard"
             />
 
-            <div className="p-5 bg-white min-h-[100vh]">
+            <div className="bg-white min-h-[100vh]">
                 <Tabs
                     activeTab={activeTab} 
                     setActiveTab={setActiveTab} 
@@ -36,8 +38,12 @@ const Dashboard = () => {
                 />
                 
                 {activeTab=="Fuels" && (
-                    <FuelsDashboard />
+                    <FuelsDashboard 
+                        startDate={startDate}
+                        endDate={endDate}
+                    />
                 )}
+
                 {activeTab=="Other Products" && (
                     <OtherProductsDashboard />
                 )}

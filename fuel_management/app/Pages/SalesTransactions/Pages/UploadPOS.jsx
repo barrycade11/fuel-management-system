@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import FileInput from "~/Components/FileInput"
 import ProgressBar from "~/Components/ProgressBar"
-import { useUploadDailySales } from "~/Hooks/Sales/useUploadDailySales"
+import { useUploadDailySales } from "~/Hooks/Sales/useUploadDailySalesXml"
 
 const UploadPOS = () => {
     const [file, setFile] = useState(null)

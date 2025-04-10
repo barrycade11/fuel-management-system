@@ -42,8 +42,8 @@ const HeroUITable = ({
   );
 
   useEffect(() => {
-    // console.log("selectedDropdownKey:", selectedDropdownKey);
-    // console.log("selectedLabel:", selectedLabel);
+    console.log("selectedDropdownKey:", selectedDropdownKey);
+    console.log("selectedLabel:", selectedLabel);
   }, [selectedDropdownKey]);
 
   // useAsyncList handles sorting automatically
@@ -103,7 +103,7 @@ const HeroUITable = ({
           placeholder="Search an option"
           size="sm"
           selectedKey={selectedDropdownKey}
-          onSelectionChange={(key) => setSelectedDropdownKey(key || "1")}
+          onSelectionChange={(key) => setSelectedDropdownKey(key)}
         >
           {(item) => <AutocompleteItem key={item.key}>{item.label}</AutocompleteItem>}
         </Autocomplete>
