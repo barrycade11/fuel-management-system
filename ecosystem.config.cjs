@@ -7,7 +7,7 @@ module.exports = {
             cwd: "fuel_management",
             env: {
                 NODE_ENV: "production",
-                PORT: 5173
+                PORT: 3000
             },
             watch: true
         },

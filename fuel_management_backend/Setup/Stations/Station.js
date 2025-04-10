@@ -1,6 +1,35 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../../Config/Connection");
+const StationSchema = require("./Params/StationSchema");
+
+/**
+ * Only get the station table 
+ *
+ */
+router.get('/', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+          id,
+          code,
+          name
+      FROM station
+    `)
+
+    return res.status(200).json({
+      success: true,
+      message: "Successfully fetch stations.",
+      body: result.rows,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+
+})
 
 router.get("/stations", async (req, res) => {
   try {
@@ -34,11 +63,15 @@ router.get("/stations", async (req, res) => {
               ON  a.barangayId = d.id
                   AND d.dropdownTypeId = 16
     `);
-    res.status(201).json(result.rows);
+    return res.status(201).json({
+      success: true,
+      message: "Successfully fetched stations",
+      body: result.rows,
+    });
   }
   catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Database query error" });
+    return res.status(500).json({ success: false, message: "Database query error" });
+    // res.status(500).json({ error: "Database query error" });
   }
 });
 
@@ -88,7 +121,16 @@ router.post("/station", async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { code, name, details, address, provinceId, cityId, barangayId, openingTime, closingTime, pumps, nozzles, fillingPosition, posStation, shipToNumber } = req.body;
+    const { error, value } = StationSchema.validate(req.body)
+
+    if(error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details.map((err) => err.message),
+      })
+    }
+
+    const { stationCode, stationName, details, address, province, city, barangay, openingTime, closingTime, pumps, nozzles, fillingPosition, posStations, shipToNumber } = value;
 
     await client.query("BEGIN");
 
@@ -99,29 +141,35 @@ router.post("/station", async (req, res) => {
                     name,
                     details,
                     address,
-                    provinceId,
-                    cityId,
-                    barangayId,
+                    province,
+                    city,
+                    barangay,
                     openingTime,
                     closingTime,
                     pumps,
                     nozzles,
                     fillingPosition,
                     posStation,
-                    shipToNumber
+                    shipToNumber,
+                    createdby
                   )
-      VALUES      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      VALUES      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
       RETURNING   id
-    `, [code, name, details, address, provinceId, cityId, barangayId, openingTime, closingTime, pumps, nozzles, fillingPosition, posStation, shipToNumber]);
+    `, [stationCode, stationName, details, address, province, city, barangay, openingTime, closingTime, pumps, nozzles, fillingPosition, posStations, shipToNumber, req.user.username]);
     
     await client.query("COMMIT");
 
-    res.status(201).json(result.rows);
+    res.status(201).json({
+      success: true,
+      message: "Successfully add new station",
+      body: null
+    });
   }
   catch (err) {
     await client.query("ROLLBACK");
+    console.log(err);
 
-    res.status(500).json({ error: "Database query error" });
+    res.status(500).json({ success: false, message: "Database query error" });
   }
   finally {
     client.release();

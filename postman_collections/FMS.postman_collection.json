@@ -10,7 +10,7 @@
 			"name": "Authentication",
 			"item": [
 				{
-					"name": "/Authentication/login",
+					"name": "/login",
 					"event": [
 						{
 							"listen": "test",
@@ -49,9 +49,74 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "/change-password",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"password\": \"test123\",\r\n    \"newPassword\": \"password\",\r\n    \"confirmPassword\": \"password\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhosturl}}/Authentication/change-password",
+							"host": [
+								"{{localhosturl}}"
+							],
+							"path": [
+								"Authentication",
+								"change-password"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"description": "/Authentication/login  \nautomatically stored token in the postman environment variables"
+		},
+		{
+			"name": "Setup",
+			"item": [
+				{
+					"name": "Stations",
+					"item": [
+						{
+							"name": "/",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{localhosturl}}/Setup/Stations",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Setup",
+										"Stations"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
 		},
 		{
 			"name": "Settings",
@@ -232,6 +297,216 @@
 					]
 				},
 				{
+					"name": "Users",
+					"item": [
+						{
+							"name": "/",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"stations\": [\"test\", \"123\"]\r\n\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Settings/Users",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Settings",
+										"Users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/:id",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Settings/Users/:id",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Settings",
+										"Users",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "6"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/create",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"jmdelacruz\",\r\n    \"password\": \"password\",\r\n    \"lastname\": \"Dela Cruz\",\r\n    \"firstname\": \"Jose Paulo\",\r\n    \"stationAssignments\": [1],\r\n    \"userRole\": 1,\r\n    \"status\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Settings/Users/create",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Settings",
+										"Users",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/update",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"admin123\",\r\n    \"lastname\": \"testing123\",\r\n    \"firstname\": \"123\",\r\n    \"stationAssignments\": [1],\r\n    \"userRole\": 1,\r\n    \"status\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Settings/Users/update",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Settings",
+										"Users",
+										"update"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/delete",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"admin123\",\r\n    \"lastname\": \"testing123\",\r\n    \"firstname\": \"123\",\r\n    \"stationAssignments\": [1],\r\n    \"userRole\": 1,\r\n    \"status\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Settings/Users/delete/:userid",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Settings",
+										"Users",
+										"delete",
+										":userid"
+									],
+									"variable": [
+										{
+											"key": "userid",
+											"value": "4"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
 					"name": "/roles",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -310,6 +585,205 @@
 									"key": "roleid",
 									"value": "33"
 								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Setup",
+			"item": [
+				{
+					"name": "Stations",
+					"item": [
+						{
+							"name": "stations",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{localhosturl}}/Setup/Stations/stations",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Setup",
+										"Stations",
+										"stations"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/station",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"stationCode\": \"STN-123\",\r\n    \"stationName\": \"Debug Station\",\r\n    \"details\": \"Test details\",\r\n    \"address\": \"123 Debug Street\",\r\n    \"openingTime\": \"08:00\",\r\n    \"closingTime\": \"18:00\",\r\n    \"pumps\": \"5\",\r\n    \"nozzles\": \"10\",\r\n    \"fillingPosition\": \"4\",\r\n    \"posStations\": \"2\",\r\n    \"shipToNumber\": 65465,\r\n    \"province\": \"Laguna\",\r\n    \"city\": \"City Of Cabuyao\",\r\n    \"barangay\": \"Butong\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{localhosturl}}/Setup/Stations/station",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Setup",
+										"Stations",
+										"station"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Global Records",
+					"item": [
+						{
+							"name": "/departments",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{localhosturl}}/Setup/GlobalRecords/departments",
+									"host": [
+										"{{localhosturl}}"
+									],
+									"path": [
+										"Setup",
+										"GlobalRecords",
+										"departments"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Locations",
+			"item": [
+				{
+					"name": "/Provinces",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{localhosturl}}/Locations/provinces/",
+							"host": [
+								"{{localhosturl}}"
+							],
+							"path": [
+								"Locations",
+								"provinces",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/city-municipality",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"code\": \"043400000\",\r\n    \"name\": \"Laguna\",\r\n    \"regionCode\": \"040000000\",\r\n    \"islandGroupCode\": \"luzon\",\r\n    \"psgc10DigitCode\": \"0403400000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhosturl}}/Locations/city-municipality",
+							"host": [
+								"{{localhosturl}}"
+							],
+							"path": [
+								"Locations",
+								"city-municipality"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/barangays",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"code\": \"043404000\",\r\n    \"name\": \"City of Cabuyao\",\r\n    \"oldName\": \"\",\r\n    \"isCapital\": false,\r\n    \"isCity\": true,\r\n    \"isMunicipality\": false,\r\n    \"provinceCode\": \"043400000\",\r\n    \"districtCode\": false,\r\n    \"regionCode\": \"040000000\",\r\n    \"islandGroupCode\": \"luzon\",\r\n    \"psgc10DigitCode\": \"0403404000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{localhosturl}}/Locations/barangays",
+							"host": [
+								"{{localhosturl}}"
+							],
+							"path": [
+								"Locations",
+								"barangays"
 							]
 						}
 					},

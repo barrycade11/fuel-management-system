@@ -3,20 +3,17 @@ const router = express.Router();
 const pool = require("../../Config/Connection");
 
 router.get("/dropdowns/:typeId", async (req, res) => {
-  // const { typeId, parentId } = req.params;
-  // console.log(typeId)
-  // console.log(parentId)
   try {
     const { typeId } = req.params;
-    // const { typeId, parentId } = req.params;
+    
     const result = await pool.query(`
       SELECT    id,
-                name
+                name,
+                details
       FROM      dropdown
-      WHERE     dropdownTypeId = $1
-    `, 
-    // [typeId, parentId]);
-    [typeId]);
+      WHERE     status = true
+                AND dropdownTypeId = $1
+    `, [typeId]);
     res.status(201).json(result.rows);
   }
   catch (err) {
@@ -25,22 +22,19 @@ router.get("/dropdowns/:typeId", async (req, res) => {
   }
 });
 
-// router.get("/dropdowns/:typeId/:parentId/:id", async (req, res) => {
 router.get("/dropdowns/:typeId/:id", async (req, res) => {
-  // const { typeId, id } = req.params;
-  // console.log(req.params)
   try {
-    // const { typeId, id, parentId } = req.params;
     const { typeId, id } = req.params;
+
     const result = await pool.query(`
       SELECT    id,
-                name
+                name,
+                details
       FROM      dropdown
-      WHERE     dropdownTypeId = $1
+      WHERE     isActive = true
+                AND dropdownTypeId = $1
                 AND id = $2
-    `, 
-    // [typeId, parentId, id]);
-    [typeId, id]);
+    `, [typeId, id]);
     res.status(201).json(result.rows);
   }
   catch (err) {
@@ -54,15 +48,15 @@ router.post("/dropdown/:typeId", async (req, res) => {
 
   try {
     const { typeId } = req.params;
-    const { name } = req.body;
+    const { name, details, status } = req.body;
     
     await client.query("BEGIN");
     
     const result = await client.query(`
       INSERT INTO dropdown
-                  (dropdownTypeId, name)
-      VALUES      ($1, $2)
-    `, [typeId, name]);
+                  (dropdownTypeId, name, details, status)
+      VALUES      ($1, $2, $3, $4)
+    `, [typeId, name, details, status]);
 
     await client.query("COMMIT");
 
@@ -83,16 +77,18 @@ router.put("/dropdown/:typeId/:id", async (req, res) => {
 
   try {
     const { typeId, id } = req.params;
-    const { name } = req.body;
+    const { name, details, status } = req.body;
     
     await client.query("BEGIN");
     
     const result = await client.query(`
       UPDATE      dropdown
-      SET         name = $3
+      SET         name = $3,
+                  details = $4,
+                  status = $5
       WHERE       dropdownTypeId = $1
                   AND id = $2
-    `, [typeId, id, name]);
+    `, [typeId, id, name, details, status]);
 
     await client.query("COMMIT");
 
