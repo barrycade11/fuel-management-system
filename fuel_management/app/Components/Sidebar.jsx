@@ -269,7 +269,7 @@ const SidebarContent = ({ compactMode = false }) => {
               </span>
             </NavLink>
             <NavLink
-              to={null}
+              to={StringRoutes.globalSetup}
               className='flex items-center py-2'>
               <span className='mr-3'>
                 <Users size={18} />
