@@ -1,223 +1,252 @@
-import { useState } from "react";
-import { SearchIcon, SettingsIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import Table from "~/Components/Table";
+import Dropdown from "~/Components/Dropdown";
+import Notification from "~/Components/Notification";
+import TableSkeleton from "~/Components/TableSkeleton";
+import DropdownStatus from "~/Components/DropdownStatus";
+import { Textarea, Input, Button } from "@heroui/react";
+import { 
+  fetchFuelMasters, 
+  fetchFuelMasterDetails, 
+  createFuelMaster, 
+  updateFuelMaster, 
+  deleteFuelMaster 
+} from "~/Hooks/Setup/GlobalRecords/FuelMaster/useFuelMasters";
+import { fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
 
 const FuelMaster = () => {
-  const [search, setSearch] = useState("");
-  const [visibleColumns, setVisibleColumns] = useState({
-    id: true,
-    code: true,
-    name: true,
-    details: true,
+  const [fuels, setFuels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null);
+  const [notification, setNotification] = useState(null);
+  const [newFuel, setNewFuel] = useState({ 
+    code: "", 
+    name: "", 
+    categoryId: "", 
+    details: "", 
+    color: "#000000", 
+    status: true
   });
-  const [showFilter, setShowFilter] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
-  const [editingFuel, setEditingFuel] = useState(null);
-  const [formData, setFormData] = useState({ code: "", name: "", details: "", color: "#000000" });
-  const [showColorPicker, setShowColorPicker] = useState(false);
-  const handleSearch = (e) => setSearch(e.target.value);
-  const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-  const handleColorChange = (e) => setFormData({ ...formData, color: e.target.value });
 
-  // Add / Edit 
-  const handleAddFuel = () => {
-    if (editingFuel) {
-      setFuels(fuels.map(fuel => 
-        fuel.id === editingFuel.id ? { ...fuel, ...formData } : fuel
-      ));
-    } else {
-      const existingFuel = fuels.find(fuel => fuel.code === formData.code);
-      
-      if (existingFuel) {
-        setFuels(fuels.map(fuel =>
-          fuel.code === formData.code ? { ...fuel, ...formData } : fuel
-        ));
-      } else {
-        const newId = fuels.length > 0 ? Math.max(...fuels.map(fuel => fuel.id)) + 1 : 1;
-        setFuels([...fuels, { id: newId, ...formData }]);
-      }
+  const getFuelMasters = async () => {
+    setLoading(true);
+    try {
+        const data = await fetchFuelMasters();
+        setFuels(data);
+        // console.log(data);
+    } catch (error) {
+        console.error("Error fetching data:", error);
+    } finally {
+        setLoading(false);
     }
-  
-    setIsAdding(false);
-    setEditingFuel(null);
-    setFormData({ code: "", name: "", details: "", color: "#000000" });
   };
 
-  const handleEditFuel = (fuel) => {
-    setEditingFuel(fuel);
-    setFormData(fuel);
-    setIsAdding(true);
+  useEffect(() => {
+      getFuelMasters();
+  }, []);
+
+  const handleAdd = () => {
+    setNewFuel({ 
+      code: "", 
+      name: "", 
+      categoryId: "", 
+      details: "", 
+      color: "#000000", 
+      status: true 
+    });
+    setIsEditing(true);
   };
 
-  const handleClose = () => {
-    setIsAdding(false);
-    setEditingFuel(null);
-    setFormData({ code: "", name: "", details: "", color: "#000000" });
+  const handleEdit = async (fuel) => {
+    try {
+        const categoryData = await fetchDropdownTypeList(3, 0, fuel.categoryid); 
+
+        if (categoryData.length > 0) {
+            setNewFuel((prev) => ({
+                ...prev,
+                ...fuel,
+                categoryId: categoryData[0].id, 
+            }));
+
+            setIsEditing(true);
+        }
+    } catch (error) {
+        console.error("Error fetching category data:", error);
+    }
   };
 
-  // Dummy data 
-  const [fuels, setFuels] = useState([
-    { id: 1, code: "VPR", name: "Shell V-Power Racing", details: "Fuel Specifications etc.", color: "#ff0000" },
-    { id: 2, code: "VPG", name: "Shell V-Power Gasoline", details: "Fuel Specifications etc.", color: "#00ff00" },
-    { id: 3, code: "VPD", name: "Shell V-Power Diesel", details: "Fuel Specifications etc.", color: "#ffff00" },
-    { id: 4, code: "FSG", name: "Fuel Specification Gas", details: "Fuel Specifications etc.", color: "#008080" },
-    { id: 5, code: "FSD", name: "Fuel Specification Diesel", details: "Fuel Specifications etc.", color: "#00ffff" },
-  ]);
+  const handleSave = async () => {
+    if (!newFuel.code || !newFuel.name || !newFuel.categoryId || !newFuel.details || !newFuel.color) {
+        setNotification({ message: "All fields are required.", type: "error" });
+        return;
+    }
 
-  const filteredFuels = fuels.filter(
-    (fuel) =>
-      fuel.name.toLowerCase().includes(search.toLowerCase()) ||
-      fuel.code.toLowerCase().includes(search.toLowerCase()) ||
-      fuel.details.toLowerCase().includes(search.toLowerCase())
-  );
-  const toggleColumn = (col) => {
-    setVisibleColumns((prev) => ({ ...prev, [col]: !prev[col] }));
+    try {
+        if (newFuel.id) {
+            await updateFuelMaster(newFuel.id, newFuel);
+        } else {
+            const response = await createFuelMaster(newFuel);
+            setFuels([...fuels, response[0]]); 
+        }
+
+        setIsEditing(false);
+        setNotification({ message: "Save successful", type: "success" });
+
+        getFuelMasters(); 
+    } catch (error) {
+        setNotification({ message: "Error saving data", type: "error" });
+        console.error("Error saving data:", error);
+    }
+  };
+
+  const handleDelete = (id) => {
+    const handleConfirm = async () => {
+        try {
+            await deleteFuelMaster(id);
+
+            setIsEditing(false);
+            setNotification({ message: "Record deleted successfully!", type: "success" });
+            getFuelMasters(); 
+            setFuels((prevFuels) => prevFuels.filter(fuel => fuel.id !== id)); 
+        } catch (error) {
+            setNotification({ message: "Failed to delete record.", type: "error" });
+            console.error("Error deleting record:", error);
+        }
+    };
+
+    const handleCancel = () => {
+        setNotification(null);
+    };
+
+    setNotification(prev => ({
+      ...prev, 
+      message: "Are you sure you want to delete this record?",
+      type: "delete",
+      onConfirm: handleConfirm, 
+      onCancel: handleCancel,  
+    }));
+  };
+
+  const columns = [
+    { key: "id", label: "No.", hidden: true },
+    { key: "code", label: "Fuel Code", hidden: false },
+    { key: "name", label: "Fuel Name", hidden: false },
+    { key: "category", label: "Category", hidden: true },
+    { key: "details", label: "Details", hidden: false },
+    { 
+      key: "status", 
+      label: "Status",
+      render: (fuel) => {
+        // console.log("Rendering status:", fuel.status);
+        return fuel.status ? "Active" : "Inactive";
+      },
+      hidden: true
+    }
+  ];
+
+  const customRender = {
+    code: (value, row) => (
+      <span className="px-3 py-1 text-white rounded-lg" style={{ backgroundColor: row.color }}>
+        {value}
+      </span>
+    ),
+    actions: (item) => (
+      <Button 
+      onClick={() => handleEdit(item)} 
+      className="bg-blue-200 text-blue-800 rounded-lg hover:bg-blue-300"
+      >
+        Edit
+      </Button>
+    ),
   };
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
-      {!isAdding ? (
-        <>
-          {/* Header Section */}
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Fuels</h2>
-
-            <div className="flex items-center space-x-2">
-              <div className="relative flex bg-gray-100 rounded-lg px-3 py-2 w-72 border">
-                <input
-                  type="text"
-                  placeholder="Search Table"
-                  value={search}
-                  onChange={handleSearch}
-                  className="flex-grow bg-transparent focus:outline-none"
-                />
-                <div className="p-1 rounded-lg">
-                  <SearchIcon size={18} />
-                </div>
-                <button
-                  onClick={() => setShowFilter(!showFilter)}
-                  className="p-1 rounded-lg hover:bg-gray-200 relative"
-                >
-                  <SettingsIcon size={18} />
-                </button>
-                {showFilter && (
-                  <div className="absolute right-0 mt-10 w-48 bg-white shadow-lg rounded-lg p-2 z-10">
-                    <p className="text-sm font-semibold mb-2">Columns to Display</p>
-                    {Object.keys(visibleColumns).map((col) => (
-                      <label key={col} className="flex items-center space-x-2 mb-1">
-                        <input
-                          type="checkbox"
-                          checked={visibleColumns[col]}
-                          onChange={() => toggleColumn(col)}
-                        />
-                        <span>{col.charAt(0).toUpperCase() + col.slice(1)}</span>
-                      </label>
-                    ))}
-                  </div>
+      {notification && 
+        <Notification 
+          message={notification.message} 
+          type={notification.type} 
+          onClose={() => setNotification(null)}
+          onConfirm={notification.onConfirm} 
+          onCancel={notification.onCancel}  
+        />}
+      {loading ? (
+        // <p>Loading...</p>
+        <TableSkeleton columns={4} rows={5}/>
+      ) : isEditing ? (
+          <div className="h-screen flex justify-center items-center">
+            <div className="bg-white p-6 w-96 h-full max-w-lg">
+              <h2 className="text-xl font-semibold mb-4">{newFuel.id ? "Edit" : "Add"} Fuel</h2>
+              <Input 
+                className="w-full mb-2" 
+                label="Fuel Code" 
+                placeholder="Enter fuel code" 
+                value={newFuel.code}
+                onChange={(e) => setNewFuel({ ...newFuel, code: e.target.value })}
+                isRequired
+              />
+              <Input 
+                className="w-full mb-2" 
+                label="Fuel Name" 
+                placeholder="Enter fuel name" 
+                value={newFuel.name}
+                onChange={(e) => setNewFuel({ ...newFuel, name: e.target.value })}
+                isRequired
+              />
+              <Dropdown 
+                  label="Fuel Category"
+                  typeId={3} 
+                  parentId={0} 
+                  value={newFuel.categoryId} 
+                  onChange={(e) => setNewFuel({ ...newFuel, categoryId: e.target.value })} 
+              />
+              <Textarea 
+                className="w-full mb-2" 
+                label="Details" 
+                placeholder="Enter Details" 
+                value={newFuel.details}
+                onChange={(e) => setNewFuel({ ...newFuel, details: e.target.value })}
+                isRequired
+              />
+              <Input 
+                type="color"
+                className="w-full mb-2 cursor-pointer" 
+                label="Assign Color" 
+                value={newFuel.color}
+                onChange={(e) => setNewFuel({ ...newFuel, color: e.target.value })}
+                isRequired
+              />
+              <DropdownStatus
+                className="w-full mb-2"
+                value={Boolean(newFuel.status)} 
+                onChange={(val) => setNewFuel({ ...newFuel, status: val })} 
+              />
+              <div className="flex justify-between items-center w-full mt-2">
+                {newFuel.id ? (
+                  <Button onClick={() => handleDelete(newFuel.id)} color="danger">Delete</Button>
+                ) : (
+                  <div></div> 
                 )}
+                <div className="flex space-x-2">
+                  <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
+                  <Button onClick={handleSave} color="primary">Save</Button>
+                </div>
               </div>
-              <button onClick={() => { setIsAdding(true); setEditingFuel(null); setFormData(initialFormData); }} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                + Add new
-              </button>
             </div>
           </div>
-
-          {/* Table Section */}
-          <table className="w-full border-collapse border border-gray-200 rounded-lg">
-            <thead>
-              <tr className="bg-gray-100">
-                {visibleColumns.id && <th className="p-2 border">No.</th>}
-                {visibleColumns.code && <th className="p-2 border">Fuel Code</th>}
-                {visibleColumns.name && <th className="p-2 border">Fuel Name</th>}
-                {visibleColumns.details && <th className="p-2 border">Details</th>}
-                <th className="p-2 border">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredFuels.map((fuel) => (
-                <tr key={fuel.id} className="text-center border">
-                  {visibleColumns.id && <td className="p-2 border">{fuel.id}</td>}
-                  {visibleColumns.code && (
-                    <td className="p-2 border">
-                      <span className="px-3 py-1 text-white rounded-lg" style={{ backgroundColor: fuel.color }}>{fuel.code}</span>
-                    </td>
-                  )}
-                  {visibleColumns.name && <td className="p-2 border">{fuel.name}</td>}
-                  {visibleColumns.details && <td className="p-2 border">{fuel.details}</td>}
-                  <td className="p-2 border">
-                    <button
-                      onClick={() => {
-                        setFormData(fuel); 
-                        setIsAdding(true);
-                      }}
-                      className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
-                    >
-                      Edit
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-
-          </table>
-        </>
       ) : (
-        // Add/Edit Section 
-        <div className="p-4 border rounded-lg bg-gray-50 w-full max-w-md mx-auto">
-
-          <h2 className="text-xl font-semibold mb-4">{editingFuel ? "Edit Fuel" : "Add Fuel"}</h2>
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block text-sm font-medium">Fuel Code</label>
-              <input
-                type="text"
-                name="code"
-                value={formData.code}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium">Fuel Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium">Details</label>
-              <textarea
-                name="details"
-                value={formData.details}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium">Assign Color</label>
-              <div className="relative flex items-center">
-                <input type="color" value={formData.color} onChange={handleColorChange} className="w-15 cursor-pointer" />
-              </div>
-              {showColorPicker && <input type="color" value={formData.color} onChange={handleColorChange} className="mt-2" />}
-            </div>
-
-            <div className="flex justify-between items-center mt-6 border-t pt-4">
-            <button className="text-red-600 hover:underline">Delete...</button>
-            <div className="space-x-4">
-              <button onClick={handleClose} className="text-blue-500 hover:underline">Close</button>
-              <button onClick={handleAddFuel} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Save</button>
-            </div>
-          </div>
-          </div>
-        </div>
+        <Table 
+          title="Fuels" 
+          data={fuels} 
+          columns={columns} 
+          onEdit={handleEdit} 
+          onAdd={handleAdd} 
+          customRender={customRender} 
+        />
       )}
     </div>
-  );
+  );  
 };
 
 export default FuelMaster;

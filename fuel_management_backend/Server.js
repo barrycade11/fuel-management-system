@@ -7,6 +7,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// DASHBOARD
+const dashboardRoutes = require("./Dashboard/AllReports");
+app.use("/Dashboard", dashboardRoutes);
+
+// Sales
+const salesRoutes = require("./Sales/DailySalesInput");
+app.use("/Sales", salesRoutes);
+
+// Forecourt Sales
+const forecourtRoutes = require("./Sales/DailySalesInputForecourt");
+app.use("/ForecourtSales", forecourtRoutes);
+
+// Select Sales
+const selectRoutes = require("./Sales/DailySalesInputSelect");
+app.use("/SelectSales", selectRoutes);
+
 // FUEL MASTER
 const fuelMastersRoutes = require("./Setup/GlobalRecords/FuelMaster");
 app.use("/Setup/GlobalRecords", fuelMastersRoutes);

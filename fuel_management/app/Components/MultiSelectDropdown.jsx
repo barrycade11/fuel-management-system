@@ -14,7 +14,7 @@ export default function MultiSelectDropdown({label}) {
     return (
         <div className="flex flex-col justify-between">
             <label className="text-sm text-gray-400">{label}</label>
-            <div className="mt-2 mb-1">
+            <div className="">
             <Dropdown>
                 <DropdownTrigger>
                     <Button endContent={<Down color={"#6b7280"} />} className="capitalize min-w-64 w-auto flex justify-between" variant="bordered">

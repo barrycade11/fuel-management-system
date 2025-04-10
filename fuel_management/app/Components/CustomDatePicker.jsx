@@ -7,7 +7,7 @@ const CustomDatePicker = ({ startDate, setStartDate, label }) => {
         <div>
             <label className="text-sm text-gray-500 font-semibold">{label}</label>
             <DatePicker
-                className="w-64 my-2"
+                className="w-full my-2"
                 label=""
                 value={startDate!==null ? parseDate(moment(startDate).format('YYYY-MM-DD')) : null}
                 onChange={(e)=>{
