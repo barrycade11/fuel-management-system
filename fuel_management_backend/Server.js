@@ -49,8 +49,8 @@ const customerRoutes = require("./Setup/GlobalRecords/Customer");
 app.use("/Setup/GlobalRecords", customerRoutes);
 
 // CUSTOMER CONTACT
-const customerContactPersonRoutes = require("./Setup/GlobalRecords/CustomerContactPerson");
-app.use("/Setup/GlobalRecords", customerContactPersonRoutes);
+const customerContactRoutes = require("./Setup/GlobalRecords/CustomerContact");
+app.use("/Setup/GlobalRecords", customerContactRoutes);
 
 // CUSTOMER VEHICLE
 const customerVehicleRoutes = require("./Setup/GlobalRecords/CustomerVehicle");

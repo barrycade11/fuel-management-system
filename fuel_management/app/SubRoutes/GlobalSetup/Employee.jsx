@@ -217,7 +217,6 @@ const Employee = () => {
     setIsEditing(true);
 
     try {   
-
       // Fetch Contacts 
       const rawContacts = await fetchEmployeeContacts(employee.id);
       const contacts = rawContacts.map(c => ({
@@ -232,7 +231,7 @@ const Employee = () => {
 
       // Fetch Dropdowns 
       const [genderData, civilStatusData, provinceData, 
-        cityData, barangayData, designationData, employeeStausData
+        cityData, barangayData, designationData, employeeStatusData
       ] = await Promise.all([
         fetchDropdownTypeList(4, employee.genderid),
         fetchDropdownTypeList(5, employee.civilstatusid),
@@ -269,7 +268,7 @@ const Employee = () => {
 
       if (mainPhoto) {
         const fixedPath = mainPhoto.replace(/\\/g, '/');
-        setImage(`http://localhost:5000/global-setup/${fixedPath}`); // Change the path on live
+        setImage(`http://localhost:5000/global-setup/${fixedPath}`); // Change the path on deployment
         setImageFile(mainPhoto);
       } else {
         setImage(null); 
@@ -361,15 +360,24 @@ const Employee = () => {
 
         if (newEmployee.id) {
             // Existing Employee 
-            employeeId = newEmployee.id; 
+            employeeId = newEmployee?.id; 
+            console.log(employeeId)
 
             // Update Employee 
             const response = await updateEmployee({ id: employeeId, payload });
 
+            employeeId = response[0]?.id;
+
+            console.log(employeeId)
+
             // Delete and Add new Contacts 
             if (employeeId && Array.isArray(employeeContacts)) {
+              console.log("inside if", employeeId)
+
               await deleteEmployeeContact(employeeId);
             
+              console.log(employeeContacts)
+
               if (employeeContacts.length > 0) {
                 await Promise.all(
                   employeeContacts.map(contact => addEmployeeContact({ id: employeeId, payload: contact }))
@@ -388,7 +396,9 @@ const Employee = () => {
             const response = await addEmployee(payload);
             employeeId = response.id; 
 
-            // Add Employee 
+            console.log(employeeId)
+
+            // Add Contacts
             if (employeeContacts.length > 0) {
               await Promise.all(
                 employeeContacts.map(contact => addEmployeeContact({ id: employeeId, payload: contact }))
@@ -478,16 +488,16 @@ const Employee = () => {
       return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`;
     },
     actions: (item) => (
-      <button
+      <Button
         onClick={() => handleEdit(item)} 
         className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
       >
         Edit
-      </button>
+      </Button>
     ),
   };
 
-  // Employee Contacts
+  // Employee Contacts Relationship
   const getRelationships = async () => {
     try {
       const response = await fetchDropdowns(6); 
@@ -520,11 +530,9 @@ const Employee = () => {
         relationshipId: Number(employeeContact.relationshipId), 
         relationship: relationships.find(r => r.id === Number(employeeContact.relationshipId))?.name || "Loading...",
     }));
-    console.log(employeeContact)
 
     try {
         const relationshipData = await fetchDropdownTypeList(6, employeeContact.relationshipId);
-        console.log(relationshipData)
         const relationship = relationshipData?.[0]?.name || "Unknown";
 
         setNewEmployeeContacts(prev => ({
@@ -626,12 +634,12 @@ const Employee = () => {
 
   const customRenderEmployeeContacts = {
     actions: (item) => (
-      <button
+      <Button
         onClick={() => handleEditEmployeeContacts(item)} 
         className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
       >
         Edit
-      </button>
+      </Button>
     ),
   };
 
@@ -837,9 +845,9 @@ const Employee = () => {
                 />
                 <Dropdown 
                   label="Station"
-                  customOptions={stations.map(sta => ({
-                    id: sta.id,
-                    name: sta.name
+                  customOptions={stations.map(s => ({
+                    id: s.id,
+                    name: s.name
                   }))}
                   value={newEmployee.stationId} 
                   onChange={(e) => setNewEmployee({ 
@@ -851,9 +859,9 @@ const Employee = () => {
               <div className="col-span-2 gap-3">
                 <Dropdown 
                   label="Department"
-                  customOptions={departments.map(dep => ({
-                    id: dep.id,
-                    name: dep.name
+                  customOptions={departments.map(d => ({
+                    id: d.id,
+                    name: d.name
                   }))}
                   value={newEmployee.departmentId} 
                   onChange={(e) => setNewEmployee({ 

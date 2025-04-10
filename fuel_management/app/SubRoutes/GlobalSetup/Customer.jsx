@@ -1,16 +1,29 @@
 import React, { useEffect, useState } from "react";
 import Table from "~/Components/Table";
 import Dropdown from "~/Components/Dropdown";
+import MultiDropdown from "~/Components/MultiDropdown";
 import Notification from "~/Components/Notification";
 import TableSkeleton from "~/Components/TableSkeleton";
-import DropdownStatus from "~/Components/DropdownStatus";
 import { 
-  fetchCustomers, 
-  fetchCustomerDetails, 
-  createCustomer, 
-  updateCustomer, 
-  deleteCustomer  
-} from "~/Hooks/Setup/GlobalRecords/Customer/useCustomers";
+  useGetGlobalRecords, 
+  useGetGlobalRecordById, 
+  useAddGlobalRecord, 
+  useUpdateGlobalRecord, 
+  useDeleteGlobalRecord 
+} from "~/Hooks/Setup/GlobalRecords/useGlobalRecordsApi";
+import { 
+  fetchCustomerContacts, 
+  useAddCustomerContactsByCustomerId,
+  useDeleteCustomerContactsByCustomerId
+} from "~/Hooks/Setup/GlobalRecords/CustomerContact/useCustomerContacts";
+import { 
+  fetchCustomerVehicles, 
+  useAddCustomerVehiclesByCustomerId,
+  useDeleteCustomerVehiclesByCustomerId
+} from "~/Hooks/Setup/GlobalRecords/CustomerVehicle/useCustomerVehicles";
+import { useGenerateCustomerCode } from "~/Hooks/Setup/GlobalRecords/Customer/useCustomers";
+import { useGetStationRecords } from "~/Hooks/Setup/Station/useStationRecordsApi";
+import DropdownStatus from "~/Components/DropdownStatus";
 import {
   Select,
   SelectItem,
@@ -19,37 +32,115 @@ import {
   Accordion, 
   AccordionItem,
   DatePicker,
-  Textarea
+  Textarea,
+  Spinner
 } from "@heroui/react";
-import { fetchCustomerContactPersons } from "~/Hooks/Setup/GlobalRecords/CustomerContactPerson/useCustomerContactPersons";
 import { fetchDropdowns, fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
 
 const Customer = () => {
-  const [makeModels, setMakeModels] = useState([]); 
-  const [vehicleStatuses, setVehicleStatus] = useState([]); 
-  const [customers, setCustomers] = useState([]);
-  const [customerContacts, setCustomerContacts] = useState([]);
+  // Fetch Customer 
+  const { 
+    data: customers, 
+    isLoading: isLoadingCustomers, 
+    error: errorECustomers
+  } = useGetGlobalRecords('Customers');
+
+  // Fetch Generated Code 
+  const { 
+    data: generatedCode, 
+    isLoading: isLoadingGeneratedCode, 
+    error: errorGeneratingCode 
+  } = useGenerateCustomerCode('Customer');
+
+  // Fetch Stations 
+  const { 
+    data: stations, 
+    isLoading: isLoadingStations, 
+    error: errorStations 
+  } = useGetStationRecords('Stations');
+
+  // Add Customer 
+  const { 
+    mutateAsync: addCustomer, 
+    isLoading: isAdding, 
+    isSuccess: isAddSuccess, 
+    error: addError 
+  } = useAddGlobalRecord('Customer');
+
+  // Update Customer 
+  const { 
+    mutateAsync: updateCustomer, 
+    isLoading: isUpdating, 
+    isSuccess: isUpdateSuccess, 
+    error: updateError 
+  } = useUpdateGlobalRecord('Customer');
+
+  // Delete Customer 
+  const { 
+    mutateAsync: deleteCustomer, 
+    isLoading: isDeleting, 
+    isSuccess: isDeleteSuccess, 
+    error: deleteError 
+  } = useDeleteGlobalRecord('Customer');
+
+  // Add Customer Contacts 
+  const { 
+    mutateAsync: addCustomerContact, 
+    isLoading: isAddingCustomerContact, 
+    isSuccess: isAddCustomerContactSuccess, 
+    error: addErrorCustomerContact 
+  } = useAddCustomerContactsByCustomerId('Customer');
+
+  // Delete Customer Contacts 
+  const { 
+    mutateAsync: deleteCustomerContact, 
+    isLoading: isDeletingCustomerContact, 
+    isSuccess: isDeleteCustomerContactSuccess, 
+    error: deleteErrorCustomerContact 
+  } = useDeleteCustomerContactsByCustomerId('Customer');
+
+  // Add Customer Vehicles 
+  const { 
+    mutateAsync: addCustomerVehicle, 
+    isLoading: isAddingCustomerVehicle, 
+    isSuccess: isAddCustomerVehicleSuccess, 
+    error: addErrorCustomerVehicle 
+  } = useAddCustomerVehiclesByCustomerId('Customer');
+
+  // Delete Customer Vehicles 
+  const { 
+    mutateAsync: deleteCustomerVehicle, 
+    isLoading: isDeletingCustomerVehicle, 
+    isSuccess: isDeleteCustomerVehicleSuccess, 
+    error: deleteErrorCustomerVehicle 
+  } = useDeleteCustomerVehiclesByCustomerId('Customer');
+
+  const [relationships, setRelationships] = useState([]); 
+  const [customerContacts, setCustomerContacts] = useState([]); 
   const [customerVehicles, setCustomerVehicles] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [loadingCustomerContacts, setLoadingCustomerContacts] = useState(true);
   const [loadingCustomerVehicles, setLoadingCustomerVehicles] = useState(true);
+  const [makeModels, setMakeModels] = useState([]); 
+  const [vehicleStatuses, setVehicleStatuses] = useState([]); 
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingCustomerContacts, setIsEditingCustomerContacts] = useState(false);
   const [isEditingCustomerVehicles, setIsEditingCustomerVehicles] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
   const [newCustomer, setNewCustomer] = useState({  
-    code: "", 
+    code: generatedCode?.code || "", 
     name: "",
     tin: "",
-    address: "", 
+    stationId: [], 
+    billingAddress: "", 
     provinceId: "",
     cityId: "",
     barangayId: "",
     contactNo: "", 
     email: "",  
     taxCode: "",  
-    customerStatusId: "",  
+    customerStatusId: ""
   });
   const [newCustomerContacts, setNewCustomerContacts] = useState({  
     name: "", 
@@ -62,37 +153,16 @@ const Customer = () => {
     details: "",
     vehicleStatusId: "",
   });
+  
+  const handleAdd = async () => {
+    let codeData = generatedCode;
 
-  // Customers
-  const getCustomers = async () => {
-    setLoading(true);
-    try {
-        const data = await fetchCustomers();
-
-        const formattedData = data.map(customer => ({
-            ...customer,
-            startTime: customer.starttime, 
-            endTime: customer.endtime  
-        }));
-
-        setCustomers(formattedData);
-        // console.log(formattedData);
-    } catch (error) {
-        console.error("Error fetching data:", error);
-    } finally {
-        setLoading(false);
-    }
-};
-  useEffect(() => {
-      getCustomers();
-  }, []);
-
-  const handleAdd = () => {
     setNewCustomer({ 
-      code: "", 
+      code: codeData.code, 
       name: "",
       tin: "",
-      address: "", 
+      stationId: [], 
+      billingAddress: "", 
       provinceId: "",
       cityId: "",
       barangayId: "",
@@ -101,55 +171,142 @@ const Customer = () => {
       taxCode: "",  
       customerStatusId: ""
     });
+
+    setCustomerContacts([])
+    setCustomerVehicles([])
+    setLoadingCustomerContacts(false);
+    setLoadingCustomerVehicles(false);
     setIsEditing(true);
   };
 
   const handleEdit = async (customer) => {
+    setIsEditing(true);
     try {
+      // Fetch Contacts 
+      const rawContacts = await fetchCustomerContacts(customer.id);
+      const contacts = rawContacts.map(c => ({
+        ...c,
+        contactNo2: c.contactNo2,
+      }));
+  
+      // Fetch Vehicles 
+      const rawVehicles = await fetchCustomerVehicles(customer.id);
+      const vehicles = rawVehicles.map(v => ({
+        ...v,
+        vehicle: v.vehicle,
+      }));
+  
+      // Fetch dropdowns
+      await Promise.all([
+        fetchDropdownTypeList(14, customer.provinceid),
+        fetchDropdownTypeList(15, customer.cityid),
+        fetchDropdownTypeList(16, customer.barangayid),
+        fetchDropdownTypeList(9, customer.taxcodeid),
+        fetchDropdownTypeList(8, customer.customerstatusid)
+      ]);
+  
+      // Update customerLin if available
+      if (customer.customerLin && Array.isArray(customer.customerLin)) {
+        const stationIds = customer.customerLin.map(item =>
+          parseInt(item.stationId, 10)
+        );
+        console.log(customer)
+        console.log(stationIds)
+
         setNewCustomer((prev) => ({
           ...prev,
-          ...customer
+          ...customer,
+          stationId: stationIds,
+          customerContacts: contacts,
+          customerVehicles: vehicles
         }));
-
-        setIsEditing(true);
+      }
+      
+  
+      // Handle vehicle make and model data
+      if (vehicles && vehicles.length > 0) {
+        const vehicleWithMakeModel = await Promise.all(
+          vehicles.map(async (vehicle) => {
+            try {
+              const vehicleData = await fetchDropdownTypeList(10, vehicle.makeModelId);
+              return {
+                ...vehicle,
+                makeModelId: Number(vehicle.makeModelId),
+                vehicle: vehicleData?.[0]?.name || "Unknown"
+              };
+            } catch (error) {
+              console.error("Error fetching make and model data:", error);
+              return {
+                ...vehicle,
+                makeModelId: Number(vehicle.makeModelId),
+                vehicle: "Unknown"
+              };
+            }
+          })
+        );
+        setCustomerVehicles(vehicleWithMakeModel);
+      } else {
+        setCustomerVehicles([]); // If no vehicles, set as empty
+      }
+  
+      // Handle vehicle status data
+      if (vehicles && vehicles.length > 0) {
+        const vehicleWithStatus = await Promise.all(
+          vehicles.map(async (vehicle) => {
+            try {
+              const vehicleStatusData = await fetchDropdownTypeList(11, vehicle.vehicleStatusId);
+              return {
+                ...vehicle,
+                vehicleStatusId: Number(vehicle.vehicleStatusId),
+                vehicle: vehicleStatusData?.[0]?.name || "Unknown"
+              };
+            } catch (error) {
+              console.error("Error fetching vehicle status data:", error);
+              return {
+                ...vehicle,
+                vehicleStatusId: Number(vehicle.vehicleStatusId),
+                vehicle: "Unknown"
+              };
+            }
+          })
+        );
+        setCustomerVehicles(vehicleWithStatus);
+      } else {
+        setCustomerVehicles([]); 
+      }
     } catch (error) {
-        console.error("Error fetching data:", error);
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoadingCustomerContacts(false);
+      setLoadingCustomerVehicles(false);
     }
-  };
+  };  
 
   const handleSave = async () => {
-    // if (!newCustomer.name || !newCustomer.startTime || !newCustomer.endTime || !newCustomer.details) {
-    //     setNotification({ message: "All fields are required.", type: "error" });
-    //     return;
-    // }
+    if (!newCustomer.name || !newCustomer.tin || !newCustomer.stationId.length > 0 ||
+        !newCustomer.billingAddress || !newCustomer.provinceId || !newCustomer.cityId ||
+        !newCustomer.barangayId || !newCustomer.contactNo || !newCustomer.email ||
+        !newCustomer.taxCodeId || !newCustomer.customerStatusId 
+    ) {
+      setNotification({ message: "All fields are required.", type: "error" });
+      return;
+    }
 
-    const formatDate = (dateObj) => {
-      if (!dateObj || !dateObj.year || !dateObj.month || !dateObj.day) return null;
-      return `${dateObj.year}-${String(dateObj.month).padStart(2, "0")}-${String(dateObj.day).padStart(2, "0")}`;
-    };
+    if (isSaving) return;
+    setIsSaving(true);
 
     const payload = {
-      code: newEmployee.code, 
-      firstName: newEmployee.firstName,
-      middleName: newEmployee.middleName,
-      lastName: newEmployee.lastName,
-      birthDate: formatDate(newEmployee.birthDate),
-      age: parseInt(newEmployee.age, 10), 
-      genderId: parseInt(newEmployee.genderId, 10), 
-      civilStatusId: parseInt(newEmployee.civilStatusId, 10),
-      address: newEmployee.address, 
-      provinceId: parseInt(newEmployee.provinceId, 10),
-      cityId: parseInt(newEmployee.cityId, 10),
-      barangayId: parseInt(newEmployee.barangayId, 10),
-      dateHired: formatDate(newEmployee.dateHired), 
-      // stationId: parseInt(newEmployee.stationId, 10),
-      stationId: parseInt(2, 10),
-      departmentId: parseInt(2, 10),
-      // departmentId: parseInt(newEmployee.departmentId, 10),
-      designationId: parseInt(newEmployee.designationId, 10),
-      employeeStatusId: parseInt(newEmployee.employeeStatusId, 10),
-      contactNo: newEmployee.contactNo,
-      email: newEmployee.email
+      name: newCustomer.name,
+      tin: newCustomer.tin,
+      billingAddress: newCustomer.billingAddress, 
+      provinceId: parseInt(newCustomer.provinceId, 10),
+      cityId: parseInt(newCustomer.cityId, 10),
+      barangayId: parseInt(newCustomer.barangayId, 10),
+      contactNo: newCustomer.contactNo,
+      email: newCustomer.email,
+      taxCodeId: parseInt(newCustomer.taxCodeId, 10),
+      customerStatusId: parseInt(newCustomer.customerStatusId, 10),
+      stations: newCustomer.stationId.map(id => ({ stationId: id }))
     };
 
     console.log(payload)
@@ -158,38 +315,82 @@ const Customer = () => {
         let customerId;
 
         if (newCustomer.id) {
-            await updateCustomer(newCustomer.id, newCustomer);
+          // Existing Customer 
+          customerId = newCustomer.id;
+
+          // console.log(customerId)
+          // console.log(customerContacts)
+          // Update Customer 
+          const response = await updateCustomer({ id: customerId, payload });
+
+          // Delete and Add new Contacts 
+          if (customerId && Array.isArray(customerContacts)) {
+            await deleteCustomerContact(customerId);
+          
+            if (customerContacts.length > 0) {
+              await Promise.all(
+                customerContacts.map(contact => addCustomerContact({ id: customerId, payload: contact }))
+              );
+            }
+          }
+
+          // Delete and Add new Vehicles 
+          if (customerId && Array.isArray(customerVehicles)) {
+            await deleteCustomerVehicle(customerId);
+          
+            if (customerVehicles.length > 0) {
+              await Promise.all(
+                customerVehicles.map(vehicle => addCustomerVehicle({ id: customerId, payload: vehicle }))
+              );
+            }
+          }
+
         } else {
-            const response = await createCustomer(newCustomer);
-            customerId = response.id; 
-            setCustomers([...customers, response[0]]); 
-        }
+          // New Customer 
+          const response = await addCustomer(payload);
+          customerId = response[0]?.id;
 
-        if (customerId) {
-          await createCustomerContact(customerId, customerContacts);
-          await createCustomerVehicle(customerId, customerVehicles);
-        }
+          console.log("payload: ", payload)
+          console.log("id: ", customerId)
+          console.log("response: ", response)
+          console.log("contacts: ", customerContacts)
 
+          // Add Contacts
+          if (customerContacts.length > 0) {
+            await Promise.all(
+              customerContacts.map(contact => addCustomerContact({ id: customerId, payload: contact }))
+            );
+          }
+
+          // Add Vehicles
+          if (customerVehicles.length > 0) {
+            await Promise.all(
+              customerVehicles.map(vehicle => addCustomerVehicle({ id: customerId, payload: vehicle }))
+            );
+          }
+        }
 
         setIsEditing(false);
         setNotification({ message: "Save successful", type: "success" });
 
-        getCustomers(); 
     } catch (error) {
         setNotification({ message: "Error saving data", type: "error" });
         console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false); 
     }
   };
 
   const handleDelete = (id) => {
     const handleConfirm = async () => {
         try {
+            // Delete all records if Customer is deleted 
             await deleteCustomer(id);
+            await deleteCustomerContact(id);
+            await deleteCustomerVehicle(id);
 
             setIsEditing(false);
-            setNotification({ message: "Record deleted successfully!", type: "success" });
-            getCustomers(); 
-            setCustomers((prevCustomers) => prevCustomers.filter(customer => customer.id !== id)); 
+            setNotification({ message: "Record deleted successfully!", type: "success" }); 
         } catch (error) {
             setNotification({ message: "Failed to delete record.", type: "error" });
             console.error("Error deleting record:", error);
@@ -214,36 +415,34 @@ const Customer = () => {
     { key: "code", label: "Customer Code", hidden: false },
     { key: "name", label: "Customer Name", hidden: false },
     { key: "tin", label: "TIN", hidden: false },
-    { key: "contactPerson", label: "Contact Person", hidden: true }
+    { key: "stations", label: "Stations", hidden: true },
+    { key: "billingAddress", label: "Billing Address", hidden: true },
+    { key: "province", label: "Province", hidden: true },
+    { key: "city", label: "City", hidden: true },
+    { key: "barangay", label: "Barangay", hidden: true },
+    { key: "contactNo", label: "Contact No.", hidden: true },
+    { key: "taxCode", label: "Tax Code", hidden: true },
+    { key: "customerStatus", label: "Customer Status", hidden: true }
   ];
 
   const customRender = {
+    customerLin: (customerLinArray) => {
+      console.log(customerLinArray)
+      if (!Array.isArray(customerLinArray) || customerLinArray.length === 0) {
+        return "N/A";
+      }
+    
+      return customerLinArray.map(sub => sub.station || `ID: ${sub.stationId}`).join(", ");
+    },
     actions: (item) => (
-      <button
+      <Button
         onClick={() => handleEdit(item)} 
         className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
       >
         Edit
-      </button>
+      </Button>
     ),
   };
-
-  // Customer Contacts 
-  const getCustomerContacts = async () => {
-    setLoadingCustomerContacts(true);
-    try {
-      const data = await fetchCustomerContactPersons(customers.id);
-
-    } catch {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoadingCustomerContacts(false);
-    }
-  }
-
-  useEffect(() => {
-    getCustomerContacts();
-  }, []);
 
   const handleAddCustomerContacts = () => {
     setNewCustomerContacts({
@@ -255,47 +454,53 @@ const Customer = () => {
   }
 
   const handleEditCustomerContacts = async (customerContact) => {
-    try {
-        setNewCustomerContacts((prev) => ({
-            ...prev,
-            ...customerContact
-        }));
-    } catch (error) {
-        console.error("Error fetching data:", error);
-    }
-
+    setNewCustomerContacts({
+      ...customerContact,
+      contactNo2: customerContact.contactNo2 || customerContact.contactNo, // fallback
+    });
+  
     setIsEditingCustomerContacts(true);
-  };
+  };  
 
   const handleSaveCustomerContacts = async () => {
-    try {
-        let updatedContacts = [...customerContacts];
-
-        if (newCustomerContacts.id) {
-            // Update existing contact
-            updatedContacts = updatedContacts.map(contact =>
-                contact.id === newCustomerContacts.id ? { ...contact, ...newCustomerContacts } : contact
-            );
-        } else {
-            // Add new contact
-            const tempId = `temp-${Date.now()}`;
-            const newContact = { 
-                ...newCustomerContacts, 
-                id: tempId
-            };
-            updatedContacts = [...updatedContacts, newContact];
-        }
-
-        setCustomerContacts(updatedContacts);
-        setIsEditingCustomerContacts(false);
-        setNotification({ message: "Save successful (temporary)", type: "success" });
-
-    } catch (error) {
-        setNotification({ message: "Error saving data", type: "error" });
-        console.error("Error saving data:", error);
+    if (!newCustomerContacts.name || !newCustomerContacts.contactNo2 || !newCustomerContacts.details) {
+      setNotification({ message: "All fields are required.", type: "error" });
+      return;
     }
-  };
+    if (isSaving) return;
+    setIsSaving(true);
 
+    try {
+      let updatedContacts = [...customerContacts];
+  
+      if (newCustomerContacts.id) {
+        updatedContacts = updatedContacts.map(contact =>
+          contact.id === newCustomerContacts.id
+            ? {
+                ...newCustomerContacts,
+                contactNo2: newCustomerContacts.contactNo2,
+              }
+            : contact
+        );
+      } else {
+        const tempId = `temp-${Date.now()}`;
+        const newContact = {
+          ...newCustomerContacts,
+          id: tempId,
+          contactNo2: newCustomerContacts.contactNo2 || newCustomerContacts.contactNo,
+        };
+  
+        updatedContacts = [...updatedContacts, newContact];
+      }
+      setIsSaving(false);
+      setCustomerContacts(updatedContacts);
+      setIsEditingCustomerContacts(false);
+      setNotification({ message: "Save successful (temporary)", type: "success" });
+    } catch (error) {
+      setNotification({ message: "Error saving data", type: "error" });
+      console.error("Error saving data:", error);
+    }
+  };  
 
   const handleDeleteCustomerContacts = (id) => {
     const handleConfirm = () => {
@@ -328,23 +533,22 @@ const Customer = () => {
   const customerContactsColumns = [
     { key: "id", label: "No.", hidden: true },
     { key: "name", label: "Name", hidden: false },
-    { key: "contactNo", label: "Contact No.", hidden: false }, 
+    { key: "contactNo2", label: "Contact No.", hidden: false }, 
     { key: "details", label: "Details", hidden: true },
   ];
 
   const customRenderCustomerContacts = {
     actions: (item) => (
-      <button
+      <Button
         onClick={() => handleEditCustomerContacts(item)} 
         className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
       >
         Edit
-      </button>
+      </Button>
     ),
   };
 
-
-  // Customer Vehicles 
+  // Customer Vehicle Make and Model
   const getMakeModels = async () => {
     try {
       const response = await fetchDropdowns(10); 
@@ -354,46 +558,23 @@ const Customer = () => {
     }
   };
 
-  const getVehicleStatus = async () => {
+  useEffect(() => {
+    getMakeModels();
+  }, []);
+
+  // Customer Vehicle Status
+  const getVehicleStatuses = async () => {
     try {
       const response = await fetchDropdowns(11); 
-      setVehicleStatus(response); 
+      setVehicleStatuses(response); 
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
 
-  const getCustomerVehicles = async () => {
-    setLoadingCustomerVehicles(true);
-    try {
-      const data = await fetchCustomerVehicle(customers.id);
-
-    } catch {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoadingCustomerVehicles(false);
-    }
-  }
-
   useEffect(() => {
-    getMakeModels();
+    getVehicleStatuses();
   }, []);
-
-  useEffect(() => {
-    getVehicleStatus();
-  }, []);
-
-  useEffect(() => {
-    if (makeModels.length > 0) {
-      getCustomerVehicles(); 
-    }
-  }, [makeModels]);
-
-  useEffect(() => {
-    if (vehicleStatuses.length > 0) {
-      getCustomerVehicles(); 
-    }
-  }, [vehicleStatuses]);
 
   const handleAddCustomerVehicles = () => {
     setNewCustomerVehicles({
@@ -412,16 +593,14 @@ const Customer = () => {
         makeModelId: Number(customerVehicle.makeModelId), 
         makeModel: makeModels.find(m => m.id === Number(customerVehicle.makeModelId))?.name || "Loading...",
         vehicleStatusId: Number(customerVehicle.vehicleStatusId), 
-        status: vehicleStatuses.find(v => v.id === Number(customerVehicle.vehicleStatusId))?.name || "Loading...",
+        vehicleStatus: vehicleStatuses.find(v => v.id === Number(customerVehicle.vehicleStatusId))?.name || "Loading...",
     }));
 
     try {
       const makeModelData = await fetchDropdownTypeList(10, customerVehicle.makeModelId);
-      console.log(makeModelData)
       const makeModel = makeModelData?.[0]?.name || "Unknown";
 
       const vehicleStatusData = await fetchDropdownTypeList(11, customerVehicle.vehicleStatusId);
-      console.log(vehicleStatusData)
       const vehicleStatus = vehicleStatusData?.[0]?.name || "Unknown";
 
       setNewCustomerVehicles(prev => ({
@@ -437,71 +616,55 @@ const Customer = () => {
   };
 
   const handleSaveCustomerVehicles = async () => {
+    // Temporary Vehicle 
     try {
       let updatedVehicles = [...customerVehicles];
-  
-      // Declare variables at the start to avoid reference errors
-      let makeModelName = "Unknown";
-      let vehicleStatusName = "Unknown";
-  
+
       if (newCustomerVehicles.id) {
-        const existingVehicle = updatedVehicles.find(c => c.id === newCustomerVehicles.id);
-        makeModelName = existingVehicle?.makeModel || "Unknown";
-        vehicleStatusName = existingVehicle?.vehicleStatus || "Unknown";
-  
+        const existingVehicle = updatedVehicles.find(v => v.id === newCustomerVehicles.id);
+        
+        let makeModelName = existingVehicle?.makeModel || "Unknown"; 
+
         if (existingVehicle?.makeModelId !== newCustomerVehicles.makeModelId) {
-          const makeModelData = await fetchDropdownTypeList(10, newCustomerVehicles.makeModelId);
+
+          const makeModelData = await fetchDropdownTypeList(6, newCustomerVehicles.makeModelId);
           makeModelName = makeModelData?.[0]?.name || "Unknown";
         }
-  
-        updatedVehicles = updatedVehicles.map(makeModel =>
-          makeModel.id === newCustomerVehicles.id
-            ? { ...newCustomerVehicles, makeModel: makeModelName }
-            : makeModel
-        );
-  
-        if (existingVehicle?.vehicleStatusId !== newCustomerVehicles.vehicleStatusId) {
-          const vehicleStatusData = await fetchDropdownTypeList(11, newCustomerVehicles.vehicleStatusId);
-          vehicleStatusName = vehicleStatusData?.[0]?.name || "Unknown";
-        }
-  
-        updatedVehicles = updatedVehicles.map(vehicleStatus =>
-          vehicleStatus.id === newCustomerVehicles.id
-            ? { ...newCustomerVehicles, vehicleStatus: vehicleStatusName }
-            : vehicleStatus
+
+        updatedVehicles = updatedVehicles.map(contact =>
+          contact.id === newCustomerVehicles.id
+            ? { ...newCustomerVehicles, 
+              makeModel: makeModelName,
+              contactno2: newCustomerVehicles.contactNo2
+              
+            }
+            : contact
         );
       } else {
         const tempId = `temp-${Date.now()}`;
-  
-        // Fetch names for new entries
-        const makeModelData = await fetchDropdownTypeList(10, newCustomerVehicles.makeModelId);
-        makeModelName = makeModelData?.[0]?.name || "Unknown";
-  
-        const vehicleStatusData = await fetchDropdownTypeList(11, newCustomerVehicles.vehicleStatusId);
-        vehicleStatusName = vehicleStatusData?.[0]?.name || "Unknown";
-  
-        const newVehicle = {
-          ...newCustomerVehicles,
-          id: tempId,
+        const makeModelData = await fetchDropdownTypeList(6, newCustomerVehicles.makeModelId);
+        const makeModelName = makeModelData?.[0]?.name || "Unknown";
+
+        const newVehicle = { 
+          ...newCustomerVehicles, 
+          id: tempId, 
           makeModelId: parseInt(newCustomerVehicles.makeModelId, 10),
           makeModel: makeModelName,
-          vehicleStatusId: parseInt(newCustomerVehicles.vehicleStatusId, 10),
-          vehicleStatus: vehicleStatusName,
+          contactno2: newCustomerVehicles.contactNo2
         };
-  
+
         updatedVehicles = [...updatedVehicles, newVehicle];
       }
-  
+
       setCustomerVehicles(updatedVehicles);
       setIsEditingCustomerVehicles(false);
       setNotification({ message: "Save successful (temporary)", type: "success" });
-  
+
     } catch (error) {
       setNotification({ message: "Error saving data", type: "error" });
       console.error("Error saving data:", error);
     }
   };
-  
 
   const handleDeleteCustomerVehicles = (id) => {
     const handleConfirm = () => {
@@ -560,7 +723,7 @@ const Customer = () => {
           onConfirm={notification.onConfirm} 
           onCancel={notification.onCancel}  
         />}
-      {loading ? (
+      {isLoadingCustomers ? (
         // <p>Loading...</p>
         <TableSkeleton columns={4} rows={5}/>
       ) : isEditing ? (
@@ -569,66 +732,125 @@ const Customer = () => {
           <AccordionItem key="customer_info" aria-label="Customer Information" title="Customer Information">
             <div className="grid grid-cols-12 gap-3 mb-4">
               <div className="col-span-2 gap-3">
-                <Input label="Customer Code" value="CUS-00001" disabled />
-              </div>
-              <div className="col-span-6 gap-3">
-                <Input label="Customer Name" placeholder="Enter Name" />
+                <Input 
+                  className="w-full mb-2" 
+                  label="Customer Code" 
+                  placeholder="Enter customer code" 
+                  value={newCustomer.code}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, code: e.target.value })}
+                  disabled
+                  isRequired
+                />
               </div>
               <div className="col-span-4 gap-3">
-                <Input label="TIN" placeholder="Enter TIN" />
+                <Input 
+                  className="w-full mb-2" 
+                  label="Customer Name" 
+                  placeholder="Enter name" 
+                  value={newCustomer.name}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                  isRequired
+                />
+              </div>
+              <div className="col-span-2 gap-3">
+                <Input 
+                  className="w-full mb-2" 
+                  label="TIN" 
+                  placeholder="Enter TIN" 
+                  value={newCustomer.tin}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, tin: e.target.value })}
+                  isRequired
+                />
+              </div>
+              <div className="col-span-4 gap-3">
+                <MultiDropdown 
+                  label="Station"
+                  customOptions={stations.map(s => ({
+                    id: s.id,
+                    name: s.name
+                  }))}
+                  isMultiline
+                  value={newCustomer.stationId || []} 
+                  onChange={(e) => setNewCustomer({ 
+                    ...newCustomer, 
+                    stationId: e.target.value.map(id => parseInt(id, 10)) 
+                  })} 
+                />
               </div>
             </div>
 
             <div className="grid grid-cols-12 gap-3 mb-4">
-              <div className="col-span-5 gap-3">
-                <Input label="Billing Address: Street" placeholder="Enter Billing Address" />
+              <div className="col-span-3 gap-3">
+                <Input 
+                  className="w-full mb-2" 
+                  label="Billing Address: Street" 
+                  placeholder="Enter Billing Address" 
+                  value={newCustomer.billingAddress}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, billingAddress: e.target.value })}
+                  isRequired
+                />
               </div>
               <div className="col-span-3 gap-3">
                 <Dropdown 
                   label="Province"
                   typeId={14} 
-                  value={newCustomer.province} 
-                  onChange={(e) => setNewCustomer({ ...newCustomer, province: e.target.value })} 
+                  value={newCustomer.provinceId} 
+                  onChange={(e) => setNewCustomer({ ...newCustomer, provinceId: e.target.value })} 
                 />
               </div>
-              <div className="col-span-2 gap-3">
+              <div className="col-span-3 gap-3">
                 <Dropdown 
                   label="City"
                   typeId={15} 
-                  value={newCustomer.city} 
-                  onChange={(e) => setNewCustomer({ ...newCustomer, city: e.target.value })} 
+                  value={newCustomer.cityId} 
+                  onChange={(e) => setNewCustomer({ ...newCustomer, cityId: e.target.value })} 
                 />
               </div>
-              <div className="col-span-2 gap-3">
+              <div className="col-span-3 gap-3">
                 <Dropdown 
                   label="Barangay"
                   typeId={16} 
-                  value={newCustomer.barangay} 
-                  onChange={(e) => setNewCustomer({ ...newCustomer, barangay: e.target.value })} 
+                  value={newCustomer.barangayId} 
+                  onChange={(e) => setNewCustomer({ ...newCustomer, barangayId: e.target.value })} 
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-12 gap-3 mb-4">
-              <div className="col-span-3 gap-3">
-                <Input label="Contact No." placeholder="Enter Contact No." />
-              </div>
-              <div className="col-span-5 gap-3">
-                <Input label="Email" placeholder="Enter Email" />
-              </div>
               <div className="col-span-2 gap-3">
-              <Dropdown 
-                  label="Tax Code"
-                  typeId={9} 
-                  value={newCustomer.taxCode} 
-                  onChange={(e) => setNewCustomer({ ...newCustomer, taxCode: e.target.value })} 
+                <Input 
+                  className="w-full mb-2" 
+                  label="Contact No." 
+                  placeholder="Enter Contact No." 
+                  value={newCustomer.contactNo}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, contactNo: e.target.value })}
+                  isRequired
                 />
               </div>
-              <div className="col-span-2 gap-3">
-                <DropdownStatus
-                  className="w-full mb-2"
-                  value={Boolean(newCustomer.status)} 
-                  onChange={(val) => setNewCustomer({ ...newCustomer, status: val })} 
+              <div className="col-span-4 gap-3">
+                <Input 
+                  className="w-full mb-2" 
+                  label="Email" 
+                  placeholder="Enter email" 
+                  value={newCustomer.email}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                  isRequired
+                />
+              </div>
+              <div className="col-span-3 gap-3">
+                <Dropdown 
+                  label="Tax Code"
+                  typeId={9} 
+                  value={newCustomer.taxCodeId} 
+                  onChange={(e) => setNewCustomer({ ...newCustomer, taxCodeId: e.target.value })} 
+                />
+              </div>
+              <div className="col-span-3 gap-3">
+                <Dropdown 
+                  label="Customer Status"
+                  typeId={8} 
+                  value={newCustomer.customerStatusId} 
+                  onChange={(e) => setNewCustomer({ ...newCustomer, customerStatusId: e.target.value })} 
                 />
               </div>
             </div>
@@ -652,8 +874,8 @@ const Customer = () => {
                     className="w-full mb-2" 
                     label="Contact No." 
                     placeholder="Enter contact no." 
-                    value={newCustomerContacts.contactNo}
-                    onChange={(e) => setNewCustomerContacts({ ...newCustomerContacts, contactNo: e.target.value })}
+                    value={newCustomerContacts.contactNo2}
+                    onChange={(e) => setNewCustomerContacts({ ...newCustomerContacts, contactNo2: e.target.value })}
                     isRequired
                   />
                   <Textarea 
@@ -674,11 +896,10 @@ const Customer = () => {
                       <Button onClick={() => setIsEditingCustomerContacts(false)} color="default" className="text-[blue]">Close</Button>
                       <Button 
                         onClick={handleSaveCustomerContacts} 
-                        // disabled={isSaving} 
+                        disabled={isSaving} 
                         color="primary"
                       >
-                        {/* {isSaving ? "Saving..." : "Save"} */}
-                        Save
+                        {isSaving ? "Saving..." : "Save"}
                       </Button>
                     </div>
                   </div>
@@ -724,7 +945,7 @@ const Customer = () => {
                     isRequired
                   />
                   <Dropdown 
-                    label="Status"
+                    label="Customer Status"
                     typeId={11} 
                     value={newCustomerVehicles.vehicleStatusId} 
                     onChange={(e) => setNewCustomerVehicles({ ...newCustomerVehicles, vehicleStatusId: e.target.value })} 
@@ -775,8 +996,16 @@ const Customer = () => {
             ) : (
               <div></div> 
             )}
-            <Button onClick={handleSave} color="primary" className="w-min rounded-md font-semibold text-base text-white">
-                Save
+            <Button 
+              onClick={handleSave} 
+              disabled={isSaving} 
+              isLoading={isSaving}
+              spinner={<Spinner size="sm" variant="wave" color="default" />}
+              spinnerPlacement="end"
+              color="primary"
+              className="w-min rounded-md font-semibold text-base text-white"
+            >
+              {isSaving ? "Saving" : "Save"}
             </Button>
             <Button className="w-min rounded-md font-semibold text-base text-blue-600 bg-blue-200">
                 View History

@@ -136,35 +136,31 @@ router.delete("/employee/:employeeId/photo/delete", async (req, res) => {
   try {
     const { employeeId } = req.params;
 
-    console.log(`Attempting to delete photo for employee ID: ${employeeId}`);
-
     await client.query("BEGIN");
 
-    console.log(`Checking for photo in database for employee ID: ${employeeId}`);
-    const checkPath = await client.query(`
-      SELECT photo
-      FROM employeePhoto
-      WHERE employeeId = $1
-    `, [employeeId]);
+    // const checkPath = await client.query(`
+    //   SELECT photo
+    //   FROM employeePhoto
+    //   WHERE employeeId = $1
+    // `, [employeeId]);
 
-    if (checkPath.rows.length === 0) {
-      console.error(`No photo found for employee ID: ${employeeId}`);
-    }
+    // if (checkPath.rows.length === 0) {
+    //   console.error(`No photo found for employee ID: ${employeeId}`);
+    // }
 
-    const photoPath = checkPath.rows[0].photo;
-    console.log(`Found photo for employee ID: ${employeeId}, photo path: ${photoPath}`);
+    // const photoPath = checkPath?.rows?.[0]?.photo;
 
-    const filePath = path.join(__dirname, '..', '..', photoPath);
-    console.log(`Checking if file exists at path: ${filePath}`);
+    // if (photoPath) {
+    //   const filePath = path.join(__dirname, '..', '..', photoPath);
+    //   if (fs.existsSync(filePath)) {
+    //     fs.unlinkSync(filePath);  
+    //   } else {
+    //     console.error(`File not found at path: ${filePath}`);
+    //   }
+    // } else {
+    //   console.log(`No photo found for employee ID: ${employeeId}`);
+    // }
 
-    if (fs.existsSync(filePath)) {
-      console.log(`File found at path: ${filePath}, deleting file.`);
-      fs.unlinkSync(filePath);  
-    } else {
-      console.error(`File not found at path: ${filePath}`);
-    }
-
-    console.log(`Deleting photo record from database for employee ID: ${employeeId}`);
     const result = await client.query(`
       DELETE
       FROM employeePhoto
@@ -177,6 +173,7 @@ router.delete("/employee/:employeeId/photo/delete", async (req, res) => {
   } catch (err) {
     await client.query("ROLLBACK");
 
+    console.log(err)
     console.error("Error occurred during deletion:", err);
     res.status(500).json({ error: "Error deleting photo." });
   } finally {

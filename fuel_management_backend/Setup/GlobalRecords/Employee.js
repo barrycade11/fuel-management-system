@@ -88,7 +88,7 @@ router.get("/employees", async (req, res) => {
               ON  a.employeeStatusId = j.id
                   AND j.dropdownTypeId = 7
     `);
-    // console.log(result.rows);
+
     res.status(201).json(result.rows);
   }
   catch (err) {
@@ -188,9 +188,6 @@ router.post("/employee", async (req, res) => {
       const nextNumber = lastNumber + 1;
       newCode = `EMP-${nextNumber.toString().padStart(5, '0')}`;
     }
-
-    console.log("generated code:", newCode)
-    console.log("request body:", req.body)
     
     const result = await client.query(`
       INSERT INTO employee
@@ -217,8 +214,6 @@ router.post("/employee", async (req, res) => {
       VALUES      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       RETURNING id
     `, [newCode, firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email]);
-    
-    console.log(result.rows[0])
 
     await client.query("COMMIT");
     
@@ -237,9 +232,7 @@ router.post("/employee", async (req, res) => {
 router.put("/employee/:id", async (req, res) => {
   const client = await pool.connect();
   const { firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email } = req.body;
-  console.log(req.body)
   const { id } = req.params;
-  console.log(id)
   if (!id) {
     console.error("Error: ID is undefined or missing");
     return res.status(400).json({ error: "ID is required" });
@@ -272,8 +265,6 @@ router.put("/employee/:id", async (req, res) => {
       WHERE       id = $1 
       RETURNING id
     `, [id, firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email]);
-    
-    console.log(result.rows[0])
 
     await client.query("COMMIT");
     
@@ -311,6 +302,7 @@ router.delete("/employee/:id", async (req, res) => {
   catch (err) {
     await client.query("ROLLBACK");
 
+    console.log(err)
     res.status(500).json({ error: "Database query error" });
   }
   finally {

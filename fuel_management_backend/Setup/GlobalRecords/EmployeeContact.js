@@ -121,7 +121,7 @@ router.put("/employee/:employeeId/contact/:id", async (req, res) => {
   }
 });
 
-router.delete("/employee/:employeeId/contact/:id", async (req, res) => {
+router.delete("/employee/:employeeId/contact/delete", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -143,6 +143,7 @@ router.delete("/employee/:employeeId/contact/:id", async (req, res) => {
   catch (err) {
     await client.query("ROLLBACK");
 
+    console.log(err)
     res.status(500).json({ error: "Database query error" });
   }
   finally {
@@ -150,7 +151,7 @@ router.delete("/employee/:employeeId/contact/:id", async (req, res) => {
   }
 });
 
-router.delete("/employee/:employeeId/delete", async (req, res) => {
+router.delete("/employee/:employeeId/contact/delete", async (req, res) => {
   const client = await pool.connect();
 
   try {
