@@ -207,7 +207,7 @@ const TanksDashboard = () => {
     ])
 
     return (
-        <div className="grid gap-10 px-5">
+        <div className="grid gap-10">
             <SimpleTable2 
                 mainHeader={"Tank Name"}
                 tankData={tankData}

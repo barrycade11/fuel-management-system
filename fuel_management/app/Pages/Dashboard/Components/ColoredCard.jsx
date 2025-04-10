@@ -3,7 +3,7 @@ const ColoredCard = ({color, title, total, percentage, target, prior}) => {
         <div className="h-auto w-auto min-w-40 p-2 rounded-3xl flex flex-col justify-between" style={{ backgroundColor: color }}>
             <div className="flex justify-between text-white font-semibold">
                 <label className="text-sm uppercase">{title}</label>
-                <label className="text-xl">{percentage}%</label>
+                <labebl className="text-xl">{percentage}%</labebl>
             </div>
 
             <div>

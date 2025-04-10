@@ -1,59 +1,61 @@
 import { useState } from "react"
-import { TankInputRows } from "./Rows/TankInputRows"
+import ColorBGText from "~/Components/ColoredBGText"
+import { Fuels } from "~/Constants/Labels"
+import SimpleInput from "~/Components/SimpleInput"
 
-const TanksInput = ({tankTotal, setTankTotal}) => {
+const TanksInput = () => {
     const tableHeader = ["Tank Name", "Fuel", "Price", "Dip", "Volume"]
-    // const [tankData, setTankData] = useState([
-    //     {
-    //         id: 1,
-    //         fuel: Fuels[0],
-    //         price: 72.5,
-    //         dip: 1238,
-    //         volume: 9234.23
-    //     },
-    //     {
-    //         id: 2,
-    //         fuel: Fuels[1],
-    //         price: 72.5,
-    //         dip: 1238,
-    //         volume: 9234.23
-    //     },
-    //     {
-    //         id: 3,
-    //         fuel: Fuels[2],
-    //         price: 72.5,
-    //         dip: 1238,
-    //         volume: 9234.23
-    //     },
-    //     {
-    //         id: 4,
-    //         fuel: Fuels[3],
-    //         price: 72.5,
-    //         dip: 1238,
-    //         volume: 9234.23
-    //     },
-    //     {
-    //         id: 5,
-    //         fuel: Fuels[0],
-    //         price: 72.5,
-    //         dip: 1238,
-    //         volume: 9234.23
-    //     },
-    //     {
-    //         id: 6,
-    //         fuel: Fuels[1],
-    //         price: 72.5,
-    //         dip: 1238,
-    //         volume: 9234.23
-    //     },
-    //     {
-    //         id: 7,
-    //         fuel: Fuels[2],
-    //         price: 72.5,
-    //         dip: 1238,
-    //         volume: 9234.23
-    //     }
-    // ])
+    const [tankData, setTankData] = useState([
+        {
+            id: 1,
+            fuel: Fuels[0],
+            price: 72.5,
+            dip: 1238,
+            volume: 9234.23
+        },
+        {
+            id: 2,
+            fuel: Fuels[1],
+            price: 72.5,
+            dip: 1238,
+            volume: 9234.23
+        },
+        {
+            id: 3,
+            fuel: Fuels[2],
+            price: 72.5,
+            dip: 1238,
+            volume: 9234.23
+        },
+        {
+            id: 4,
+            fuel: Fuels[3],
+            price: 72.5,
+            dip: 1238,
+            volume: 9234.23
+        },
+        {
+            id: 5,
+            fuel: Fuels[0],
+            price: 72.5,
+            dip: 1238,
+            volume: 9234.23
+        },
+        {
+            id: 6,
+            fuel: Fuels[1],
+            price: 72.5,
+            dip: 1238,
+            volume: 9234.23
+        },
+        {
+            id: 7,
+            fuel: Fuels[2],
+            price: 72.5,
+            dip: 1238,
+            volume: 9234.23
+        }
+    ])
 
     return (
         <div className="h-min w-full border-[1px]">
@@ -71,14 +73,49 @@ const TanksInput = ({tankTotal, setTankTotal}) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {tankTotal.map((item, index)=> {
+                        {tankData.map((item, index)=> {
                             return (
                                 <tr key={index} className="h-full w-full border-[1px]">
-                                    <TankInputRows 
-                                        tankData={item}
-                                        tankTotal={tankTotal}
-                                        setTankTotal={setTankTotal}
-                                    />
+                                    <td className="text-center items-center px-6">{item?.id}</td>
+                                    <td className="text-center grid justify-center items-center px-6 py-1">
+                                        <ColorBGText text={item?.fuel.name} color={item?.fuel.color}/>
+                                    </td>
+                                    <td className="text-center items-center px-6">
+                                        <SimpleInput
+                                            version={1}
+                                            label={''}
+                                            placeholder={"type here"}
+                                            icon={'₱'}
+                                            type={"number"}
+                                            textAlign={"center"}
+                                            initialValue={item?.price}
+                                        // setInitialValue={}
+                                        />
+                                    </td>
+                                    <td className="text-center items-center px-6">
+                                        <SimpleInput
+                                            version={1}
+                                            label={''}
+                                            placeholder={"type here"}
+                                            icon={'₱'}
+                                            type={"number"}
+                                            textAlign={"center"}
+                                            initialValue={item?.dip}
+                                        // setInitialValue={}
+                                        />
+                                    </td>
+                                    <td className="text-center items-center px-6">
+                                        <SimpleInput
+                                            version={1}
+                                            label={''}
+                                            placeholder={"type here"}
+                                            icon={'₱'}
+                                            type={"number"}
+                                            textAlign={"center"}
+                                            initialValue={item?.volume}
+                                        // setInitialValue={}
+                                        />
+                                    </td>
                                 </tr>
                             )
                         })}

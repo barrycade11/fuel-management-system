@@ -1,4 +1,4 @@
-import apiClient from "~/Constants/ApiClient";
+import {apiClient} from "~/Constants/ApiClient";
 
 export const useUploadDailySalesInputSelect = async (data) => {
     try {

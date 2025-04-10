@@ -4,7 +4,7 @@ import Dropdown from "~/Components/Dropdown";
 import Notification from "~/Components/Notification";
 import TableSkeleton from "~/Components/TableSkeleton";
 import DropdownStatus from "~/Components/DropdownStatus";
-import { Textarea, Input, Button } from "@heroui/react";
+import { Textarea, Input, Button, Spinner } from "@heroui/react";
 import { 
   fetchFuelMasters, 
   fetchFuelMasterDetails, 
@@ -18,6 +18,7 @@ const FuelMaster = () => {
   const [fuels, setFuels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
   const [newFuel, setNewFuel] = useState({ 
@@ -60,7 +61,7 @@ const FuelMaster = () => {
 
   const handleEdit = async (fuel) => {
     try {
-        const categoryData = await fetchDropdownTypeList(3, 0, fuel.categoryid); 
+        const categoryData = await fetchDropdownTypeList(3, fuel.categoryid); 
 
         if (categoryData.length > 0) {
             setNewFuel((prev) => ({
@@ -82,6 +83,9 @@ const FuelMaster = () => {
         return;
     }
 
+    if (isSaving) return;
+    setIsSaving(true);
+
     try {
         if (newFuel.id) {
             await updateFuelMaster(newFuel.id, newFuel);
@@ -97,6 +101,8 @@ const FuelMaster = () => {
     } catch (error) {
         setNotification({ message: "Error saving data", type: "error" });
         console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false); 
     }
   };
 
@@ -197,7 +203,6 @@ const FuelMaster = () => {
               <Dropdown 
                   label="Fuel Category"
                   typeId={3} 
-                  parentId={0} 
                   value={newFuel.categoryId} 
                   onChange={(e) => setNewFuel({ ...newFuel, categoryId: e.target.value })} 
               />
@@ -230,7 +235,16 @@ const FuelMaster = () => {
                 )}
                 <div className="flex space-x-2">
                   <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
-                  <Button onClick={handleSave} color="primary">Save</Button>
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={isSaving} 
+                    isLoading={isSaving}
+                    spinner={<Spinner size="sm" variant="wave" color="default" />}
+                    spinnerPlacement="end"
+                    color="primary"
+                  >
+                    {isSaving ? "Saving" : "Save"}
+                  </Button>
                 </div>
               </div>
             </div>

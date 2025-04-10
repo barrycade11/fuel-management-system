@@ -12,7 +12,7 @@ const SimpleInput = ({version, label, placeholder, icon, type, textAlign, initia
                     placeholder={placeholder} 
                     required 
                     value={initialValue}
-                    onChange={(e)=>setInitialValue(e.target.value)}
+                    onChange={()=>setInitialValue}
                 />
             )}
             {version==2 && (

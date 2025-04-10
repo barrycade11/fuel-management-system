@@ -5,7 +5,9 @@ const TextBoxField = ({
   type = "text",
   name = "",
   placeholder = "",
-  onChange 
+  onChange,
+  value = "",
+  endContent = null, // get JSX.Element
 }) => {
 
   const handleChange = (e) => {
@@ -15,16 +17,20 @@ const TextBoxField = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 py-3">
-      <h3 className="text-black font-semibold text-small">{label}</h3>
+    <div className="flex flex-col">
+      <h3 className="text-default-500 font-semibold text-small">{label}</h3>
       <div className="flex w-full flex-wrap items-end md:flex-nowrap mb-6 md:mb-0 gap-4">
         <Input
+          aria-labelledby="none"
           onChange={handleChange}
           labelPlacement={'outside'}
           placeholder={placeholder}
           type={type}
-          
-          className='w-full  border border-black bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 placeholder-gray-400'
+          radius='none'
+          defaultValue={value}
+          name={name}
+          endContent={endContent}
+          className='w-full border border-default-50 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 placeholder-gray-400'
         />
       </div>
     </div>

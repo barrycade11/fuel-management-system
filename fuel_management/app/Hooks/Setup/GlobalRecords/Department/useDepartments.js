@@ -1,5 +1,16 @@
 import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
+import { useQuery } from "@tanstack/react-query";
+
+const useFetchDepartments = () => {
+  return useQuery({
+    queryKey: ['deparments'],
+    queryFn: async () => {
+      const response = await apiClient.get(`${endPoints.GlobalRecords}/departments`)
+      return response.data;
+    }
+  });
+}
 
 const fetchDepartments = async () => {
     try {
@@ -27,7 +38,7 @@ const createDepartment = async (data) => {
     try {
         // console.log("POST URL:", `${endPoints.GlobalRecords}/Department`);
         // console.log("Payload:", data);
-        const response = await apiClient.post(`${endPoints.GlobalRecords}/Deparment`, data);
+        const response = await apiClient.post(`${endPoints.GlobalRecords}/Department`, data);
         // console.log(response)
         return response.data;
     }
@@ -59,6 +70,7 @@ const deleteDepartment = async (id) => {
 };
 
 export { 
+    useFetchDepartments,
     fetchDepartments, 
     fetchDepartmentDetails, 
     createDepartment, 

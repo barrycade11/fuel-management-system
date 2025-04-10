@@ -2,6 +2,9 @@
  * A class that provides string routes and utility methods for route management.
  */
 class StringRoutes {
+
+  static changePassword = '/change-password';
+
   static dev = 'dev';
   static dashboard = 'dashboard';
   static salesTransactions = 'sales-transactions';
@@ -28,7 +31,11 @@ class StringRoutes {
   static incentives = 'global-setup/incentives';
 
   static settings = 'settings';
+  static register = 'register';
   static permission = 'permissions';
+
+  static stationList = 'station/list';
+  static stationDetail = 'details';
 
   /**
    * Retrieves the current sub-route from a given pathname.
@@ -39,7 +46,7 @@ class StringRoutes {
   getCurrentSubRoute = (pathname) => {
     if (!pathname) return;
 
-    const subRoutes = pathname.split('/');
+    const subRoutes = pathname.split('/')
     return subRoutes[subRoutes.length - 1];
   }
 

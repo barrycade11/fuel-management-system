@@ -5,7 +5,8 @@ require("dotenv").config();
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use('/global-setup/uploads', express.static('Uploads'));
 
 // DASHBOARD
 const dashboardRoutes = require("./Dashboard/AllReports");
@@ -73,7 +74,7 @@ app.use("/Setup/GlobalRecords", customerVehicleRoutes);
 
 // STATION
 const stationRoutes = require("./Setup/Stations/Station");
-app.use("/Setup/Stations", stationRoutes);
+app.use("/Setup/Stations", ValidateToken, stationRoutes);
 
 // STATION DEPARTMENT
 const stationDepartmentRoutes = require("./Setup/Stations/StationDepartment");
@@ -104,8 +105,8 @@ const stationTankPumpRoutes = require("./Setup/Stations/StationTankPump");
 app.use("/Setup/Stations", stationTankPumpRoutes);
 
 // USERS
-const settingsUserRoutes = require("./Settings/Users/User");
-app.use("/Settings/Users", settingsUserRoutes);
+const settingsUserRoutes = require("./Settings/Users");
+app.use("/Settings/Users", ValidateToken, settingsUserRoutes);
 
 // AUTHENTICATION
 const authenticationRoutes = require("./Authentication/Authentication");
@@ -118,6 +119,10 @@ app.use("/Settings", ValidateToken, rolesRoutes);
 // PERMISSIONS ROUTES
 const permissionRoutes  = require("./Settings/Permissions");
 app.use("/Settings/Permissions", ValidateToken, permissionRoutes);
+
+//locations PH addresses
+const locationRoutes = require('./Locations/Address') ;
+app.use('/Locations', ValidateToken, locationRoutes);
 
 /*NO ACTUAL PURPOSE JUST FOR TESTING, CHECK ONLY IF SERVER RESPONSE*/
 app.use("/testing/token", ValidateToken, async (req, res) => {

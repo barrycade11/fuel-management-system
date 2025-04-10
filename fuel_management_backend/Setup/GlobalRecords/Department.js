@@ -3,6 +3,7 @@ const router = express.Router();
 const pool = require("../../Config/Connection");
 
 router.get("/departments", async (req, res) => {
+  // console.log("fetching departments")
   try {
     const result = await pool.query(`
       SELECT      a.id,
@@ -14,11 +15,11 @@ router.get("/departments", async (req, res) => {
                   c.id              as "subDepartmentId",
                   c.name            as "subDepartment"
       FROM        departmentHdr a
-      INNER JOIN  departmentLin b
+      LEFT JOIN  departmentLin b
               ON  a.id = b.departmentHdrId
-      INNER JOIN  dropdown c
+      LEFT JOIN  dropdown c
               ON  b.subDepartmentId = c.Id
-                  AND c.dropdownTypeId = 18
+                  AND c.dropdownTypeId = 19
     `);
     const resultFormatted = {};
 
@@ -41,7 +42,10 @@ router.get("/departments", async (req, res) => {
       }
     });
 
-    res.status(201).json(Object.values(resultFormatted));
+    // console.log(result.rows)
+    // console.log(resultFormatted)
+
+    res.status(200).json(Object.values(resultFormatted));
   }
   catch (err) {
     console.error(err);
@@ -66,7 +70,7 @@ router.get("/departments/:id", async (req, res) => {
               ON  a.id = b.departmentHdrId
       INNER JOIN  dropdown c
               ON  b.subDepartmentId = c.Id
-                  AND c.dropdownTypeId = 18
+                  AND c.dropdownTypeId = 19
       WHERE       a.id = $1
     `, [id]);
     const resultFormatted = {};
@@ -116,7 +120,7 @@ router.post("/department", async (req, res) => {
 
     const id = result.rows[0].id;
 
-    console.log(id)
+    // console.log(id)
     
     const subDepartmentItems = [];
     const subDepartmentQuery = subDepartments.map((item, index) => {
@@ -126,8 +130,8 @@ router.post("/department", async (req, res) => {
       return `($${base + 1}, $${base + 2})`;
     }).join(",");
 
-    console.log(subDepartmentItems)
-    console.log(subDepartmentQuery)
+    // console.log(subDepartmentItems)
+    // console.log(subDepartmentQuery)
 
     await client.query(`
       INSERT INTO departmentlin
@@ -152,6 +156,11 @@ router.post("/department", async (req, res) => {
 router.put("/department/:id", async (req, res) => {
   const client = await pool.connect();
 
+  // const { id } = req.params;
+  // const { name, subDepartments, details, status } = req.body;
+
+  // console.log(id)
+  // console.log(req.body)
   try {
     const { id } = req.params;
     const { name, subDepartments, details, status } = req.body;
@@ -160,7 +169,7 @@ router.put("/department/:id", async (req, res) => {
 
     const result = await client.query(`
       UPDATE      departmentHdr
-      SET         name = $2
+      SET         name = $2, 
                   details = $3,
                   status = $4
       WHERE       id = $1
@@ -179,15 +188,18 @@ router.put("/department/:id", async (req, res) => {
 
       return `($${base + 1}, $${base + 2})`;
     }).join(",");
+
     await client.query(`
-      INSERT INTO departmentLin
-                  (departmentHdrId, subDepartmentId)
+      INSERT INTO departmentlin
+                  (departmenthdrid, subdepartmentid)
       VALUES      ${subDepartmentQuery}
     `, subDepartmentItems);
 
     await client.query("COMMIT");
 
-    res.status(201).json(result.rows);
+
+    // res.status(201).json(result.rows);
+    res.status(201).json({success: true, message: "Record added successfully"});
   }
   catch (err) {
     await client.query("ROLLBACK");

@@ -1,4 +1,4 @@
-import React, { Children, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   UserIcon,
   LayoutDashboardIcon,
@@ -13,12 +13,30 @@ import {
   SettingsIcon,
   ChevronDown,
   ChevronUp,
-  Users
+  Users,
+  Menu,
+  X,
+  UsersIcon
 } from 'lucide-react'
 import useToggleDrawer from '~/Hooks/Sidenav/useToggleDrawer'
+import useAuth from '~/Hooks/Auth/useAuth';
 import { useLocation, useNavigate, NavLink } from 'react-router';
 import StringRoutes from '~/Constants/StringRoutes';
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, useToast, dropdown } from "@heroui/react";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Button,
+  useToast,
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerBody,
+  DrawerFooter,
+  useDisclosure
+} from "@heroui/react";
+
 
 const NavItemWithDropdown = ({
   hdrIcon = null,
@@ -26,21 +44,20 @@ const NavItemWithDropdown = ({
   children
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const { isOpen }  = useToggleDrawer(); 
-  const stringRoutes = new StringRoutes(); 
+  const { isOpen } = useToggleDrawer();
+  const stringRoutes = new StringRoutes();
   const { pathname } = useLocation()
 
   const toggleDropdown = () => {
     setDropdownOpen(state => !state);
-  } 
-  //isActive ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-blue-50'
+  }
 
   return (
-    <li className='flex flex-col '>
+    <li className='flex flex-col py-1 '>
       <NavLink
         to={'#'}
         className={({ isActive }) =>
-          `px-4 py-2 flex flex-row items-center text-gray-800 cursor-pointer ${stringRoutes.getRootRoute(pathname).includes(StringRoutes.settings)? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-blue-50'}`
+          `px-4 py-2 flex flex-row items-center text-gray-800 cursor-pointer ${stringRoutes.getRootRoute(pathname).includes(StringRoutes.settings) ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-blue-50'}`
         }
         onClick={toggleDropdown}
       >
@@ -87,7 +104,7 @@ const NavItem = ({ icon, text, active = false, indented = false, url = "" }) => 
       <NavLink
         to={url}
         className={({ isActive }) =>
-          `cursor-pointer flex items-center px-4 py-2   ${isActive ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-blue-50'}`
+          `cursor-pointer flex items-center px-4 py-2 ${isActive ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-blue-50'}`
         }
       >
         <span className="mr-3">{icon}</span>
@@ -105,9 +122,19 @@ const NavItem = ({ icon, text, active = false, indented = false, url = "" }) => 
 
 const AdminNavItem = () => {
   const { isOpen } = useToggleDrawer();
+  const { user, onSetClearToken } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    navigate('/')
+    onSetClearToken();
+  }
+
+  const handleChangePassword = () => {
+    navigate(StringRoutes.changePassword);
+  }
 
   return (
-
     <Dropdown>
       <DropdownTrigger>
         <li className="flex flex-row items-center px-3">
@@ -122,7 +149,7 @@ const AdminNavItem = () => {
             }}
           >
             <div className="flex items-center">
-              <span className="font-medium text-gray-700">Alice Feeney</span>
+              <span className="font-medium text-gray-700">{user.firstname + ' ' + user.lastname}</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-4 w-4 ml-1"
@@ -138,24 +165,23 @@ const AdminNavItem = () => {
                 />
               </svg>
             </div>
-            <p className="text-xs text-gray-600">Admin</p>
+            <p className="text-xs text-gray-600">{user.rolename}</p>
           </div>
         </li>
       </DropdownTrigger>
       <DropdownMenu aria-label="Static Actions">
-        <DropdownItem key="new">Logout</DropdownItem>
-        <DropdownItem key="copy">Change Password</DropdownItem>
+        <DropdownItem onPress={handleLogout} key="new">Logout</DropdownItem>
+        <DropdownItem onPress={handleChangePassword}>Change Password</DropdownItem>
       </DropdownMenu>
     </Dropdown>
   )
 }
 
+const SidebarContent = ({ compactMode = false }) => {
+  const { isOpen, toggleDrawer } = useToggleDrawer();
 
-/*
- * Sidebar sample 
- * */
-const Sidebar = () => {
-  const { isOpen } = useToggleDrawer();
+  // Force isOpen to true when in compact mode (for drawer view)
+  const displayOpen = compactMode ? true : isOpen;
 
   return (
     <div className="bg-blue-50 flex flex-col h-full">
@@ -168,9 +194,9 @@ const Sidebar = () => {
           />
           <div
             style={{
-              zIndex: isOpen ? '1' : '-1',
-              transform: isOpen ? 'translateX(0px)' : 'translateX(-10px)',
-              opacity: isOpen ? 1 : 0,
+              zIndex: displayOpen ? '1' : '-1',
+              transform: displayOpen ? 'translateX(0px)' : 'translateX(-10px)',
+              opacity: displayOpen ? 1 : 0,
               transition: 'transform 0.3s ease, opacity 0.3s ease',
             }}
           >
@@ -212,7 +238,7 @@ const Sidebar = () => {
           />
         </ul>
 
-        <ul >
+        <ul>
           <NavItemWithDropdown
             hdrIcon={<SettingsIcon size={18} />}
             text='Settings'
@@ -223,17 +249,76 @@ const Sidebar = () => {
               <span className='mr-3'>
                 <Users size={18} />
               </span>
-              <span>
+              <span className='text-sm text-default-600'>
                 Users
               </span>
             </NavLink>
           </NavItemWithDropdown>
+
+          <NavItemWithDropdown
+            text="Setup"
+            hdrIcon={<SettingsIcon color='black' size={18} />}>
+            <NavLink
+              to={StringRoutes.stationList}
+              className='flex items-center py-2 '>
+              <span className='mr-3'>
+                <Users size={18} />
+              </span>
+              <span className='text-sm text-default-600'>
+                Stations
+              </span>
+            </NavLink>
+            <NavLink
+              to={StringRoutes.globalSetup}
+              className='flex items-center py-2'>
+              <span className='mr-3'>
+                <Users size={18} />
+              </span>
+              <span className='text-sm text-default-600'>
+                Global Records
+              </span>
+            </NavLink>
+          </NavItemWithDropdown>
+
         </ul>
       </nav>
     </div>
-  )
-}
+  );
+};
 
+const Sidebar = ({ screenSize = "desktop", drawerSize = "md" }) => {
+  const { isOpen, toggleDrawer, isCompactSidebarOpen, onManageSidebarOpen } = useToggleDrawer();
+  const { isOpen: drawerIsOpen, onOpen: openDrawer, onClose: closeDrawer } = useDisclosure();
 
-export default Sidebar
+  const shouldShowDrawer = screenSize === 'mobile' || screenSize === 'tablet';
 
+  // For desktop view, show the regular sidebar
+  if (!shouldShowDrawer) {
+    return <SidebarContent />;
+  }
+
+  // For mobile and tablet view, show the drawer and toggle button
+  return (
+    <>
+      <Drawer
+        isOpen={isCompactSidebarOpen}
+        onClose={onManageSidebarOpen}
+        placement="left"
+        size={drawerSize}
+        radius="sm"
+      >
+        <DrawerContent>
+          {(onClose) => (
+            <>
+              <DrawerBody className="p-0">
+                <SidebarContent compactMode={true} />
+              </DrawerBody>
+            </>
+          )}
+        </DrawerContent>
+      </Drawer>
+    </>
+  );
+};
+
+export default Sidebar;

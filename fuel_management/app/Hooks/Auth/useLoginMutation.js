@@ -1,4 +1,4 @@
-import apiClient from "~/Constants/ApiClient";
+import { apiClient } from "~/Constants/ApiClient";
 import { useMutation } from "@tanstack/react-query";
 
 const useLoginMutation = () => {

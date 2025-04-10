@@ -4,6 +4,7 @@ import FMSLogo from "~/Components/FMSLogo";
 import TextBoxField from "./Components/TextBoxField";
 import PrimaryButton from "~/Components/PrimayButton";
 import StringRoutes from "~/Constants/StringRoutes";
+import { Form } from '@heroui/react';
 import useLoginMutation from "~/Hooks/Auth/useLoginMutation";
 import useAuth from "~/Hooks/Auth/useAuth";
 import { addToast } from "@heroui/react";
@@ -31,9 +32,11 @@ const Login = () => {
    * @param {Event} e - Form submit event.
    */
   const onManageLogin = async (e) => {
+    e.preventDefault();
     setIsLoading(true);
     loginMutation.mutate(form, {
       onError: (error) => {
+        console.log(error);
         console.error("Login failed:", error.response?.data?.message || error.message);
         showError(error);
         setIsLoading(false);
@@ -71,26 +74,30 @@ const Login = () => {
           <div className="py-10">
             <FMSLogo />
           </div>
-          <form onSubmit={onManageLogin}>
-            <TextBoxField
-              label="Username"
-              placeholder="Enter your username"
-              onChange={(e) => onChange("username", e.target.value)} // Pass 'key' and value to onChange
-            />
-            <TextBoxField
-              label="Password"
-              placeholder="Enter your password"
-              type="password"
-              onChange={(e) => onChange("password", e.target.value)} // Pass 'key' and value to onChange
-            />
-            <div className="pt-5">
-              <PrimaryButton
-                isLoading={isLoading}
-                title="Login"
-                onClick={onManageLogin} // Handle button click for form submission
+          <Form onSubmit={onManageLogin} className="flex flex-col flex-1 items-stretch">
+            <div className="py-2">
+              <TextBoxField
+                label="Username"
+                placeholder="Enter your username"
+                onChange={(e) => onChange("username", e.target.value)} // Pass 'key' and value to onChange
               />
             </div>
-          </form>
+            <div className="py-2">
+              <TextBoxField
+                label="Password"
+                placeholder="Enter your password"
+                type="password"
+                onChange={(e) => onChange("password", e.target.value)} // Pass 'key' and value to onChange
+              />
+            </div>
+            <div className="pt-5">
+              <PrimaryButton
+                type="submit"
+                isLoading={isLoading}
+                title="Login"
+              />
+            </div>
+          </Form>
         </div>
       </div>
 
