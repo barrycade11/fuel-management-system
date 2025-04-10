@@ -11,7 +11,7 @@ router.get("/dropdowns/:typeId", async (req, res) => {
                 name,
                 details
       FROM      dropdown
-      WHERE     isActive = true
+      WHERE     status = true
                 AND dropdownTypeId = $1
     `, [typeId]);
     res.status(201).json(result.rows);
@@ -48,15 +48,15 @@ router.post("/dropdown/:typeId", async (req, res) => {
 
   try {
     const { typeId } = req.params;
-    const { name, details, isActive } = req.body;
+    const { name, details, status } = req.body;
     
     await client.query("BEGIN");
     
     const result = await client.query(`
       INSERT INTO dropdown
-                  (dropdownTypeId, name, details, isActive)
+                  (dropdownTypeId, name, details, status)
       VALUES      ($1, $2, $3, $4)
-    `, [typeId, name, details, isActive]);
+    `, [typeId, name, details, status]);
 
     await client.query("COMMIT");
 
@@ -77,7 +77,7 @@ router.put("/dropdown/:typeId/:id", async (req, res) => {
 
   try {
     const { typeId, id } = req.params;
-    const { name, details, isActive } = req.body;
+    const { name, details, status } = req.body;
     
     await client.query("BEGIN");
     
@@ -85,10 +85,10 @@ router.put("/dropdown/:typeId/:id", async (req, res) => {
       UPDATE      dropdown
       SET         name = $3,
                   details = $4,
-                  isActive = $5
+                  status = $5
       WHERE       dropdownTypeId = $1
                   AND id = $2
-    `, [typeId, id, name, details, isActive]);
+    `, [typeId, id, name, details, status]);
 
     await client.query("COMMIT");
 
