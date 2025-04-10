@@ -22,6 +22,26 @@ router.get("/dropdowns/:typeId", async (req, res) => {
   }
 });
 
+router.get("/dropdowns/:typeId/setup", async (req, res) => {
+  try {
+    const { typeId } = req.params;
+    
+    const result = await pool.query(`
+      SELECT    id,
+                name,
+                details,
+                status
+      FROM      dropdown
+      WHERE     dropdownTypeId = $1
+    `, [typeId]);
+    res.status(201).json(result.rows);
+  }
+  catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database query error" });
+  }
+});
+
 router.get("/dropdowns/:typeId/:id", async (req, res) => {
   try {
     const { typeId, id } = req.params;
@@ -31,8 +51,7 @@ router.get("/dropdowns/:typeId/:id", async (req, res) => {
                 name,
                 details
       FROM      dropdown
-      WHERE     isActive = true
-                AND dropdownTypeId = $1
+      WHERE     dropdownTypeId = $1
                 AND id = $2
     `, [typeId, id]);
     res.status(201).json(result.rows);
