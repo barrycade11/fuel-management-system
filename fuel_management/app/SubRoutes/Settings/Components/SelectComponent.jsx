@@ -57,8 +57,8 @@ const SelectOptionRole = ({
       aria-labelledby="none"
       radius="none"
       placeholder="Select Role"
-      // onChange={(e) => onChange(e)}
-      defaultSelectedKeys={defaultSelectedKeys}
+      onSelectionChange={(e) => onChange(e)}
+      selectedKeys={defaultSelectedKeys}
       fullWidth className="flex-1">
       {data.body.map((data) => (
         <SelectItem

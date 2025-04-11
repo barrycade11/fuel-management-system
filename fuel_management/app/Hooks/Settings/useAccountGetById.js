@@ -4,8 +4,6 @@ import { useParams } from "react-router";
 
 const useAccountGetById = () => {
   const { id } = useParams()
-  const query = useQueryClient();
-  // query.invalidateQueries(["accountid"]); // Clear cache before fetching
 
   return useQuery({
     queryKey: ['accountid', id],
@@ -13,9 +11,11 @@ const useAccountGetById = () => {
       // query.invalidateQueries(["accountid"]); // Clear cache before fetching
       // query.invalidateQueries(["roles"]); // Clear cache before fetching
       // query.invalidateQueries(["stationidname"]); // Clear cache before fetching
-      const response = await apiClient.get(`/Settings/Users/${id}`);
+      const response = await apiClient.get(`/Settings/Users/${id}`)
+
       return response.data
-    }
+    },
+    enabled: false, //prevent fetching when adding new user
   });
 }
 

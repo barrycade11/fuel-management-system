@@ -3,27 +3,6 @@ import UserWithDP from "~/Components/UserWithDP";
 import { ChevronUp, ChevronDown, MoreVertical } from "lucide-react";
 import PrimaryButton from "~/Components/PrimayButton";
 
-
-
-/**
- * Accept this data format
- *{
-      "id": 6,
-      "username": "jmdelacruz",
-      "firstname": "Jose Paulo",
-      "lastname": "Dela Cruz",
-      "roleid": 1,
-      "rolename": "SUPER ADMIN",
-      "stations": [
-          {
-              "stationid": 1,
-              "stationname": "test"
-          }
-      ]
-  }
- *
- */
-
 const TableHeader = ({
   children,
   onClick,
