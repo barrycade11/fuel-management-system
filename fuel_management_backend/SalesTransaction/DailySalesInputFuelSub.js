@@ -13,7 +13,7 @@ router.get("/dailySalesInput/:dailySalesInputId/Fuel/:fuelId/items", async (req,
                   a.transCt,
                   a.volume,
                   a.amount
-      FROM        dailySalesInputFuelLin a
+      FROM        dailySalesInput_FuelLin a
       INNER JOIN  fuelMaster b
               ON  a.fuelMasterId = b.id
       WHERE       a.dailySalesInputFuelHdr = $1
@@ -37,7 +37,7 @@ router.get("/dailySalesInputs/:dailySalesInputId/Fuel/:fuelId/items/:id", async 
                   a.transCt,
                   a.volume,
                   a.amount
-      FROM        dailySalesInputFuelLin a
+      FROM        dailySalesInput_FuelLin a
       INNER JOIN  fuelMaster b
               ON  a.fuelMasterId = b.id
       WHERE       a.dailySalesInputFuelHdr = $1
@@ -61,7 +61,7 @@ router.post("/dailySalesInput/:dailySalesInputId/Fuel/:fuelId/item", async (req,
     await client.query("BEGIN");
 
     const result = await client.query(`
-      INSERT INTO dailySalesInputFuelLin
+      INSERT INTO dailySalesInput_FuelLin
                   (
                     dailySalesInputFuelHdrId,
                     fuelMasterId,
@@ -97,7 +97,7 @@ router.put("/dailySalesInput/:dailySalesInputId/Fuel/:fuelId/item/:id", async (r
     await client.query("BEGIN")
     
     const result = await client.query(`
-      UPDATE      dailySalesInputFuelLin
+      UPDATE      dailySalesInput_FuelLin
       SET         fuelMasterId = $2,
                   transCt = $3,
                   volume = $4,
@@ -130,7 +130,7 @@ router.delete("/dailySalesInput/:dailySalesInputId/Fuel/:fuelId/item/:id", async
     
     const result = await client.query(`
       DELETE
-      FROM        dailySalesInputFuelLin
+      FROM        dailySalesInput_FuelLin
       WHERE       id = $1
     `, [id]);
 
