@@ -1,5 +1,5 @@
 import { Button, Input, menuItem, Textarea } from "@heroui/react";
-import SelectComponent from "./Components/SelectComponent";
+import { SelectComponent } from "./Components/SelectComponent";
 import { MailIcon, SearchIcon, SettingsIcon } from "lucide-react";
 import useAuth from "~/Hooks/Auth/useAuth";
 import useToken from '~/Hooks/TestHook/useToken';
