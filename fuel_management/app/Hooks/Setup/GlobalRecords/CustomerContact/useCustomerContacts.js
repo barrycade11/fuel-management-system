@@ -2,9 +2,9 @@ import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
-const fetchEmployeeContacts = async (employeeId) => {
+const fetchCustomerContacts = async (customerId) => {
     try {
-        const response = await apiClient.get(`${endPoints.GlobalRecords}/Employee/${employeeId}/Contacts`);
+        const response = await apiClient.get(`${endPoints.GlobalRecords}/Customer/${customerId}/Contacts`);
 
         return response.data;
     }
@@ -13,7 +13,7 @@ const fetchEmployeeContacts = async (employeeId) => {
     }
 };
 
-const useAddEmployeeContactsByEmployeeId = (resource) => {
+const useAddCustomerContactsByCustomerId = (resource) => {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async ({ id, payload}) => {
@@ -30,7 +30,7 @@ const useAddEmployeeContactsByEmployeeId = (resource) => {
     });
 };
 
-const useDeleteEmployeeContactsByEmployeeId = (resource) => {
+const useDeleteCustomerContactsByCustomerId = (resource) => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id) => {
@@ -48,7 +48,7 @@ const useDeleteEmployeeContactsByEmployeeId = (resource) => {
 };
 
 export { 
-    fetchEmployeeContacts,
-    useAddEmployeeContactsByEmployeeId,
-    useDeleteEmployeeContactsByEmployeeId 
+    fetchCustomerContacts,
+    useAddCustomerContactsByCustomerId,
+    useDeleteCustomerContactsByCustomerId 
 };

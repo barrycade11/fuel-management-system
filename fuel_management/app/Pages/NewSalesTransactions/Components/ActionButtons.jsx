@@ -1,7 +1,11 @@
 import { Button } from "@heroui/react"
 import { ArrowRight, Plus } from 'lucide-react';
 
-const ActionButtons = ({ selectedMode, submitHandler }) => {
+const ActionButtons = ({ 
+    selectedMode, 
+    submitHandler, 
+    setOpenAdd,
+ }) => {
     return (
         <>
             {selectedMode == 3 && (
@@ -27,7 +31,7 @@ const ActionButtons = ({ selectedMode, submitHandler }) => {
                 </div>
             )}
             <div className="md:flex grid grid-cols-3 gap-2 mt-4">
-                <Button color="default" className="w-min rounded-md font-semibold text-base text-white">
+                <Button onPress={()=>setOpenAdd(false)} color="default" className="w-min rounded-md font-semibold text-base text-white">
                     Back
                 </Button>
                 <Button color="danger" className="w-min rounded-md font-semibold text-base text-white" isDisabled={true}>
