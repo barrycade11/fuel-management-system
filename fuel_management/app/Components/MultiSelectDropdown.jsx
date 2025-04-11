@@ -31,7 +31,7 @@ export default function MultiSelectDropdown({label}) {
                     onSelectionChange={setSelectedKeys}
                 >
                     {Locations.map((item) => (
-                        <DropdownItem key={item}>{item}</DropdownItem>
+                        <DropdownItem key={item.description}>{item.description}</DropdownItem>
                     ))}
                 </DropdownMenu>
             </Dropdown>

@@ -14,6 +14,7 @@ const SalesTransactions = () => {
     const [selectedShiftManager, setSelectedShiftManager] = useState('')
     const [selectedShift, setSelectedShift] = useState('')
     const [openAdd, setOpenAdd] = useState(false);
+    const [editId, setEditId] = useState('');
 
     return (
         <>
@@ -47,6 +48,7 @@ const SalesTransactions = () => {
                     <>
                         {openAdd === true ?
                             <DailySalesInput
+                                editId={editId}
                                 setOpenAdd={setOpenAdd}
                                 selectedMode={selectedMode}
                                 effectivityDate={effectivityDate}
@@ -63,6 +65,7 @@ const SalesTransactions = () => {
                                 selectedStation={selectedStation}
                                 selectedShiftManager={selectedShiftManager}
                                 selectedShift={selectedShift}
+                                setEditId={setEditId}
                             />
                         }
                     </>

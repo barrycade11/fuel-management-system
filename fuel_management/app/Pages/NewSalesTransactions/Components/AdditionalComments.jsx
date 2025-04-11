@@ -18,6 +18,7 @@ const AdditionalComments = ({comment, setComment}) => {
                 classNames={{
                     inputWrapper: "bg-gray-300",
                 }}
+                required={true}
             />
         </div>
     )

@@ -12,7 +12,8 @@ export const DailySalesTable = ({
     selectedMode,
     selectedStation,
     selectedShiftManager,
-    selectedShift
+    selectedShift,
+    setEditId
 }) => {
     const [dailySales, setDailySales] = useState([])
     const columns = [
@@ -43,8 +44,9 @@ export const DailySalesTable = ({
         setOpenAdd(true)
     }
 
-    const handleEdit = () => {
-
+    const handleEdit = (id) => {
+        // setEditId(id)
+        // setOpenAdd(true)
     }
 
     const customRender = {
@@ -55,7 +57,7 @@ export const DailySalesTable = ({
         ),
         actions: (item) => (
             <Button
-                onClick={() => handleEdit(item)}
+                onClick={() => handleEdit(item.ID)}
                 className="bg-blue-200 text-blue-800 rounded-lg hover:bg-blue-300"
             >
                 View

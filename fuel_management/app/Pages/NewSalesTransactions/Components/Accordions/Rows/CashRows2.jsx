@@ -4,6 +4,7 @@ import moment from "moment";
 import { SampleEmployeeName } from "~/Constants/Labels";
 
 export const CashRows2 = ({ currentData, content, setContent, setPurpose, setOpenAdd, setEditData }) => {
+
     return (
         <>
             <td className="px-6 py-1">
