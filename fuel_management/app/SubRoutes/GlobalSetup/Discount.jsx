@@ -5,7 +5,7 @@ import MultiDropdown from "~/Components/MultiDropdown";
 import Notification from "~/Components/Notification";
 import TableSkeleton from "~/Components/TableSkeleton";
 import DropdownStatus from "~/Components/DropdownStatus";
-import { Textarea, Input, Button, DatePicker } from "@heroui/react";
+import { Textarea, Input, Button, DatePicker, Spinner } from "@heroui/react";
 import { 
   fetchDiscounts, 
   fetchDiscountDetails, 
@@ -13,12 +13,18 @@ import {
   updateDiscount, 
   deleteDiscount 
 } from "~/Hooks/Setup/GlobalRecords/Discount/useDiscounts";
+import {
+  fetchDepartments
+} from "~/Hooks/Setup/GlobalRecords/Department/useDepartments"
 import { fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
+import { parseZonedDateTime, parseAbsolute, parseAbsoluteToLocal } from "@internationalized/date";
 
 const Discount = () => {
   const [discounts, setDiscounts] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
   const [newDiscount, setNewDiscount] = useState({ 
@@ -42,7 +48,7 @@ const Discount = () => {
     try {
         const data = await fetchDiscounts();
         setDiscounts(data);
-        console.log(data);
+        // console.log(data);
     } catch (error) {
         console.error("Error fetching data:", error);
     } finally {
@@ -52,7 +58,20 @@ const Discount = () => {
 
   useEffect(() => {
       getDiscounts();
-  }, []);
+  }, [departments]);
+
+  const getDepartments = async () => {
+    setLoading(true);
+    try {
+        const data = await fetchDepartments();
+        setDepartments(data);
+        // console.log(data);
+    } catch (error) {
+        console.error("Error fetching data:", error);
+    } finally {
+        setLoading(false);
+    }
+  };
 
   const handleAdd = () => {
     setNewDiscount({ 
@@ -70,48 +89,41 @@ const Discount = () => {
       maxLimit: "",
       status: true
     });
+    getDepartments();
     setIsEditing(true);
   };
 
   const handleEdit = async (discount) => {
+    console.log(discount);
     try {
-        const [criteriaData, discountTypeData, chargeToData] = await Promise.all([
-          fetchDropdownTypeList(3, discount.criteriaid),
-          fetchDropdownTypeList(3, discount.discounttypeid),
-          fetchDropdownTypeList(3, discount.chargetoid),
-        ]);
+      getDepartments();
+
+      const [criteriaData, discountTypeData, chargeToData] = await Promise.all([
+        fetchDropdownTypeList(17, discount.criteriaId),
+        fetchDropdownTypeList(18, discount.discountTypeId),
+        fetchDropdownTypeList(1, discount.chargeToId),
+      ]);
       
-        setNewDiscount((prev) => ({
-            ...prev,
-            ...discount,
-            applicabilityId: [], 
+      if (discount.discountLin && Array.isArray(discount.discountLin)) {
+
+        const applicabilityIds = discount.discountLin.map(item => 
+          parseInt(item.applicabilityId, 10)
+        );
+        
+        setNewDiscount(prev => ({
+          ...prev,
+          ...discount,
+          applicabilityId: applicabilityIds,
+          startDate: parseAbsoluteToLocal(discount.startDate),
+          endDate: parseAbsoluteToLocal(discount.endDate)
         }));
-
-        setIsEditing(true); 
-
-        const applicabilityIds = Array.isArray(discount.subdiscountid)
-            ? discount.subdiscountid
-            : [discount.subdiscountid];
-
-        const applicabilityData = [];
-
-        for (const id of applicabilityIds) {
-            const response = await fetchDropdownTypeList(19, id);
-            if (response.length > 0) {
-                applicabilityData.push(response[0].id);
-            }
-        }
-
-        // Update state with sub-discount data
-        setNewDiscount((prev) => ({
-            ...prev,
-            applicabilityId: applicabilityData, 
-            criteriaId: criteriaData[0].id, 
-            discountTypeId: discountTypeData[0].id, 
-            chargeToId: chargeToData[0].id, 
-        }));
+        
+        // console.log(newDiscount);
+        
+        setIsEditing(true);
+      }
     } catch (error) {
-        console.error("Error fetching sub discount data:", error);
+      console.error("Error fetching discount data:", error);
     }
   };
 
@@ -119,45 +131,53 @@ const Discount = () => {
   const handleSave = async () => {
     if (!newDiscount.code || 
       !newDiscount.name || 
-      !newDiscount.details
+      !newDiscount.criteriaId || 
+      !newDiscount.qualifierValue || 
+      !newDiscount.discountTypeId || 
+      !newDiscount.discountValue || 
+      !newDiscount.chargeToId || 
+      !newDiscount.maxLimit || 
+      !newDiscount.startDate || 
+      !newDiscount.endDate || 
+      !newDiscount.details ||
+      !newDiscount.status ||
+      !newDiscount.applicabilityId.length > 0 
     ) {
       setNotification({ message: "All fields are required.", type: "error" });
       return;
     }
-  
+
+    if (isSaving) return;
+    setIsSaving(true);
+
+    // const payload = {
+    //   ...newDiscount,
+    //   applicability: newDiscount.applicabilityId.map(id => ({ applicabilityId: id })), 
+    //   startDate: formatDate(newDiscount.startDate),
+    //   endDate: formatDate(newDiscount.endDate)
+    // };
+
+    const payload = {
+      code: newDiscount.code,
+      name: newDiscount.name,
+      criteriaId: parseInt(newDiscount.criteriaId, 10), 
+      qualifierValue: parseInt(newDiscount.qualifierValue, 10),
+      discountTypeId: parseInt(newDiscount.discountTypeId, 10),
+      discountValue: parseInt(newDiscount.discountValue, 10),
+      chargeToId: parseInt(newDiscount.chargeToId, 10),
+      maxLimit: parseInt(newDiscount.maxLimit, 10),
+      startDate: formatDate(newDiscount.startDate), 
+      endDate: formatDate(newDiscount.endDate),
+      details: newDiscount.details,
+      status: newDiscount.status ?? true, 
+      applicabilities: newDiscount.applicabilityId.map(id => ({ applicabilityId: id })), 
+
+    };
+
+    // console.log(payload)
     try {
-      const formatDate = (dateObj) => {
-        if (!dateObj || !dateObj.year || !dateObj.month || !dateObj.day) return null;
-        return `${dateObj.year}-${String(dateObj.month).padStart(2, "0")}-${String(dateObj.day).padStart(2, "0")}`;
-      };
-
-      // const payload = {
-      //   ...newDiscount,
-      //   applicability: newDiscount.applicabilityId.map(id => ({ applicabilityId: id })), 
-      //   startDate: formatDate(newDiscount.startDate),
-      //   endDate: formatDate(newDiscount.endDate)
-      // };
-
-      const payload = {
-        code: newDiscount.code,
-        name: newDiscount.name,
-        criteriaId: parseInt(newDiscount.criteriaId, 10), 
-        qualifierValue: parseInt(newDiscount.qualifierValue, 10),
-        discountTypeId: parseInt(newDiscount.discountTypeId, 10),
-        discountValue: parseInt(newDiscount.discountValue, 10),
-        chargeToId: parseInt(newDiscount.chargeToId, 10),
-        maxLimit: parseInt(newDiscount.maxLimit, 10),
-        startDate: formatDate(newDiscount.startDate), 
-        endDate: formatDate(newDiscount.endDate),
-        details: newDiscount.details,
-        status: newDiscount.status ?? true, 
-        applicability: newDiscount.applicabilityId.map(id => ({ applicabilityId: id })), 
-
-      };
-
-      console.log(payload)
-  
       if (newDiscount.id) {
+        // console.log(newDiscount.id)
         await updateDiscount(newDiscount.id, payload);
       } else {
         const response = await createDiscount(payload);
@@ -170,6 +190,8 @@ const Discount = () => {
     } catch (error) {
       setNotification({ message: "Error saving data", type: "error" });
       console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false); 
     }
   };
 
@@ -201,16 +223,47 @@ const Discount = () => {
     }));
   };
 
+  const formatDate = (dateObj) => {
+    if (!dateObj || !dateObj.year || !dateObj.month || !dateObj.day) return null;
+    return `${dateObj.year}-${String(dateObj.month).padStart(2, "0")}-${String(dateObj.day).padStart(2, "0")}`;
+  };
+
   const columns = [
     { key: "id", label: "No.", hidden: true },
     { key: "code", label: "Discount Code", hidden: false },
     { key: "name", label: "Discount Name", hidden: false },
+    { key: "discountLin", label: "Applicability", hidden: false },
+    { key: "criteria", label: "Criteria", hidden: true },
+    { key: "qualifierValue", label: "Qualifier Value", hidden: true },
     { key: "discountType", label: "Discount Type", hidden: false },
+    { key: "discountValue", label: "Discount Value", hidden: true },
+    { key: "chargeTo", label: "Charge To", hidden: true },
+    { key: "maxLimit", label: "Max Limit", hidden: true },
+    { key: "startDate", label: "Start Date", hidden: true },
+    { key: "endDate", label: "End Date", hidden: true },
     { key: "details", label: "Details", hidden: true },
     { key: "status", label: "Status", hidden: false }
   ];
 
   const customRender = {
+    discountLin: (discountLinArray) => {
+      // console.log(discountLinArray)
+      if (!Array.isArray(discountLinArray) || discountLinArray.length === 0) {
+        return "N/A";
+      }
+    
+      return discountLinArray.map(sub => sub.applicability || `ID: ${sub.applicabilityId}`).join(", ");
+    },
+    startDate: (item) => {
+      if (!item) return '';
+      const date = new Date(item);
+      return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`;
+    },
+    endDate: (item) => {
+      if (!item) return '';
+      const date = new Date(item);
+      return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}/${date.getFullYear()}`;
+    },
     actions: (item) => (
       <Button 
       onPress={() => handleEdit(item)} 
@@ -239,7 +292,7 @@ const Discount = () => {
         <TableSkeleton columns={5} rows={5}/>
       ) : isEditing ? (
           <div className="h-full flex justify-center items-center">
-            <div className="bg-white w-96 h-full max-w-lg">
+            <div className="bg-white w-full h-full max-w-lg">
               <h2 className="text-xl font-semibold mb-4">{newDiscount.id ? "Edit" : "Add"} Discount</h2>
               <Input 
                 className="w-full mb-2" 
@@ -258,18 +311,24 @@ const Discount = () => {
                 isRequired
               />
               <MultiDropdown 
-                  label="Applicability"
-                  typeId={19} 
-                  isMultiline
-                  value={newDiscount.applicabilityId} 
-                  onChange={(e) => setNewDiscount({ ...newDiscount, applicabilityId: e.target.value })} 
+                label="Applicability"
+                customOptions={departments.map(dep => ({
+                  id: dep.id,
+                  name: dep.name
+                }))}
+                isMultiline
+                value={newDiscount.applicabilityId} 
+                onChange={(e) => setNewDiscount({ 
+                  ...newDiscount, 
+                  applicabilityId: e.target.value.map(id => parseInt(id, 10)) 
+                })} 
               />
               <div className="flex space-x-4">
                 <div className="flex flex-col w-full">
                   <div className="relative flex items-center rounded-lg">
                   <Dropdown 
                     label="Criteria"
-                    typeId={3} 
+                    typeId={17} 
                     value={newDiscount.criteriaId} 
                     onChange={(e) => setNewDiscount({ ...newDiscount, criteriaId: e.target.value })} 
                   />
@@ -293,7 +352,7 @@ const Discount = () => {
                   <div className="relative flex items-center rounded-lg">
                   <Dropdown 
                     label="Discount Type"
-                    typeId={3} 
+                    typeId={18} 
                     value={newDiscount.discountTypeId} 
                     onChange={(e) => setNewDiscount({ ...newDiscount, discountTypeId: e.target.value })} 
                   />
@@ -317,7 +376,7 @@ const Discount = () => {
                   <div className="relative flex items-center rounded-lg">
                   <Dropdown 
                     label="Charge To"
-                    typeId={3} 
+                    typeId={1} 
                     value={newDiscount.chargeToId} 
                     onChange={(e) => setNewDiscount({ ...newDiscount, chargeToId: e.target.value })} 
                   />
@@ -343,6 +402,7 @@ const Discount = () => {
                       isRequired 
                       label="Start Date" 
                       placeholder="Pick a date" 
+                      granularity="day"
                       value={newDiscount.startDate} 
                       onChange={(date) => setNewDiscount({ ...newDiscount, startDate: date })}
                     />
@@ -354,6 +414,7 @@ const Discount = () => {
                       isRequired 
                       label="End Date" 
                       placeholder="Pick a date" 
+                      granularity="day"
                       value={newDiscount.endDate} 
                       onChange={(date) => setNewDiscount({ ...newDiscount, endDate: date })}
                     />
@@ -381,7 +442,16 @@ const Discount = () => {
                 )}
                 <div className="flex space-x-2">
                   <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
-                  <Button onClick={handleSave} color="primary">Save</Button>
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={isSaving} 
+                    isLoading={isSaving}
+                    spinner={<Spinner size="sm" variant="wave" color="default" />}
+                    spinnerPlacement="end"
+                    color="primary"
+                  >
+                    {isSaving ? "Saving" : "Save"}
+                  </Button>
                 </div>
               </div>
             </div>
