@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import Table from "~/Components/Table";
+import Table from "~/Components/TableForObject";
 import MultiDropdown from "~/Components/MultiDropdown";
 import Notification from "~/Components/Notification";
 import TableSkeleton from "~/Components/TableSkeleton";
 import DropdownStatus from "~/Components/DropdownStatus";
-import { Textarea, Input, Button } from "@heroui/react";
+import { Textarea, Input, Button, Spinner } from "@heroui/react";
 import { 
   fetchDepartments, 
   fetchDepartmentDetails, 
@@ -18,6 +18,7 @@ const Department = () => {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
   const [newDepartment, setNewDepartment] = useState({ 
@@ -55,44 +56,29 @@ const Department = () => {
   };
 
   const handleEdit = async (department) => {
-    try {
-        setNewDepartment((prev) => ({
-            ...prev,
-            ...department,
-            subDepartmentId: [], 
-        }));
-
-        setIsEditing(true); 
-
-        const subDepartmentIds = Array.isArray(department.subdepartmentid)
-            ? department.subdepartmentid
-            : [department.subdepartmentid];
-
-        const subDepartmentData = [];
-
-        for (const id of subDepartmentIds) {
-            const response = await fetchDropdownTypeList(19, id);
-            if (response.length > 0) {
-                subDepartmentData.push(response[0].id);
-            }
-        }
-
-        // Update state with sub-department data
-        setNewDepartment((prev) => ({
-            ...prev,
-            subDepartmentId: subDepartmentData, // Store multiple IDs
-        }));
-    } catch (error) {
-        console.error("Error fetching sub department data:", error);
-    }
+    // console.log(department)
+    if (department.departmentLin && Array.isArray(department.departmentLin)) {
+      const subDepartmentIds = department.departmentLin.map(item => item.subDepartmentId);
+      
+      setNewDepartment(prev => ({
+        ...prev,
+        ...department,
+        subDepartmentId: subDepartmentIds 
+      }));
+      
+      setIsEditing(true);
+    };
   };
 
 
   const handleSave = async () => {
-    if (!newDepartment.name || !newDepartment.details) {
+    if (!newDepartment.name || !newDepartment.details || !newDepartment.subDepartmentId.length > 0) {
       setNotification({ message: "All fields are required.", type: "error" });
       return;
     }
+
+    if (isSaving) return;
+    setIsSaving(true);
   
     try {
       const payload = {
@@ -113,6 +99,8 @@ const Department = () => {
     } catch (error) {
       setNotification({ message: "Error saving data", type: "error" });
       console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false); 
     }
   };
 
@@ -147,12 +135,21 @@ const Department = () => {
   const columns = [
     { key: "id", label: "No.", hidden: true },
     { key: "name", label: "Department Name", hidden: false },
-    { key: "subdepartment", label: "Sub Department", hidden: false },
+    { key: "subdepartments", label: "Sub Department", hidden: false },
     { key: "details", label: "Details", hidden: true },
     { key: "status", label: "Status", hidden: true }
   ];
 
   const customRender = {
+    subdepartments: (row) => {
+      // console.log("row:", row); 
+      
+      if (!row || !Array.isArray(row.departmentLin) || row.departmentLin.length === 0) {
+        return "N/A";
+      }
+  
+      return row.departmentLin.map(sub => sub.subDepartment || "Unnamed").join(", ");
+    },
     actions: (item) => (
       <Button 
       onPress={() => handleEdit(item)} 
@@ -219,7 +216,16 @@ const Department = () => {
                 )}
                 <div className="flex space-x-2">
                   <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
-                  <Button onClick={handleSave} color="primary">Save</Button>
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={isSaving} 
+                    isLoading={isSaving}
+                    spinner={<Spinner size="sm" variant="wave" color="default" />}
+                    spinnerPlacement="end"
+                    color="primary"
+                  >
+                    {isSaving ? "Saving" : "Save"}
+                  </Button>
                 </div>
               </div>
             </div>
