@@ -3,6 +3,18 @@ import Table from "~/Components/Table";
 import Dropdown from "~/Components/Dropdown";
 import Notification from "~/Components/Notification";
 import TableSkeleton from "~/Components/TableSkeleton";
+import { CalendarDate, parseZonedDateTime, parseAbsolute, parseAbsoluteToLocal } from "@internationalized/date";
+import {
+  Select,
+  SelectItem, 
+  Input,
+  Button,
+  Accordion, 
+  AccordionItem,
+  DatePicker,
+  Textarea,
+  Spinner
+} from "@heroui/react";
 import { 
   useGetGlobalRecords, 
   useGetGlobalRecordById, 
@@ -22,21 +34,14 @@ import {
 } from "~/Hooks/Setup/GlobalRecords/EmployeePhoto/useEmployeePhotos";
 import { useGenerateEmployeeCode } from "~/Hooks/Setup/GlobalRecords/Employee/useEmployees";
 import { useGetStationRecords } from "~/Hooks/Setup/Station/useStationRecordsApi";
-import {
-  Select,
-  SelectItem, 
-  Input,
-  Button,
-  Accordion, 
-  AccordionItem,
-  DatePicker,
-  Textarea,
-  Spinner
-} from "@heroui/react";
-import { CalendarDate, parseZonedDateTime, parseAbsolute, parseAbsoluteToLocal } from "@internationalized/date";
 import { fetchDropdowns, fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
+import { AutoCompleteProvince, AutoCompleteCityMunicipality, AutoCompleteBarangays } from "./Components/AutoCompleteFields";
 
 const Employee = () => {
+
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const API_PORT = import.meta.env.VITE_API_PORT;
+
   // Fetch Employees 
   const { 
     data: employees, 
@@ -141,9 +146,9 @@ const Employee = () => {
     genderId: "", 
     civilStatusId: "", 
     address: "", 
-    provinceId: "", 
-    cityId: "", 
-    barangayId: "", 
+    // provinceId: null, 
+    // cityId: null, 
+    // barangayId: null, 
     dateHired: null, 
     stationId: "", 
     departmentId: "", 
@@ -156,6 +161,7 @@ const Employee = () => {
 
   const handleAdd = async () => {
     let codeData = generatedCode;
+    // console.log(generatedCode)
   
     setNewEmployee({
       code: codeData.code,
@@ -166,9 +172,9 @@ const Employee = () => {
       genderId: "",
       civilStatusId: "",
       address: "",
-      provinceId: "",
-      cityId: "",
-      barangayId: "",
+      // provinceId: null,
+      // cityId: null,
+      // barangayId: null,
       dateHired: null,
       stationId: "",
       departmentId: "",
@@ -215,6 +221,7 @@ const Employee = () => {
 
   const handleEdit = async (employee) => {
     setIsEditing(true);
+    setEmployeeContacts([]);
 
     try {   
       // Fetch Contacts 
@@ -230,48 +237,30 @@ const Employee = () => {
       const photoId = employeePhotos[0] ? employeePhotos[0].id : null;
 
       // Fetch Dropdowns 
-      const [genderData, civilStatusData, provinceData, 
-        cityData, barangayData, designationData, employeeStatusData
+      const [genderData, 
+        civilStatusData, 
+        // provinceData, 
+        // cityData, 
+        // barangayData, 
+        designationData, 
+        employeeStatusData
       ] = await Promise.all([
         fetchDropdownTypeList(4, employee.genderid),
         fetchDropdownTypeList(5, employee.civilstatusid),
-        fetchDropdownTypeList(14, employee.provinceid),
-        fetchDropdownTypeList(15, employee.cityid),
-        fetchDropdownTypeList(16, employee.barangayid),
+        // fetchDropdownTypeList(14, employee.provinceid),
+        // fetchDropdownTypeList(15, employee.cityid),
+        // fetchDropdownTypeList(16, employee.barangayid),
         fetchDropdownTypeList(2, employee.designationid),
         fetchDropdownTypeList(7, employee.employeestatusid)
       ]);
 
-      setNewEmployee(prev => ({
-        ...prev, 
-        ...employee, 
-        firstName: employee.firstname,
-        middleName: employee.middlename,
-        lastName: employee.lastname,
-        genderId: employee.genderid,
-        civilStatusId: employee.civilstatusid,
-        provinceId: employee.provinceid,
-        cityId: employee.cityid,
-        barangayId: employee.barangayid,
-        stationId: employee.stationid,
-        departmentId: employee.departmentid,
-        designationId: employee.designationid,
-        employeeStatusId: employee.employeestatusid,
-        contactNo: employee.contactno,
-        birthDate: parseAbsoluteToLocal(employee.birthdate),
-        dateHired: parseAbsoluteToLocal(employee.datehired),
-        employeeContacts: contacts,
-        photo: mainPhoto, 
-        photoId: photoId
-      }));
-
-
       if (mainPhoto) {
         const fixedPath = mainPhoto.replace(/\\/g, '/');
-        setImage(`http://localhost:5000/global-setup/${fixedPath}`); // Change the path on deployment
-        setImageFile(mainPhoto);
+        setImage(`http://${API_BASE_URL}:${API_PORT}/global-setup/${fixedPath}`);
+        setImageFile(null);
       } else {
         setImage(null); 
+        setImageFile(null); 
       }
 
       if (contacts && contacts.length > 0) {
@@ -299,6 +288,29 @@ const Employee = () => {
       } else {
         setEmployeeContacts([]);
       }
+
+      setNewEmployee(prev => ({
+        ...prev, 
+        ...employee, 
+        firstName: employee.firstname,
+        middleName: employee.middlename,
+        lastName: employee.lastname,
+        genderId: employee.genderid,
+        civilStatusId: employee.civilstatusid,
+        // provinceId: employee.provinceid,
+        // cityId: employee.cityid,
+        // barangayId: employee.barangayid,
+        stationId: employee.stationid,
+        departmentId: employee.departmentid,
+        designationId: employee.designationid,
+        employeeStatusId: employee.employeestatusid,
+        contactNo: employee.contactno,
+        birthDate: parseAbsoluteToLocal(employee.birthdate),
+        dateHired: parseAbsoluteToLocal(employee.datehired),
+        employeeContacts: contacts,
+        photo: mainPhoto, 
+        photoId: photoId
+      }));
   
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -308,10 +320,12 @@ const Employee = () => {
   };
 
   const handleSave = async () => {
+    console.log(newEmployee)
     if (!newEmployee.firstName || !newEmployee.middleName || !newEmployee.lastName ||
         !newEmployee.birthDate || !newEmployee.genderId || !newEmployee.civilStatusId || 
-        !newEmployee.address || !newEmployee.provinceId || !newEmployee.cityId || 
-        !newEmployee.barangayId || !newEmployee.dateHired || !newEmployee.stationId || 
+        !newEmployee.address || 
+        // !newEmployee.provinceId || !newEmployee.cityId || !newEmployee.barangayId || 
+        !newEmployee.dateHired || !newEmployee.stationId || 
         !newEmployee.departmentId || !newEmployee.designationId || !newEmployee.employeeStatusId || 
         !newEmployee.contactNo || !newEmployee.email
       ) {
@@ -340,9 +354,9 @@ const Employee = () => {
       genderId: parseInt(newEmployee.genderId, 10), 
       civilStatusId: parseInt(newEmployee.civilStatusId, 10),
       address: newEmployee.address, 
-      provinceId: parseInt(newEmployee.provinceId, 10),
-      cityId: parseInt(newEmployee.cityId, 10),
-      barangayId: parseInt(newEmployee.barangayId, 10),
+      // provinceId: newEmployee.provinceId,
+      // cityId: newEmployee.cityId,
+      // barangayId: newEmployee.barangayId,
       datehired: formatDate(newEmployee.dateHired), 
       stationId: parseInt(newEmployee.stationId, 10),
       departmentId: parseInt(newEmployee.departmentId, 10),
@@ -371,24 +385,22 @@ const Employee = () => {
             console.log(employeeId)
 
             // Delete and Add new Contacts 
-            if (employeeId && Array.isArray(employeeContacts)) {
-              console.log("inside if", employeeId)
-
-              await deleteEmployeeContact(employeeId);
-            
-              console.log(employeeContacts)
-
-              if (employeeContacts.length > 0) {
-                await Promise.all(
-                  employeeContacts.map(contact => addEmployeeContact({ id: employeeId, payload: contact }))
-                );
-              }
+            await deleteEmployeeContact(employeeId);
+      
+            console.log(employeeContacts)
+            console.log(employeeContacts.length)
+            if (employeeContacts.length > 0) {
+              await Promise.all(
+                employeeContacts.map(contact => addEmployeeContact({ id: employeeId, payload: contact }))
+              );
             }
 
             // Delete and Add new Image 
-            if (employeeId && imageFile) {
-              await deleteEmployeePhoto(employeeId);
-              const response = await addEmployeePhoto({ id: employeeId, payload: formData }); 
+            if (imageFile && imageFile) {
+              await deleteEmployeePhoto(employeeId); 
+              const formData = new FormData();
+              formData.append("photo", imageFile);
+              await addEmployeePhoto({ id: employeeId, payload: formData });
             }
             
         } else {
@@ -396,7 +408,7 @@ const Employee = () => {
             const response = await addEmployee(payload);
             employeeId = response.id; 
 
-            console.log(employeeId)
+            // console.log(employeeId)
 
             // Add Contacts
             if (employeeContacts.length > 0) {
@@ -407,7 +419,9 @@ const Employee = () => {
 
             // Add Photo 
             if (employeeId && imageFile) {
-              const response = await addEmployeePhoto({ id: employeeId, payload: formData }); 
+              const formData = new FormData();
+              formData.append("photo", imageFile);
+              await addEmployeePhoto({ id: employeeId, payload: formData });
             }
         }
 
@@ -426,9 +440,9 @@ const Employee = () => {
     const handleConfirm = async () => {
         try {
             // Delete all records if Employee is deleted 
-            await deleteEmployee(id);
             await deleteEmployeeContact(id);
             await deleteEmployeePhoto(id);
+            await deleteEmployee(id);
 
             setIsEditing(false);
             setNotification({ message: "Record deleted successfully!", type: "success" });
@@ -464,9 +478,9 @@ const Employee = () => {
     { key: "gender", label: "Gender", hidden: true },
     { key: "civilstatus", label: "Civil Status", hidden: true },
     { key: "address", label: "Address", hidden: true },
-    { key: "province", label: "Province", hidden: true },
-    { key: "city", label: "City", hidden: true },
-    { key: "barangay", label: "Barangay", hidden: true },
+    // { key: "province", label: "Province", hidden: true },
+    // { key: "city", label: "City", hidden: true },
+    // { key: "barangay", label: "Barangay", hidden: true },
     { key: "datehired", label: "Date Hired", hidden: true },
     { key: "station", label: "Station", hidden: true },
     { key: "department", label: "Department", hidden: false },
@@ -547,55 +561,56 @@ const Employee = () => {
   };
 
   const handleSaveEmployeeContacts = async () => {
-    // Temporary Contact 
     try {
-      let updatedContacts = [...employeeContacts];
-
-      if (newEmployeeContacts.id) {
-        const existingContact = updatedContacts.find(c => c.id === newEmployeeContacts.id);
-        
-        let relationshipName = existingContact?.relationship || "Unknown"; 
-
-        if (existingContact?.relationshipId !== newEmployeeContacts.relationshipId) {
-
-          const relationshipData = await fetchDropdownTypeList(6, newEmployeeContacts.relationshipId);
-          relationshipName = relationshipData?.[0]?.name || "Unknown";
-        }
-
-        updatedContacts = updatedContacts.map(contact =>
-          contact.id === newEmployeeContacts.id
-            ? { ...newEmployeeContacts, 
-              relationship: relationshipName,
-              contactno2: newEmployeeContacts.contactNo2
-              
-            }
-            : contact
+      const contactId = newEmployeeContacts.id || `temp-${Date.now()}`;
+      const relationshipId = parseInt(newEmployeeContacts.relationshipId, 10);
+      
+      const relationshipData = await fetchDropdownTypeList(6, relationshipId);
+      const relationshipName = relationshipData?.[0]?.name || "Unknown";
+  
+      const updatedContact = {
+        ...newEmployeeContacts,
+        id: contactId,
+        relationshipId,
+        relationship: relationshipName,
+        contactno2: newEmployeeContacts.contactNo2
+      };
+  
+      const isEdit = employeeContacts.some(contact => contact.id === contactId);
+  
+      let updatedContacts;
+      if (isEdit) {
+        updatedContacts = employeeContacts.map((contact) =>
+          contact.id === contactId ? updatedContact : contact
         );
       } else {
-        const tempId = `temp-${Date.now()}`;
-        const relationshipData = await fetchDropdownTypeList(6, newEmployeeContacts.relationshipId);
-        const relationshipName = relationshipData?.[0]?.name || "Unknown";
-
-        const newContact = { 
-          ...newEmployeeContacts, 
-          id: tempId, 
-          relationshipId: parseInt(newEmployeeContacts.relationshipId, 10),
-          relationship: relationshipName,
-          contactno2: newEmployeeContacts.contactNo2
-        };
-
-        updatedContacts = [...updatedContacts, newContact];
+        const duplicateExists = employeeContacts.some(
+          (c) =>
+            c.contactNo === updatedContact.contactNo &&
+            c.relationshipId === updatedContact.relationshipId
+        );
+  
+        if (duplicateExists) {
+          setNotification({
+            message: "This contact already exists.",
+            type: "error",
+          });
+          return;
+        }
+  
+        updatedContacts = [...employeeContacts, updatedContact];
       }
-
+  
       setEmployeeContacts(updatedContacts);
       setIsEditingEmployeeContacts(false);
       setNotification({ message: "Save successful (temporary)", type: "success" });
-
+  
     } catch (error) {
-      setNotification({ message: "Error saving data", type: "error" });
-      console.error("Error saving data:", error);
+      console.error("Error saving contact:", error);
+      setNotification({ message: "Error saving contact", type: "error" });
     }
-  };
+  };  
+  
 
   const handleDeleteEmployeeContacts = (id) => {
     const handleConfirm = () => {
@@ -807,28 +822,37 @@ const Employee = () => {
                 />
               </div>
               <div className="col-span-2 gap-3">
-                <Dropdown 
-                  label="Province"
-                  typeId={14} 
-                  value={newEmployee.provinceId} 
-                  onChange={(e) => setNewEmployee({ ...newEmployee, provinceId: e.target.value })} 
-                />
+                {/* <AutoCompleteProvince 
+                  selectedKey={newEmployee.provinceId} 
+                  onSelectionChange={(code) =>
+                    setNewEmployee({
+                      ...newEmployee,
+                      provinceId: code 
+                    })
+                  }
+                /> */}
               </div>
               <div className="col-span-2 gap-3">
-                <Dropdown 
-                  label="City / Municipality"
-                  typeId={15} 
-                  value={newEmployee.cityId} 
-                  onChange={(e) => setNewEmployee({ ...newEmployee, cityId: e.target.value })} 
-                />
+                {/* <AutoCompleteCityMunicipality
+                  selectedKey={newEmployee.cityId} 
+                  onSelectionChange={(provinceCode) =>
+                    setNewEmployee({
+                      ...newEmployee,
+                      cityId: provinceCode 
+                    })
+                  }
+                /> */}
               </div>
               <div className="col-span-2 gap-3">
-                <Dropdown 
-                  label="Barangay"
-                  typeId={16} 
-                  value={newEmployee.barangayId} 
-                  onChange={(e) => setNewEmployee({ ...newEmployee, barangayId: e.target.value })} 
-                />
+                {/* <AutoCompleteBarangays
+                  selectedKey={newEmployee.barangayId} 
+                  onSelectionChange={(cityCode) =>
+                    setNewEmployee({
+                      ...newEmployee,
+                      barangayId: cityCode 
+                    })
+                  }
+                /> */}
               </div>
             </div>
 
@@ -845,9 +869,9 @@ const Employee = () => {
                 />
                 <Dropdown 
                   label="Station"
-                  customOptions={stations.map(s => ({
-                    id: s.id,
-                    name: s.name
+                  customOptions={stations.body.map(sta => ({
+                    id: sta.id,
+                    name: sta.name
                   }))}
                   value={newEmployee.stationId} 
                   onChange={(e) => setNewEmployee({ 

@@ -6,6 +6,7 @@ const useGetProvinces = () => {
     queryKey: ['provinces'],
     queryFn: async () => {
       const response = await apiClient.get('/Locations/provinces');
+      console.log(response)
       return response.data;
     }
   });

@@ -9,7 +9,7 @@ const useGetCitiesMunicipalities = () => {
     },
     onSuccess: (_) => {},
   });
-}
+};
 
 export default useGetCitiesMunicipalities; 
 

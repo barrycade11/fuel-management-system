@@ -31,7 +31,7 @@ router.get("/dropdowns/:typeId/:id", async (req, res) => {
                 name,
                 details
       FROM      dropdown
-      WHERE     isActive = true
+      WHERE     status = true
                 AND dropdownTypeId = $1
                 AND id = $2
     `, [typeId, id]);

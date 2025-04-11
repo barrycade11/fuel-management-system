@@ -44,12 +44,12 @@ router.get("/employees", async (req, res) => {
                   a.civilStatusId,
                   c.name civilStatus,
                   a.address,
-                  a.provinceId,
-                  d.name province,
-                  a.cityId,
-                  e.name city,
-                  a.barangayId,
-                  f.name barangay,
+                  -- a.provinceId,
+                  -- d.name province,
+                  -- a.cityId,
+                  -- e.name city,
+                  -- a.barangayId,
+                  -- f.name barangay,
                   a.dateHired,
                   a.stationId,
                   g.name station,
@@ -68,15 +68,9 @@ router.get("/employees", async (req, res) => {
       INNER JOIN  dropdown c
               ON  a.civilStatusId = c.id
                   AND c.dropdownTypeId = 5
-      INNER JOIN  dropdown d
-              ON  a.provinceId = d.id
-                  AND d.dropdownTypeId = 14
-      INNER JOIN  dropdown e
-              ON  a.cityId = e.id
-                  AND e.dropdownTypeId = 15
-      INNER JOIN  dropdown f
-              ON  a.barangayId = f.id
-                  AND f.dropdownTypeId = 16
+      -- INNER JOIN  dropdown d ON  a.provinceId = d.id AND d.dropdownTypeId = 14
+      -- INNER JOIN  dropdown e ON  a.cityId = e.id AND e.dropdownTypeId = 15
+      -- INNER JOIN  dropdown f ON  a.barangayId = f.id AND f.dropdownTypeId = 16
       INNER JOIN  station g
               ON  a.stationId = g.id
       INNER JOIN  departmenthdr h
