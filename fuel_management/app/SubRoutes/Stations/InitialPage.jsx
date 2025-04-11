@@ -73,6 +73,7 @@ const InitialPage = () => {
 
         <div className="flex flex-row gap-4">
           <Button
+            onPress={() => navigate(-1)}
             className="text-white font-semibold"
             radius="sm"
             color='default'>

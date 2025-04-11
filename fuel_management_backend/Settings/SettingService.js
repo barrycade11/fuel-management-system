@@ -14,7 +14,6 @@ exports.accountToJson = async (rows) => {
         roleid: row.role_id,
         rolename: row.rolename,
         stations: [],
-        stationids: [],
         status: row.status
       };
       acc.push(user);
@@ -25,8 +24,6 @@ exports.accountToJson = async (rows) => {
       stationid: row.stationid,
       stationname: row.stationname
     });
-
-    user.stationids.push(row.role_id.toString());
 
     return acc;
   }, []);
