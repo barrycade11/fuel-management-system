@@ -16,7 +16,7 @@ import StringRoutes from "~/Constants/StringRoutes";
 const User = () => {
   const accountMutation = useAccountMutation();
   const [stationNames, setStationNames] = useState([]);
-  const { selectedStations, accounts, onSetAccounts, onSetSelectedStations  } = useSettingsState();
+  const { selectedStations, accounts, onSetAccounts, onSetSelectedStations } = useSettingsState();
 
   const navigate = useNavigate();
 

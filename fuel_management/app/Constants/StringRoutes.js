@@ -8,6 +8,7 @@ class StringRoutes {
   static dev = 'dev';
   static dashboard = 'dashboard';
   static salesTransactions = 'sales-transactions';
+  static oldSalesTransactions = 'sales';
 
   static fuelManagement = 'fuel-management';
   static fuelPrice = 'fuel-management/fuel-price';

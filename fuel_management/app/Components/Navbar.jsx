@@ -8,7 +8,7 @@ const Navbar = ({
   const { isToggled, screenSizes, onManageSidebarOpen } = useToggleDrawer();
 
   return (
-    <nav className="w-full shadow-2xs bg-white pl-3 py-5">
+    <nav className="w-full shadow-2xs bg-white pl-3 pt-5">
       <div className="flex flex-row">
         <Menu className='cursor-pointer' onClick={() => screenSizes !== "desktop" ? onManageSidebarOpen() : isToggled()} />
         <h2 className="font-light pl-2">{title}</h2>

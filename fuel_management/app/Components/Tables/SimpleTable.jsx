@@ -10,7 +10,7 @@ const SimpleTable = ( props ) => {
                         <th scope="col" className="px-6 py-3">
                             {props.mainHeader}
                         </th>
-                        {Locations.map((location, index) => (
+                        {props.fuelSales?.labels.map((location, index) => (
                             <th key={index} scope="col" className="px-6 py-3">
                                 {location}
                             </th>

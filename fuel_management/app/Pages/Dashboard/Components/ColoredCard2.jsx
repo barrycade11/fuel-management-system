@@ -2,7 +2,7 @@ const ColoredCard2 = ({color, title, percentage, target, prior}) => {
     return (
         <div className="h-auto w-auto min-w-36 p-2 rounded-3xl grid" style={{ backgroundColor: color }}>
             <div className="font-semibold grid">
-                <labebl className="text-3xl text-right drop-shadow-lg">{percentage}%</labebl>
+                <label className="text-3xl text-right drop-shadow-lg">{percentage}%</label>
                 <label className="text-white text-base uppercase underline font-bold">{title}</label>
             </div>
 

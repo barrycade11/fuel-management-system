@@ -12,6 +12,17 @@ const fetchDropdowns = async (typeId) => {
     }
 };
 
+const fetchDropdownsSetup = async (typeId) => {
+    try {
+        const response = await apiClient.get(`${endPoints.GlobalRecords}/Dropdowns/${typeId}/Setup`);
+
+        return response.data;
+    }
+    catch (error) {
+        throw error;
+    }
+};
+
 const fetchDropdownTypeList = async (typeId, id) => {
     if (!typeId || !id) {
         console.error("Invalid parameters:", { typeId, id });

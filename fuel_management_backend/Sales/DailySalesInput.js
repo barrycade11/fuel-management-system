@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require("../Config/Connection");
 const fs = require('node:fs');
 const { XMLParser } = require("fast-xml-parser");
-const multer  = require('multer');
+const multer = require('multer');
 const path = require("path");
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -14,10 +14,10 @@ const storage = multer.diskStorage({
         cb(null, file.originalname)
     }
 })
-  
+
 const upload = multer({ storage: storage });
 
-router.post("/POS-Upload", upload.single("pos"), async (req, res) => {
+router.post("/posUpload", upload.single("pos"), async (req, res) => {
     const client = await pool.connect();
     const uploadedFile = req.file
 
@@ -35,7 +35,37 @@ router.post("/POS-Upload", upload.single("pos"), async (req, res) => {
         }
         // console.log(lin)
     });
-    res.status(201).json({message: "Success"})
+    res.status(201).json({ message: "Success" })
+});
+
+router.get("/getDailySalesInput", async (req, res) => {
+    try {
+        const { effectivityDate, selectedStation } = req.query;
+
+        let query =`
+            SELECT      "ID",
+                        station_id,
+                        shift_id,
+                        employee_id
+            FROM        public.dailysalesinput_hdr AS a
+            WHERE       a."uploaded_at" =  $1
+        `
+        if (selectedStation!='') {
+            query+=`
+                AND     a."station_id" = $2
+            `
+        }
+
+        let bindData = [effectivityDate]
+        if (selectedStation!='') bindData.push(selectedStation)
+
+        const result = await pool.query(query, bindData);
+        res.status(201).json({success: true, message: result.rows});
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Database query error" });
+    }
 });
 
 module.exports = router;

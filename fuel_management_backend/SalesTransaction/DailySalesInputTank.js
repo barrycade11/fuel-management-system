@@ -13,7 +13,7 @@ router.get("/dailySalesInput/:dailySalesInputId/Tanks", async (req, res) => {
                   a.price,
                   a.dip,
                   a.volume
-      FROM        dailySalesInputTank a
+      FROM        dailySalesInput_Tank a
       INNER JOIN  stationTank b
               ON  a.stationTankId = b.id
       WHERE       a.dailySalesInputId = $1
@@ -37,7 +37,7 @@ router.get("/dailySalesInputs/:dailySalesInputId/Tanks/:id", async (req, res) =>
                   a.price,
                   a.dip,
                   a.volume
-      FROM        dailySalesInputTank a
+      FROM        dailySalesInput_Tank a
       INNER JOIN  stationTank b
               ON  a.stationTankId = b.id
       WHERE       a.dailySalesInputId = $1
@@ -61,7 +61,7 @@ router.post("/dailySalesInput/:dailySalesInputId/Tank", async (req, res) => {
     await client.query("BEGIN");
 
     const result = await client.query(`
-      INSERT INTO dailySalesInputTank
+      INSERT INTO dailySalesInput_Tank
                   (
                     dailySalesInputId,
                     stationTankId,
@@ -97,7 +97,7 @@ router.put("/dailySalesInput/:dailySalesInputId/Tank/:id", async (req, res) => {
     await client.query("BEGIN")
     
     const result = await client.query(`
-      UPDATE      dailySalesInputTank
+      UPDATE      dailySalesInput_Tank
       SET         stationTankId = $2,
                   price = $3,
                   dip = $4,
@@ -130,7 +130,7 @@ router.delete("/dailySalesInput/:dailySalesInputId/Tank/:id", async (req, res) =
     
     const result = await client.query(`
       DELETE
-      FROM        dailySalesInputTank
+      FROM        dailySalesInput_Tank
       WHERE       id = $1
     `, [id]);
 
