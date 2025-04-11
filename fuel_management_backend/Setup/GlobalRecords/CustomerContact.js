@@ -2,21 +2,16 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../../Config/Connection");
 
-router.get("/customer/:customerId/vehicles", async (req, res) => {
+router.get("/customer/:customerId/contacts", async (req, res) => {
   try {
     const { customerId } = req.params;
     const result = await pool.query(`
-      SELECT      a.id,
-                  a.plateNo,
-                  a.vehicleMakeModelId,
-                  b.name vehicleMakeModel,
-                  a.details,
-                  a.status
-      FROM        customerVehicle a
-      INNER JOIN  dropdown b
-              ON  a.vehicleMakeModelId = b.id
-                  AND b.dropdownTypeId = 10
-      WHERE       a.customerId = $1
+      SELECT      id,
+                  name,
+                  contactNo contactNo2,
+                  details
+      FROM        customerContactPerson
+      WHERE       customerId = $1
     `, [customerId]);
     res.status(201).json(result.rows);
   }
@@ -26,22 +21,17 @@ router.get("/customer/:customerId/vehicles", async (req, res) => {
   }
 });
 
-router.get("/customer/:customerId/vehicles/:id", async (req, res) => {
+router.get("/customer/:customerId/contact/:id", async (req, res) => {
   try {
     const { customerId, id } = req.params;
     const result = await pool.query(`
-      SELECT      a.id,
-                  a.plateNo,
-                  a.vehicleMakeModelId,
-                  b.name vehicleMakeModel,
-                  a.details,
-                  a.status
-      FROM        customerVehicle a
-      INNER JOIN  dropdown b
-              ON  a.vehicleMakeModelId = b.id
-                  AND b.dropdownTypeId = 10
-      WHERE       a.customerId = $1
-                  and a.id = $2
+      SELECT      id,
+                  name,
+                  contactNo,
+                  details
+      FROM        customerContactPerson
+      WHERE       customerId = $1
+                  and id = $2
     `, [customerId, id]);
     res.status(201).json(result.rows);
   }
@@ -51,27 +41,26 @@ router.get("/customer/:customerId/vehicles/:id", async (req, res) => {
   }
 });
 
-router.post("/customer/:customerId/vehicle", async (req, res) => {
+router.post("/customer/:customerId/contact", async (req, res) => {
   const client = await pool.connect();
 
   try {
     const { customerId } = req.params;
-    const { plateNo, makeModelId, details, status } = req.body;
+    const { name, contactNo, details } = req.body;
 
     await client.query("BEGIN");
 
     const result = await client.query(`
-      INSERT INTO customerVehicle
+      INSERT INTO customerContactPerson
                   (
                     customerId,
-                    plateNo,
-                    vehicleMakeModelId,
-                    details,
-                    status
+                    name,
+                    contactNo,
+                    details
                   )
-      VALUES      ($1, $2, $3, $4, $5)
+      VALUES      ($1, $2, $3, $4)
       RETURNING   id
-    `, [customerId, plateNo, makeModelId, details, status]);
+    `, [customerId, name, contactNo, details]);
     
     await client.query("COMMIT");
 
@@ -87,24 +76,23 @@ router.post("/customer/:customerId/vehicle", async (req, res) => {
   }
 });
 
-router.put("/customer/:customerId/vehicle/:id", async (req, res) => {
+router.put("/customer/:customerId/contactPerson/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {
     const { customerId, id } = req.params;
-    const { plateNo, vehicleMakeModelId, details, status } = req.body;
+    const { name, contactNo, details } = req.body;
     
     await client.query("BEGIN")
     
     const result = await client.query(`
-      UPDATE      customerVehicle
-      SET         plateNo = $3,
-                  vehicleMakeModelId = $4,
-                  details = $5,
-                  status = $6
+      UPDATE      customerContactPerson
+      SET         name = $3,
+                  contactNo = $4,
+                  details = $5
       WHERE       customerId = $1
                   AND id = $2
-    `, [customerId, id, plateNo, vehicleMakeModelId, details, status]);
+    `, [customerId, id, name, contactNo, details]);
 
     await client.query("COMMIT");
 
@@ -120,7 +108,7 @@ router.put("/customer/:customerId/vehicle/:id", async (req, res) => {
   }
 });
 
-router.delete("/customer/:customerId/vehicle/delete", async (req, res) => {
+router.delete("/customer/:customerId/contact/delete", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -130,7 +118,7 @@ router.delete("/customer/:customerId/vehicle/delete", async (req, res) => {
     
     const result = await client.query(`
       DELETE
-      FROM        customerVehicle
+      FROM        customerContactPerson
       WHERE       customerId = $1
     `, [customerId]);
 
