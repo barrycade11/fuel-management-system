@@ -1,6 +1,7 @@
 import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
 import { useQuery } from "@tanstack/react-query";
+import { useParams } from 'react-router'
 
 const useFetchStations = () => {
   return useQuery({
@@ -9,6 +10,17 @@ const useFetchStations = () => {
       const response = await apiClient.get(`${endPoints.Stations}/stations`);
       return response.data;
     }
+  })
+}
+
+const useFetchStationId = (id) => {
+  return useQuery({
+    queryKey: ['stationid', id],
+    queryFn: async () => {
+      const response = await apiClient(`${endPoints.Stations}/stations/${id}`)
+      return response.data;
+    },
+    enabled: false,
   })
 }
 
@@ -69,6 +81,7 @@ const deleteStation = async (id) => {
 
 export { 
     useFetchStations,
+    useFetchStationId,
     fetchStations, 
     fetchStationDetails, 
     createStation, 
