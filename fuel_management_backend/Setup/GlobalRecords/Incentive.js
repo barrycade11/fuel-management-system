@@ -2,18 +2,20 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../../Config/Connection");
 
-router.get("/target/:targetId/weekly", async (req, res) => {
+router.get("/incentives", async (req, res) => {
   try {
-    const { targetId } = req.params;
-
     const result = await pool.query(`
-      SELECT      id,
-                  dayOfWeek,
-                  fullDayPerc,
-                  targetValue
-      FROM        targets_weekly
-      WHERE       targetId = $1
-    `, [targetId]);
+      SELECT      a.id,
+                  a.name,
+                  a.timePeriodId,
+                  b.name            timePeriod,
+                  a.details,
+                  a.status
+      FROM        shift a
+      INNER JOIN  dropdown b
+              ON  a.timePeriodId = b.id
+                  AND b.dropdownTypeId = 25
+    `);
     res.status(201).json(result.rows);
   }
   catch (err) {
@@ -22,19 +24,23 @@ router.get("/target/:targetId/weekly", async (req, res) => {
   }
 });
 
-router.get("/target/:targetId/weekly/:id", async (req, res) => {
+router.get("/incentives/:id", async (req, res) => {
   try {
-    const { targetId, id } = req.params;
+    const { id } = req.params;
 
     const result = await pool.query(`
-      SELECT      id,
-                  dayOfWeek,
-                  fullDayPerc,
-                  targetValue
-      FROM        targets_weekly
-      WHERE       targetId = $1
-                  AND id = $2
-    `, [targetId, id]);
+      SELECT      a.id,
+                  a.name,
+                  a.timePeriodId,
+                  b.name            timePeriod,
+                  a.details,
+                  a.status
+      FROM        shift a
+      INNER JOIN  dropdown b
+              ON  a.timePeriodId = b.id
+                  AND b.dropdownTypeId = 25
+      WHERE       a.id = $1
+    `, [id]);
     res.status(201).json(result.rows);
   }
   catch (err) {
@@ -43,26 +49,25 @@ router.get("/target/:targetId/weekly/:id", async (req, res) => {
   }
 });
 
-router.post("/target/:targetId/weekly", async (req, res) => {
+router.post("/incentive", async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { targetId } = req.params;
-    const { dayOfWeek, fullDayPerc, targetValue } = req.body;
+    const { name, timePeriodId, details, status } = req.body;
 
     await client.query("BEGIN");
 
     const result = await client.query(`
-      INSERT INTO targets_weekly
+      INSERT INTO incentives
                   (
-                    dayOfWeek,
-                    fullDayPerc,
-                    targetValue,
-                    targetId
+                    name,
+                    timePeriodId,
+                    details,
+                    status
                   )
       VALUES      ($1, $2, $3, $4)
       RETURNING   id
-    `, [dayOfWeek, fullDayPerc, targetValue, targetId]);
+    `, [name, timePeriodId, details, status]);
     
     await client.query("COMMIT");
 
@@ -78,22 +83,23 @@ router.post("/target/:targetId/weekly", async (req, res) => {
   }
 });
 
-router.put("/target/:targetId/weekly/:id", async (req, res) => {
+router.put("/incentive/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { targetId, id } = req.params;
-    const { dayOfWeek, fullDayPerc, targetValue } = req.body;
-
-    await client.query("BEGIN");
+    const { id } = req.params;
+    const { name, timePeriodId, details, status } = req.body;
+    
+    await client.query("BEGIN")
     
     const result = await client.query(`
-      UPDATE      targets_weekly
-      SET         dayOfWeek = $1,
-                  fullDayPerc = $2,
-                  targetValue = $3
-      WHERE       id = $4
-    `, [dayOfWeek, fullDayPerc, targetValue, id]);
+      UPDATE      incentives
+      SET         name = $2,
+                  timePeriodId = $3,
+                  details = $4,
+                  status = $5
+      WHERE       id = $1
+    `, [id, name, timePeriodId, details, status]);
 
     await client.query("COMMIT");
 
@@ -109,7 +115,7 @@ router.put("/target/:targetId/weekly/:id", async (req, res) => {
   }
 });
 
-router.delete("/target/:targetId/weekly/:id", async (req, res) => {
+router.delete("/incentive/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -119,7 +125,7 @@ router.delete("/target/:targetId/weekly/:id", async (req, res) => {
     
     const result = await client.query(`
       DELETE
-      FROM        targets_weekly
+      FROM        incentives
       WHERE       id = $1
     `, [id]);
 
