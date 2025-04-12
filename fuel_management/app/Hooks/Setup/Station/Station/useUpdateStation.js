@@ -1,13 +1,14 @@
 import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
+import { useMutation } from "@tanstack/react-query";
 
-export const updateStation = async (id, data) => {
-    try {
-        const response = await apiClient.put(`${endPoints.GlobalRecords}/Station/${id}`, data);
-
-        return response.data;
+const useUpdateStationMutation = () => {
+  return useMutation({
+    mutationFn: async ({ params, id }) => {
+      const response = await apiClient.put(`${endPoints.Stations}/station/${id}`, params)
+      return response.data;
     }
-    catch (error) {
-        throw error;
-    }
+  })
 };
+
+export default useUpdateStationMutation; 
