@@ -36,12 +36,7 @@ router.get("/customers", async (req, res) => {
                   a.name,
                   a.tin,
                   a.billingaddress AS "billingAddress",
-                  a.provinceId AS "provinceId",
-                  b.name province,
-                  a.cityId AS "cityId",
-                  c.name city,
-                  a.barangayId AS "barangayId",
-                  d.name barangay,
+                --  a.provinceId AS "provinceId", b.name province, a.cityId AS "cityId", c.name city, a.barangayId AS "barangayId", d.name barangay,
                   a.contactno AS "contactNo",
                   a.email,
                   a.taxCodeId AS "taxCodeId",
@@ -52,15 +47,9 @@ router.get("/customers", async (req, res) => {
                   h.id AS "stationId",
                   h.name AS "station" 
       FROM        customer a
-      LEFT JOIN  dropdown b
-              ON  a.provinceId = b.id
-                  AND b.dropdownTypeId = 14
-      LEFT JOIN  dropdown c
-              ON  a.cityId = c.id
-                  AND c.dropdownTypeId = 15
-      LEFT JOIN  dropdown d
-              ON  a.barangayId = d.id
-                  AND d.dropdownTypeId = 16
+      -- LEFT JOIN  dropdown b ON  a.provinceId = b.id AND b.dropdownTypeId = 14
+      -- LEFT JOIN  dropdown c ON  a.cityId = c.id AND c.dropdownTypeId = 15
+      -- LEFT JOIN  dropdown d ON  a.barangayId = d.id AND d.dropdownTypeId = 16
       LEFT JOIN  dropdown e
               ON  a.taxCodeId = e.id
                   AND e.dropdownTypeId = 9
@@ -82,9 +71,9 @@ router.get("/customers", async (req, res) => {
           name: row.name,
           tin: row.tin,
           billingAddress: row.billingAddress, 
-          provinceId: row.provinceId,
-          province: row.province,
-          cityId: row.cityId,
+          // provinceId: row.provinceId,
+          // province: row.province,
+          // cityId: row.cityId,
           city: row.city,
           barangayId: row.barangayId,
           barangay: row.barangay,

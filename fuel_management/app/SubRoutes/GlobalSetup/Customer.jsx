@@ -36,6 +36,7 @@ import {
   Spinner
 } from "@heroui/react";
 import { fetchDropdowns, fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
+import { AutoCompleteProvince, AutoCompleteCityMunicipality, AutoCompleteBarangays } from "./Components/AutoCompleteFields";
 
 const Customer = () => {
   // Fetch Customer 
@@ -115,12 +116,11 @@ const Customer = () => {
     error: deleteErrorCustomerVehicle 
   } = useDeleteCustomerVehiclesByCustomerId('Customer');
 
-  const [relationships, setRelationships] = useState([]); 
   const [customerContacts, setCustomerContacts] = useState([]); 
   const [customerVehicles, setCustomerVehicles] = useState([]);
   const [loadingCustomerContacts, setLoadingCustomerContacts] = useState(true);
   const [loadingCustomerVehicles, setLoadingCustomerVehicles] = useState(true);
-  const [makeModels, setMakeModels] = useState([]); 
+  const [vehicleMakeModels, setVehicleMakeModels] = useState([]); 
   const [vehicleStatuses, setVehicleStatuses] = useState([]); 
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingCustomerContacts, setIsEditingCustomerContacts] = useState(false);
@@ -134,9 +134,9 @@ const Customer = () => {
     tin: "",
     stationId: [], 
     billingAddress: "", 
-    provinceId: "",
-    cityId: "",
-    barangayId: "",
+    // provinceId: "",
+    // cityId: "",
+    // barangayId: "",
     contactNo: "", 
     email: "",  
     taxCode: "",  
@@ -163,9 +163,9 @@ const Customer = () => {
       tin: "",
       stationId: [], 
       billingAddress: "", 
-      provinceId: "",
-      cityId: "",
-      barangayId: "",
+      // provinceId: "",
+      // cityId: "",
+      // barangayId: "",
       contactNo: "", 
       email: "",  
       taxCode: "",  
@@ -181,111 +181,96 @@ const Customer = () => {
 
   const handleEdit = async (customer) => {
     setIsEditing(true);
+    setCustomerContacts([]);
+    setCustomerVehicles([]);
+    setLoadingCustomerContacts(true);
+    setLoadingCustomerVehicles(true);
+  
     try {
       // Fetch Contacts 
       const rawContacts = await fetchCustomerContacts(customer.id);
       const contacts = rawContacts.map(c => ({
         ...c,
-        contactNo2: c.contactNo2,
+        contactNo2: c.contactNo2 || c.contactno2,
+        contactno2: c.contactNo2 || c.contactno2
       }));
+      setCustomerContacts(contacts); 
   
       // Fetch Vehicles 
       const rawVehicles = await fetchCustomerVehicles(customer.id);
       const vehicles = rawVehicles.map(v => ({
         ...v,
-        vehicle: v.vehicle,
+        plateNo: v.plateNo || v.plateno, 
+        vehicleMakeModelId: v.vehicleMakeModelId || v.vehiclemakemodelid,
+        vehicleStatusId: v.vehicleStatusId || v.vehiclestatusid
       }));
+      setCustomerVehicles(vehicles); 
+
+      console.log("contacts: ", contacts)
+      console.log("vehicles: ", vehicles)
   
       // Fetch dropdowns
       await Promise.all([
-        fetchDropdownTypeList(14, customer.provinceid),
-        fetchDropdownTypeList(15, customer.cityid),
-        fetchDropdownTypeList(16, customer.barangayid),
         fetchDropdownTypeList(9, customer.taxcodeid),
         fetchDropdownTypeList(8, customer.customerstatusid)
       ]);
-  
-      // Update customerLin if available
-      if (customer.customerLin && Array.isArray(customer.customerLin)) {
-        const stationIds = customer.customerLin.map(item =>
-          parseInt(item.stationId, 10)
-        );
-        console.log(customer)
-        console.log(stationIds)
-
-        setNewCustomer((prev) => ({
-          ...prev,
-          ...customer,
-          stationId: stationIds,
-          customerContacts: contacts,
-          customerVehicles: vehicles
-        }));
-      }
-      
   
       // Handle vehicle make and model data
       if (vehicles && vehicles.length > 0) {
         const vehicleWithMakeModel = await Promise.all(
           vehicles.map(async (vehicle) => {
             try {
-              const vehicleData = await fetchDropdownTypeList(10, vehicle.makeModelId);
+              const vehicleData = await fetchDropdownTypeList(10, vehicle.vehicleMakeModelId);
               return {
                 ...vehicle,
-                makeModelId: Number(vehicle.makeModelId),
+                vehicleMakeModelId: Number(vehicle.vehicleMakeModelId),
                 vehicle: vehicleData?.[0]?.name || "Unknown"
               };
             } catch (error) {
               console.error("Error fetching make and model data:", error);
               return {
                 ...vehicle,
-                makeModelId: Number(vehicle.makeModelId),
+                vehicleMakeModelId: Number(vehicle.vehicleMakeModelId),
                 vehicle: "Unknown"
               };
             }
           })
         );
-        setCustomerVehicles(vehicleWithMakeModel);
-      } else {
-        setCustomerVehicles([]); // If no vehicles, set as empty
-      }
-  
-      // Handle vehicle status data
-      if (vehicles && vehicles.length > 0) {
-        const vehicleWithStatus = await Promise.all(
-          vehicles.map(async (vehicle) => {
-            try {
-              const vehicleStatusData = await fetchDropdownTypeList(11, vehicle.vehicleStatusId);
-              return {
-                ...vehicle,
-                vehicleStatusId: Number(vehicle.vehicleStatusId),
-                vehicle: vehicleStatusData?.[0]?.name || "Unknown"
-              };
-            } catch (error) {
-              console.error("Error fetching vehicle status data:", error);
-              return {
-                ...vehicle,
-                vehicleStatusId: Number(vehicle.vehicleStatusId),
-                vehicle: "Unknown"
-              };
-            }
-          })
-        );
-        setCustomerVehicles(vehicleWithStatus);
+        setCustomerVehicles(vehicleWithMakeModel); 
       } else {
         setCustomerVehicles([]); 
       }
+  
+      // Update customerLin if available
+      if (customer.customerLin && Array.isArray(customer.customerLin)) {
+        const stationIds = customer.customerLin.map(item =>
+          parseInt(item.stationId, 10)
+        );
+  
+        setNewCustomer((prev) => ({
+          ...prev,
+          ...customer,
+          stationId: stationIds,
+          customerContacts: contacts, 
+          customerVehicles: vehicles 
+        }));
+      }
+  
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoadingCustomerContacts(false);
       setLoadingCustomerVehicles(false);
     }
-  };  
+  };
+  
 
   const handleSave = async () => {
+    console.log(newCustomer)
     if (!newCustomer.name || !newCustomer.tin || !newCustomer.stationId.length > 0 ||
-        !newCustomer.billingAddress || !newCustomer.provinceId || !newCustomer.cityId ||
-        !newCustomer.barangayId || !newCustomer.contactNo || !newCustomer.email ||
+        !newCustomer.billingAddress || 
+        // !newCustomer.provinceId || !newCustomer.cityId || !newCustomer.barangayId || 
+        !newCustomer.contactNo || !newCustomer.email ||
         !newCustomer.taxCodeId || !newCustomer.customerStatusId 
     ) {
       setNotification({ message: "All fields are required.", type: "error" });
@@ -299,9 +284,9 @@ const Customer = () => {
       name: newCustomer.name,
       tin: newCustomer.tin,
       billingAddress: newCustomer.billingAddress, 
-      provinceId: parseInt(newCustomer.provinceId, 10),
-      cityId: parseInt(newCustomer.cityId, 10),
-      barangayId: parseInt(newCustomer.barangayId, 10),
+      // provinceId: parseInt(newCustomer.provinceId, 10),
+      // cityId: parseInt(newCustomer.cityId, 10),
+      // barangayId: parseInt(newCustomer.barangayId, 10),
       contactNo: newCustomer.contactNo,
       email: newCustomer.email,
       taxCodeId: parseInt(newCustomer.taxCodeId, 10),
@@ -309,7 +294,7 @@ const Customer = () => {
       stations: newCustomer.stationId.map(id => ({ stationId: id }))
     };
 
-    console.log(payload)
+    console.log("payload: ", payload)
 
     try {
         let customerId;
@@ -324,25 +309,23 @@ const Customer = () => {
           const response = await updateCustomer({ id: customerId, payload });
 
           // Delete and Add new Contacts 
-          if (customerId && Array.isArray(customerContacts)) {
-            await deleteCustomerContact(customerId);
-          
-            if (customerContacts.length > 0) {
-              await Promise.all(
-                customerContacts.map(contact => addCustomerContact({ id: customerId, payload: contact }))
-              );
-            }
+          await deleteCustomerContact(customerId);
+
+          if (customerContacts.length > 0) {
+            console.log(customerContacts)
+            await Promise.all(
+              customerContacts.map(contact => addCustomerContact({ id: customerId, payload: contact }))
+            );
           }
 
           // Delete and Add new Vehicles 
-          if (customerId && Array.isArray(customerVehicles)) {
-            await deleteCustomerVehicle(customerId);
-          
-            if (customerVehicles.length > 0) {
-              await Promise.all(
-                customerVehicles.map(vehicle => addCustomerVehicle({ id: customerId, payload: vehicle }))
-              );
-            }
+          await deleteCustomerVehicle(customerId);
+        
+          if (customerVehicles.length > 0) {
+            console.log("Log data before adding in the db: ", customerVehicles)
+            await Promise.all(
+              customerVehicles.map(vehicle => addCustomerVehicle({ id: customerId, payload: vehicle }))
+            );
           }
 
         } else {
@@ -350,6 +333,7 @@ const Customer = () => {
           const response = await addCustomer(payload);
           customerId = response[0]?.id;
 
+          console.log(response)
           console.log("payload: ", payload)
           console.log("id: ", customerId)
           console.log("response: ", response)
@@ -357,6 +341,7 @@ const Customer = () => {
 
           // Add Contacts
           if (customerContacts.length > 0) {
+            console.log("add contacts: ", customerContacts)
             await Promise.all(
               customerContacts.map(contact => addCustomerContact({ id: customerId, payload: contact }))
             );
@@ -364,6 +349,7 @@ const Customer = () => {
 
           // Add Vehicles
           if (customerVehicles.length > 0) {
+            console.log("add vehicles: ", customerVehicles)
             await Promise.all(
               customerVehicles.map(vehicle => addCustomerVehicle({ id: customerId, payload: vehicle }))
             );
@@ -385,9 +371,9 @@ const Customer = () => {
     const handleConfirm = async () => {
         try {
             // Delete all records if Customer is deleted 
-            await deleteCustomer(id);
             await deleteCustomerContact(id);
             await deleteCustomerVehicle(id);
+            await deleteCustomer(id);
 
             setIsEditing(false);
             setNotification({ message: "Record deleted successfully!", type: "success" }); 
@@ -417,9 +403,9 @@ const Customer = () => {
     { key: "tin", label: "TIN", hidden: false },
     { key: "stations", label: "Stations", hidden: true },
     { key: "billingAddress", label: "Billing Address", hidden: true },
-    { key: "province", label: "Province", hidden: true },
-    { key: "city", label: "City", hidden: true },
-    { key: "barangay", label: "Barangay", hidden: true },
+    // { key: "province", label: "Province", hidden: true },
+    // { key: "city", label: "City", hidden: true },
+    // { key: "barangay", label: "Barangay", hidden: true },
     { key: "contactNo", label: "Contact No.", hidden: true },
     { key: "taxCode", label: "Tax Code", hidden: true },
     { key: "customerStatus", label: "Customer Status", hidden: true }
@@ -456,8 +442,12 @@ const Customer = () => {
   const handleEditCustomerContacts = async (customerContact) => {
     setNewCustomerContacts({
       ...customerContact,
-      contactNo2: customerContact.contactNo2 || customerContact.contactNo, // fallback
+      contactNo2: customerContact.contactNo2 || customerContact.contactno2,
+      contactno2: customerContact.contactNo2 || customerContact.contactno2,
     });
+
+    console.log("customer contact: ", customerContact)
+    console.log("customer contact: ", customerContact.contactNo2)
   
     setIsEditingCustomerContacts(true);
   };  
@@ -467,38 +457,42 @@ const Customer = () => {
       setNotification({ message: "All fields are required.", type: "error" });
       return;
     }
+
     if (isSaving) return;
     setIsSaving(true);
-
-    try {
-      let updatedContacts = [...customerContacts];
   
-      if (newCustomerContacts.id) {
-        updatedContacts = updatedContacts.map(contact =>
-          contact.id === newCustomerContacts.id
-            ? {
-                ...newCustomerContacts,
-                contactNo2: newCustomerContacts.contactNo2,
-              }
-            : contact
+    try {
+      const contactId = newCustomerContacts.id || `temp-${Date.now()}`;
+      const updatedContact = {
+        ...newCustomerContacts,
+        id: contactId,
+        contactNo2: newCustomerContacts.contactNo2 || newCustomerContacts.contactno2, 
+        contactno2: newCustomerContacts.contactNo2 || newCustomerContacts.contactno2, 
+      };
+  
+      const isEdit = customerContacts.some(contact => contact.id === contactId);
+  
+      let updatedContacts;
+      if (isEdit) {
+        // Replace the existing contact
+        updatedContacts = customerContacts.map((contact) =>
+          contact.id === contactId ? updatedContact : contact
         );
       } else {
-        const tempId = `temp-${Date.now()}`;
-        const newContact = {
-          ...newCustomerContacts,
-          id: tempId,
-          contactNo2: newCustomerContacts.contactNo2 || newCustomerContacts.contactNo,
-        };
-  
-        updatedContacts = [...updatedContacts, newContact];
+        // Add a new one
+        updatedContacts = [...customerContacts, updatedContact];
       }
-      setIsSaving(false);
+
+      console.log(updatedContacts)
+  
       setCustomerContacts(updatedContacts);
       setIsEditingCustomerContacts(false);
       setNotification({ message: "Save successful (temporary)", type: "success" });
     } catch (error) {
       setNotification({ message: "Error saving data", type: "error" });
       console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false);
     }
   };  
 
@@ -533,7 +527,7 @@ const Customer = () => {
   const customerContactsColumns = [
     { key: "id", label: "No.", hidden: true },
     { key: "name", label: "Name", hidden: false },
-    { key: "contactNo2", label: "Contact No.", hidden: false }, 
+    { key: "contactno2", label: "Contact No.", hidden: false }, 
     { key: "details", label: "Details", hidden: true },
   ];
 
@@ -549,17 +543,17 @@ const Customer = () => {
   };
 
   // Customer Vehicle Make and Model
-  const getMakeModels = async () => {
+  const getVehicleMakeModels = async () => {
     try {
       const response = await fetchDropdowns(10); 
-      setMakeModels(response); 
+      setVehicleMakeModels(response); 
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
 
   useEffect(() => {
-    getMakeModels();
+    getVehicleMakeModels();
   }, []);
 
   // Customer Vehicle Status
@@ -590,22 +584,22 @@ const Customer = () => {
     setNewCustomerVehicles(prev => ({
         ...prev,
         ...customerVehicle,
-        makeModelId: Number(customerVehicle.makeModelId), 
-        makeModel: makeModels.find(m => m.id === Number(customerVehicle.makeModelId))?.name || "Loading...",
+        vehicleMakeModelId: Number(customerVehicle.vehicleMakeModelId), 
+        vehicleMakeModel: vehicleMakeModels.find(m => m.id === Number(customerVehicle.vehicleMakeModelId))?.name || "Loading...",
         vehicleStatusId: Number(customerVehicle.vehicleStatusId), 
         vehicleStatus: vehicleStatuses.find(v => v.id === Number(customerVehicle.vehicleStatusId))?.name || "Loading...",
     }));
 
     try {
-      const makeModelData = await fetchDropdownTypeList(10, customerVehicle.makeModelId);
-      const makeModel = makeModelData?.[0]?.name || "Unknown";
+      const vehicleMakeModelData = await fetchDropdownTypeList(10, customerVehicle.vehicleMakeModelId);
+      const vehicleMakeModel = vehicleMakeModelData?.[0]?.name || "Unknown";
 
       const vehicleStatusData = await fetchDropdownTypeList(11, customerVehicle.vehicleStatusId);
       const vehicleStatus = vehicleStatusData?.[0]?.name || "Unknown";
 
       setNewCustomerVehicles(prev => ({
           ...prev,
-          makeModel,
+          vehicleMakeModel,
           vehicleStatus,
       }));
     } catch (error) {
@@ -617,45 +611,55 @@ const Customer = () => {
 
   const handleSaveCustomerVehicles = async () => {
     // Temporary Vehicle 
+    if (!newCustomerVehicles.plateNo || !newCustomerVehicles.vehicleMakeModelId || 
+      !newCustomerVehicles.details || !newCustomerVehicles.vehicleStatusId) {
+      setNotification({ message: "All fields are required.", type: "error" });
+      return;
+    }
+
+    if (isSaving) return;
+    setIsSaving(true);
+
     try {
-      let updatedVehicles = [...customerVehicles];
+      const vehicleId = newCustomerVehicles.id || `temp-${Date.now()}`;
+      const vehicleMakeModelId = parseInt(newCustomerVehicles.vehicleMakeModelId, 10);
+      const vehicleStatusId = parseInt(newCustomerVehicles.vehicleStatusId, 10);
 
-      if (newCustomerVehicles.id) {
-        const existingVehicle = updatedVehicles.find(v => v.id === newCustomerVehicles.id);
-        
-        let makeModelName = existingVehicle?.makeModel || "Unknown"; 
+      const vehicleMakeModelData = await fetchDropdownTypeList(10, vehicleMakeModelId);
+      const vehicleMakeModelName = vehicleMakeModelData?.[0]?.name || "Unknown";
+      const vehicleStatusData = await fetchDropdownTypeList(11, vehicleStatusId);
+      const vehicleStatusName = vehicleStatusData?.[0]?.name || "Unknown";
 
-        if (existingVehicle?.makeModelId !== newCustomerVehicles.makeModelId) {
+      const updatedVehicle = {
+        ...newCustomerVehicles,
+        id: vehicleId,
+        plateNo: newCustomerVehicles.plateNo || newCustomerVehicles.plateno, 
+        vehicleMakeModelId,
+        vehiclemakemodelid: vehicleMakeModelId,
+        vehicleMakeModel: vehicleMakeModelName,
+        vehiclemakemodel: vehicleMakeModelName,
+        vehicleStatusId,
+        vehiclestatusid: vehicleStatusId, 
+        vehicleStatus: vehicleStatusName,
+        vehiclestatus: vehicleMakeModelName
+      };
 
-          const makeModelData = await fetchDropdownTypeList(6, newCustomerVehicles.makeModelId);
-          makeModelName = makeModelData?.[0]?.name || "Unknown";
-        }
+      console.log("updated vehicle: ", updatedVehicle)
 
-        updatedVehicles = updatedVehicles.map(contact =>
-          contact.id === newCustomerVehicles.id
-            ? { ...newCustomerVehicles, 
-              makeModel: makeModelName,
-              contactno2: newCustomerVehicles.contactNo2
-              
-            }
-            : contact
+      const isEdit = customerVehicles.some(vehicle => vehicle.id === vehicleId);
+      
+      let updatedVehicles;
+
+      if (isEdit) {
+        updatedVehicles = customerVehicles.map((vehicle) =>
+          vehicle.id === vehicleId ? updatedVehicle : vehicle
         );
       } else {
-        const tempId = `temp-${Date.now()}`;
-        const makeModelData = await fetchDropdownTypeList(6, newCustomerVehicles.makeModelId);
-        const makeModelName = makeModelData?.[0]?.name || "Unknown";
-
-        const newVehicle = { 
-          ...newCustomerVehicles, 
-          id: tempId, 
-          makeModelId: parseInt(newCustomerVehicles.makeModelId, 10),
-          makeModel: makeModelName,
-          contactno2: newCustomerVehicles.contactNo2
-        };
-
-        updatedVehicles = [...updatedVehicles, newVehicle];
+        updatedVehicles = [...customerVehicles, updatedVehicle];
       }
 
+      console.log("update vehicles: ", updatedVehicles)
+  
       setCustomerVehicles(updatedVehicles);
       setIsEditingCustomerVehicles(false);
       setNotification({ message: "Save successful (temporary)", type: "success" });
@@ -663,6 +667,8 @@ const Customer = () => {
     } catch (error) {
       setNotification({ message: "Error saving data", type: "error" });
       console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -697,12 +703,13 @@ const Customer = () => {
   const customerVehiclesColumns = [
     { key: "id", label: "No.", hidden: true },
     { key: "plateNo", label: "Plate No.", hidden: false },
-    { key: "makeModel", label: "Make and Model", hidden: false }, 
+    { key: "vehiclemakemodel", label: "Make and Model", hidden: false }, 
     { key: "details", label: "Details", hidden: true },
-    { key: "vehicleStatus", label: "Status", hidden: false } 
+    { key: "vehiclestatus", label: "Status", hidden: false } 
   ];
 
   const customRenderCustomerVehicles = {
+
     actions: (item) => (
       <button
         onClick={() => handleEditCustomerVehicles(item)} 
@@ -765,7 +772,7 @@ const Customer = () => {
               <div className="col-span-4 gap-3">
                 <MultiDropdown 
                   label="Station"
-                  customOptions={stations.map(s => ({
+                  customOptions={stations.body.map(s => ({
                     id: s.id,
                     name: s.name
                   }))}
@@ -791,28 +798,28 @@ const Customer = () => {
                 />
               </div>
               <div className="col-span-3 gap-3">
-                <Dropdown 
+                {/* <Dropdown 
                   label="Province"
                   typeId={14} 
                   value={newCustomer.provinceId} 
                   onChange={(e) => setNewCustomer({ ...newCustomer, provinceId: e.target.value })} 
-                />
+                /> */}
               </div>
               <div className="col-span-3 gap-3">
-                <Dropdown 
+                {/* <Dropdown 
                   label="City"
                   typeId={15} 
                   value={newCustomer.cityId} 
                   onChange={(e) => setNewCustomer({ ...newCustomer, cityId: e.target.value })} 
-                />
+                /> */}
               </div>
               <div className="col-span-3 gap-3">
-                <Dropdown 
+                {/* <Dropdown 
                   label="Barangay"
                   typeId={16} 
                   value={newCustomer.barangayId} 
                   onChange={(e) => setNewCustomer({ ...newCustomer, barangayId: e.target.value })} 
-                />
+                /> */}
               </div>
             </div>
 
@@ -933,8 +940,8 @@ const Customer = () => {
                   <Dropdown 
                     label="Vehicle Make and Model"
                     typeId={10} 
-                    value={newCustomerVehicles.makeModelId} 
-                    onChange={(e) => setNewCustomerVehicles({ ...newCustomerVehicles, makeModelId: e.target.value })} 
+                    value={newCustomerVehicles.vehicleMakeModelId} 
+                    onChange={(e) => setNewCustomerVehicles({ ...newCustomerVehicles, vehicleMakeModelId: e.target.value })} 
                   />
                   <Textarea 
                     className="w-full mb-2" 
@@ -960,11 +967,10 @@ const Customer = () => {
                       <Button onClick={() => setIsEditingCustomerVehicles(false)} color="default" className="text-[blue]">Close</Button>
                       <Button 
                         onClick={handleSaveCustomerVehicles} 
-                        // disabled={isSaving} 
+                        disabled={isSaving} 
                         color="primary"
                       >
-                        {/* {isSaving ? "Saving..." : "Save"} */}
-                        Save
+                        {isSaving ? "Saving..." : "Save"}
                       </Button>
                     </div>
                   </div>
