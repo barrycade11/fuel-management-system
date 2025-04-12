@@ -3,57 +3,6 @@ import { TankInputRows } from "./Accordions/Rows/TankInputRows"
 
 const TanksInput = ({tankTotal, setTankTotal}) => {
     const tableHeader = ["Tank Name", "Fuel", "Price", "Dip", "Volume"]
-    // const [tankData, setTankData] = useState([
-    //     {
-    //         id: 1,
-    //         fuel: Fuels[0],
-    //         price: 72.5,
-    //         dip: 1238,
-    //         volume: 9234.23
-    //     },
-    //     {
-    //         id: 2,
-    //         fuel: Fuels[1],
-    //         price: 72.5,
-    //         dip: 1238,
-    //         volume: 9234.23
-    //     },
-    //     {
-    //         id: 3,
-    //         fuel: Fuels[2],
-    //         price: 72.5,
-    //         dip: 1238,
-    //         volume: 9234.23
-    //     },
-    //     {
-    //         id: 4,
-    //         fuel: Fuels[3],
-    //         price: 72.5,
-    //         dip: 1238,
-    //         volume: 9234.23
-    //     },
-    //     {
-    //         id: 5,
-    //         fuel: Fuels[0],
-    //         price: 72.5,
-    //         dip: 1238,
-    //         volume: 9234.23
-    //     },
-    //     {
-    //         id: 6,
-    //         fuel: Fuels[1],
-    //         price: 72.5,
-    //         dip: 1238,
-    //         volume: 9234.23
-    //     },
-    //     {
-    //         id: 7,
-    //         fuel: Fuels[2],
-    //         price: 72.5,
-    //         dip: 1238,
-    //         volume: 9234.23
-    //     }
-    // ])
 
     return (
         <div className="h-min w-full border-[1px]">

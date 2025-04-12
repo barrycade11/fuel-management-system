@@ -62,7 +62,8 @@ export const CashAccordion = ({
                 setEditData={setEditData}
             />
 
-            <div className="w-full flex justify-end py-4">
+            <div className="w-full flex justify-between items-baseline py-4">
+                <label className='text-gray-500'>Safedrops</label>
                 <Button
                     onPress={() => {
                         setPurpose('add')
