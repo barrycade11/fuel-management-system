@@ -29,7 +29,6 @@ router.post("/dailySalesInputForecourt", upload.single("pos"), async (req, res) 
             discountData: JSON.parse(req.body?.discountData),
             recievableData: JSON.parse(req.body?.recievableData),
             checkData: JSON.parse(req.body?.checkData),
-            inventoryData: JSON.parse(req.body?.inventoryData),
             filterData: JSON.parse(req.body?.filterData),
             salesGrandTotal: req.body?.salesGrandTotal,
             netDepartmentTotal: req.body?.netDepartmentTotal,
@@ -466,46 +465,6 @@ router.post("/dailySalesInputForecourt", upload.single("pos"), async (req, res) 
                             item?.paymentForm,
                             item?.amount,
                             item?.details
-                        ]
-                    );
-                    return resolve(true)
-                })
-            })
-        )
-
-        //saving inventory input header
-        const inventoryHeaderResult = await client.query(
-            `INSERT INTO dailysalesinput_inventoryhdr
-                                                        (
-                                                            total,
-                                                            input_id
-                                                        )
-                                            VALUES      ($1, $2)
-                                            RETURNING   *`,
-            [
-                uploadedData.inventoryData?.total,
-                savedMainId
-            ]
-        );
-        let savedInventoryId = inventoryHeaderResult.rows[0].ID
-        //saving inventory line items
-        await Promise.all(
-            uploadedData.inventoryData?.content?.map((item) => {
-                return new Promise(async (resolve, reject) => {
-                    await client.query(
-                        `INSERT INTO dailysalesinput_inventorylin
-                                                            (
-                                                                inventory_hdr,
-                                                                inventory_id,
-                                                                quantity,
-                                                                amount
-                                                            )
-                                                VALUES      ($1, $2, $3, $4)`,
-                        [
-                            savedInventoryId,
-                            item?.inventory,
-                            item?.quantity,
-                            item?.amount
                         ]
                     );
                     return resolve(true)
