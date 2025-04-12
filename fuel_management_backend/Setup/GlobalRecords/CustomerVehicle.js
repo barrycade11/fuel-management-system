@@ -10,14 +10,21 @@ router.get("/customer/:customerId/vehicles", async (req, res) => {
                   a.plateNo,
                   a.vehicleMakeModelId,
                   b.name vehicleMakeModel,
+                  a.vehiclestatusid,
+                  c.name vehicleStatus,
                   a.details,
                   a.status
       FROM        customerVehicle a
-      INNER JOIN  dropdown b
+      LEFT JOIN  dropdown b
               ON  a.vehicleMakeModelId = b.id
                   AND b.dropdownTypeId = 10
+      LEFT JOIN  dropdown c
+              ON  a.vehiclestatusid = c.id
+                  AND c.dropdownTypeId = 11
       WHERE       a.customerId = $1
     `, [customerId]);
+
+    console.log(result.rows)
     res.status(201).json(result.rows);
   }
   catch (err) {
@@ -56,7 +63,11 @@ router.post("/customer/:customerId/vehicle", async (req, res) => {
 
   try {
     const { customerId } = req.params;
-    const { plateNo, makeModelId, details, status } = req.body;
+    const { plateNo, vehicleMakeModelId, details, vehicleStatusId } = req.body;
+
+    console.log("customer id:", customerId)
+    console.log("customer id:", req.params)
+    console.log("req body:", req.body)
 
     await client.query("BEGIN");
 
@@ -67,11 +78,13 @@ router.post("/customer/:customerId/vehicle", async (req, res) => {
                     plateNo,
                     vehicleMakeModelId,
                     details,
-                    status
+                    vehiclestatusid 
                   )
       VALUES      ($1, $2, $3, $4, $5)
       RETURNING   id
-    `, [customerId, plateNo, makeModelId, details, status]);
+    `, [customerId, plateNo, vehicleMakeModelId, details, vehicleStatusId]);
+
+    // console.log(result)
     
     await client.query("COMMIT");
 
@@ -80,6 +93,7 @@ router.post("/customer/:customerId/vehicle", async (req, res) => {
   catch (err) {
     await client.query("ROLLBACK");
 
+    console.log(err)
     res.status(500).json({ error: "Database query error" });
   }
   finally {
@@ -92,7 +106,7 @@ router.put("/customer/:customerId/vehicle/:id", async (req, res) => {
 
   try {
     const { customerId, id } = req.params;
-    const { plateNo, vehicleMakeModelId, details, status } = req.body;
+    const { plateNo, vehicleMakeModelId, details, vehicleStatusId } = req.body;
     
     await client.query("BEGIN")
     
@@ -104,7 +118,7 @@ router.put("/customer/:customerId/vehicle/:id", async (req, res) => {
                   status = $6
       WHERE       customerId = $1
                   AND id = $2
-    `, [customerId, id, plateNo, vehicleMakeModelId, details, status]);
+    `, [customerId, id, plateNo, vehicleMakeModelId, details, vehicleStatusId]);
 
     await client.query("COMMIT");
 

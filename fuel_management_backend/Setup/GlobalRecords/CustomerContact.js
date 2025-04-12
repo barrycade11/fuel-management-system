@@ -46,7 +46,7 @@ router.post("/customer/:customerId/contact", async (req, res) => {
 
   try {
     const { customerId } = req.params;
-    const { name, contactNo, details } = req.body;
+    const { name, contactNo2, details } = req.body;
 
     await client.query("BEGIN");
 
@@ -60,7 +60,7 @@ router.post("/customer/:customerId/contact", async (req, res) => {
                   )
       VALUES      ($1, $2, $3, $4)
       RETURNING   id
-    `, [customerId, name, contactNo, details]);
+    `, [customerId, name, contactNo2, details]);
     
     await client.query("COMMIT");
 
@@ -81,7 +81,7 @@ router.put("/customer/:customerId/contactPerson/:id", async (req, res) => {
 
   try {
     const { customerId, id } = req.params;
-    const { name, contactNo, details } = req.body;
+    const { name, contactNo2, details } = req.body;
     
     await client.query("BEGIN")
     
@@ -92,7 +92,7 @@ router.put("/customer/:customerId/contactPerson/:id", async (req, res) => {
                   details = $5
       WHERE       customerId = $1
                   AND id = $2
-    `, [customerId, id, name, contactNo, details]);
+    `, [customerId, id, name, contactNo2, details]);
 
     await client.query("COMMIT");
 

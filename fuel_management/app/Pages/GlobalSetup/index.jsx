@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import Navbar from "~/Components/Navbar"
 import StringRoutes from "~/Constants/StringRoutes";
+// import { Tab, Tabs } from "@heroui/react";
 
 const GlobalRecords = () => {
   const { pathname } = useLocation(); 
@@ -11,7 +12,8 @@ const GlobalRecords = () => {
           title="Global Setup"
         /> 
 
-      <div className="p-6">
+      {/* <div className="p-6"> */}
+      <div className="flex flex-col bg-white h-full p-5">
         <div className="flex space-x-4 mb-4">
           <NavLink
             to={`/${StringRoutes.globalSetup}`}
