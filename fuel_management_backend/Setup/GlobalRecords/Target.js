@@ -108,7 +108,7 @@ router.put("/target/:id", async (req, res) => {
                   targetFieldId = $5,
                   status = $6
       WHERE       id = $1
-    `, [name, year, stationId, targetFieldId, status]);
+    `, [id, name, year, stationId, targetFieldId, status]);
 
     await client.query("COMMIT");
 
