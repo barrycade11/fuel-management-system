@@ -7,6 +7,7 @@ import TableSkeleton from '~/Components/TableSkeleton';
 import { useParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Time } from "@internationalized/date";
+import ErrorElement from '~/Components/ErrorElement';
 
 const StationTextFieldBox = ({
   label = "",
@@ -105,6 +106,14 @@ const StationFormDetails = () => {
     return <TableSkeleton />
   }
 
+  if(isError) {
+    return (
+      <div className='mt-5'>
+        <ErrorElement>{error.message}</ErrorElement>
+      </div>
+    )
+  }
+
   return (
     <div className='flex flex-col border border-default-200 rounded-sm mt-5 '>
       <span className='bg-blue-100 flex-1 text-md font-semibold text-default-600 px-4 py-2'>Station Details</span>
@@ -138,11 +147,12 @@ const StationFormDetails = () => {
             label="Street Address" />
         </div>
 
-        <AutoCompleteProvince />
+        <AutoCompleteProvince preSelected={isSuccess ? stationData?.body[0]?.province : null } />
 
-        <AutoCompleteCityMunicipality />
+        <AutoCompleteCityMunicipality preSelected={isSuccess ? stationData?.body[0]?.city : null}  />
 
-        <AutoCompleteBarangays />
+        <AutoCompleteBarangays preSelected={isSuccess ? stationData?.body[0]?.barangay: null}/>
+
 
         <TimeInput
           isRequired={false}
