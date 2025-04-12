@@ -24,6 +24,10 @@ app.use("/ForecourtSales", forecourtRoutes);
 const selectRoutes = require("./Sales/DailySalesInputSelect");
 app.use("/SelectSales", selectRoutes);
 
+// Manager Sales
+const managerRoutes = require("./Sales/DailySalesInputManager");
+app.use("/ManagerSales", managerRoutes);
+
 // FUEL MASTER
 const fuelMastersRoutes = require("./Setup/GlobalRecords/FuelMaster");
 app.use("/Setup/GlobalRecords", fuelMastersRoutes);

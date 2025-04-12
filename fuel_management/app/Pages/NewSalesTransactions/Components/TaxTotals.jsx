@@ -1,6 +1,17 @@
+import CurrencyFormatter from "~/Components/Lib/CurrencyFormatter"
 import SimpleInput from "~/Components/SimpleInput"
 
-const TaxTotals = () => {
+const TaxTotals = ({
+    vatableSales,
+    vatAmount,
+    vatExemptSales,
+    vatZeroRatedSales,
+    managerTotal,
+    setVatableSales,
+    setVatAmount,
+    setVatExemptSales,
+    setVatZeroRatedSales
+}) => {
     return (
         <div className="h-min w-full border-[1px] rounded-sm">
             <div className="bg-blue-100 p-3 text-gray-500 font-semibold rounded-sm">
@@ -16,8 +27,8 @@ const TaxTotals = () => {
                         icon={''}
                         type={"number"}
                         textAlign={"right"}
-                        initialValue={1438749.31}
-                    // setInitialValue={}
+                        initialValue={vatableSales}
+                        setInitialValue={setVatableSales}
                     />
                 </div>
                 <div className="grid gap-1 w-full">
@@ -28,8 +39,8 @@ const TaxTotals = () => {
                         icon={''}
                         type={"number"}
                         textAlign={"right"}
-                        initialValue={423408.99}
-                    // setInitialValue={}
+                        initialValue={vatAmount}
+                        setInitialValue={setVatAmount}
                     />
                 </div>
                 <div className="grid gap-1 w-full">
@@ -40,8 +51,8 @@ const TaxTotals = () => {
                         icon={''}
                         type={"number"}
                         textAlign={"right"}
-                        initialValue={12390.00}
-                    // setInitialValue={}
+                        initialValue={vatExemptSales}
+                        setInitialValue={setVatExemptSales}
                     />
                 </div>
                 <div className="grid gap-1 w-full">
@@ -52,21 +63,17 @@ const TaxTotals = () => {
                         icon={''}
                         type={"number"}
                         textAlign={"right"}
-                        initialValue={82346.00}
-                    // setInitialValue={}
+                        initialValue={vatZeroRatedSales}
+                        setInitialValue={setVatZeroRatedSales}
                     />
                 </div>
                 <div className="grid gap-1">
-                    <SimpleInput
-                        version={3}
-                        label={"Total"}
-                        placeholder={""}
-                        icon={''}
-                        type={"number"}
-                        textAlign={"right"}
-                        initialValue={3938748.92}
-                    // setInitialValue={}
-                    />
+                    <div className='grid'>
+                        <label className="font-semibold text-gray-500">Total</label>
+                        <label className='bg-gray-100 rounded-md mt-1 font-semibold text-right p-2'>
+                            {CurrencyFormatter(managerTotal)}
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
