@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 // Screen size breakpoints
 const BREAKPOINTS = {
   MOBILE: 480,   // Small mobile devices
-  TABLET: 1284// Tablets and smaller laptops
+  TABLET: 1024// Tablets and smaller laptops
 };
 
 // Layout for the admin dashboard

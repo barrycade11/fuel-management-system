@@ -3,6 +3,7 @@ import CurrencyFormatter from "~/Components/Lib/CurrencyFormatter";
 import { PaymentMode } from "~/Constants/Labels";
 
 export const RedemptionRows = ({ currentData, content, setContent, setPurpose, setOpenAdd, setEditData }) => {
+    console.log(currentData)
     return (
         <>
             <td className="px-6 py-1">

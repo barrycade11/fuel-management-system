@@ -51,7 +51,8 @@ router.get("/dropdowns/:typeId/:id", async (req, res) => {
                 name,
                 details
       FROM      dropdown
-      WHERE     dropdownTypeId = $1
+      WHERE     status = true
+                AND dropdownTypeId = $1
                 AND id = $2
     `, [typeId, id]);
     res.status(201).json(result.rows);
