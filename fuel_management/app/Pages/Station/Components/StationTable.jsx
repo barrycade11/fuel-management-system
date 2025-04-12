@@ -1,6 +1,6 @@
 import PrimaryButton from "~/Components/PrimayButton"
 import { CircularProgress } from "@heroui/react"
-import { useFetchStations  } from "~/Hooks/Setup/Station/Station/useStations";
+import { useFetchStations } from "~/Hooks/Setup/Station/Station/useStations";
 import TableSkeleton from "~/Components/TableSkeleton";
 import { useNavigate } from "react-router";
 import StringRoutes from "~/Constants/StringRoutes";
@@ -40,9 +40,9 @@ const StationTable = () => {
     return `${item.address} ${item.barangay} ${item.city} ${item.province}`;
   }
 
-  const handleView = (id) => {
-    navigate(StringRoutes.stationDetail + `/${id}`);
-  } 
+  const handleView = (item) => {
+    navigate(StringRoutes.stationDetail + `/${item.id}`);
+  }
 
   return (
     <div className="px-4 overflow-x-auto">
@@ -64,7 +64,7 @@ const StationTable = () => {
                 <td align="center" className="whitespace-nowrap">{combineLocationDetails(item)}</td>
                 <td align="center">
                   <PrimaryButton
-                    onClick={() => handleView(item.id)}
+                    onClick={() => handleView(item)}
                     fullWidth={false}
                     variant="ghost"
                     color="primary"
