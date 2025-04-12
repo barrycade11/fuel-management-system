@@ -7,6 +7,7 @@ import useAddStationMutation from "~/Hooks/Setup/Station/Station/useAddStation";
 import { useNavigate, useParams } from "react-router";
 import useUpdateStationMutation from "~/Hooks/Setup/Station/Station/useUpdateStation";
 import useDeleteStationMutation from "~/Hooks/Setup/Station/Station/useDeleteStation";
+import { useRef } from "react";
 
 const InitialPage = () => {
   const addStationMutation = useAddStationMutation();
@@ -14,6 +15,7 @@ const InitialPage = () => {
   const deleteStationMutation = useDeleteStationMutation();
   const navigate = useNavigate();
   const { id } = useParams();
+  const formRef = useRef(null)
 
   /**
    * Shows a toast notification.
@@ -37,17 +39,19 @@ const InitialPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const data = Object.fromEntries((new FormData(e.currentTarget)))
-
-    return id === undefined || id === null ?
-      onManageSubmitStoreDetails(data) :
-      onManageUpdateStoreDetails(data);
+    console.log(e);
+    // const data = Object.fromEntries((new FormData(e.currentTarget)))
+    //
+    // return id === undefined || id === null ?
+    //   onManageSubmitStoreDetails(data) :
+    //   onManageUpdateStoreDetails(data);
   }
 
   const onManageSubmitStoreDetails = (data) => {
     addStationMutation.mutate(data, {
       onError: (error) => {
         console.log(error);
+                      type='number'
         showToast({
           title: "Error",
           description: error.message,
@@ -116,8 +120,8 @@ const InitialPage = () => {
   }
 
   return (
-    <Form onSubmit={handleSubmit} className="flex bg-white flex-col px-4 items-stretch">
-      <StationFormDetails />
+    <Form ref={formRef} onSubmit={handleSubmit} className="flex bg-white flex-col px-4 items-stretch">
+      <StationFormDetails ref={formRef} />
       <div className="grid md:grid-cols-5 mt-14 ">
         <TanksTable />
         <TanksDepartmentTable />

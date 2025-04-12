@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 
 const useStationStore = create((set, get) => ({
+  nozzleCount: 0,
+  onSetNozzlesCount: (count) => set({ nozzleCount: count }),
+
+  product: null,
+  onSetSelectedProduct: (val) => set({ product: val }),
+
+  viewTank: null,
+  onSetViewTank: (data) => set({ viewTank: data }),
+
   departmentOnView: false,
   departmentOnViewId: null,
   stationDetails: null, // Object expected
@@ -10,8 +19,10 @@ const useStationStore = create((set, get) => ({
   onSetStationDetails: (form) => {
     set({ stationDetails: form })
   },
-  onSetTanks: (items) => {
-    set({ tanks: items })
+  onSetTanks: (item) => {
+    set((state) => ({
+      tanks: [...state.tanks, item],
+    }));
   },
   onSetDepartments: (items) => {
     set({ departments: items })
