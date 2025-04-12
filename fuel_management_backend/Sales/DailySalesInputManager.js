@@ -1,8 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../Config/Connection");
-const fs = require('node:fs');
-const { XMLParser } = require("fast-xml-parser");
 const multer = require('multer');
 const path = require("path");
 const storage = multer.diskStorage({
@@ -15,56 +13,176 @@ const storage = multer.diskStorage({
     }
 })
 
+
 const upload = multer({ storage: storage });
 
-router.post("/posUpload", upload.single("pos"), async (req, res) => {
+router.post("/dailySalesInputManager", upload.single("pos"), async (req, res) => {
     const client = await pool.connect();
-    const uploadedFile = req.file
-
-    fs.readFile(uploadedFile?.path, 'utf8', (err, data) => {
-        if (err) {
-            console.error(err);
-            return;
-        }
-        const parser = new XMLParser();
-        let parsedXml = parser.parse(data);
-
-        for (let item of parsedXml.ArrayOfTransaction.Transaction) {
-            console.log(item)
-            lin = [...lin, item.TransactionItem]
-        }
-        // console.log(lin)
-    });
-    res.status(201).json({ message: "Success" })
-});
-
-router.get("/getDailySalesInput", async (req, res) => {
     try {
-        const { effectivityDate, selectedStation } = req.query;
-        
-        let query = `
-            SELECT      "ID",
-                        station_id,
-                        shift_id,
-                        employee_id,
-                        input_mode
-            FROM        public.dailysalesinput_hdr AS a
-            WHERE       a."effectivity_date" =  $1
-        `
-        if (selectedStation != '') {
-            query += `
-                AND     a."station_id" = $2
-            `
+        const uploadedFile = req.file
+        const uploadedData = {
+            filterData: JSON.parse(req.body?.filterData),
+            fuelData: JSON.parse(req.body?.fuelData),
+            tankData: JSON.parse(req.body?.tankTotal),
+            vatableSales: req.body?.vatableSales,
+            vatAmount: req.body?.vatAmount,
+            vatExemptSales: req.body?.vatExemptSales,
+            vatZeroRatedSales: req.body?.vatZeroRatedSales,
+            managerTotal: req.body?.managerTotal,
+            comment: req.body?.comment
         }
-        let bindData = [effectivityDate]
-        if (selectedStation != '') bindData.push(selectedStation)
 
-        const result = await pool.query(query, bindData);
-        res.status(201).json({ success: true, message: result.rows });
+        console.log(uploadedData)
+
+        await client.query("BEGIN");
+        //saving main sales input header
+        const mainHeaderResult = await client.query(
+            `INSERT INTO dailysalesinput_hdr
+                        (
+                            input_mode,
+                            station_id,
+                            shift_id,
+                            employee_id,
+                            effectivity_date,
+                            comment
+                        )
+            VALUES      ($1, $2, $3, $4, $5, $6)
+            RETURNING   *`,
+            [
+                uploadedData.filterData?.selectedMode,
+                uploadedData.filterData?.selectedStation,
+                uploadedData.filterData?.selectedShift,
+                uploadedData.filterData?.selectedShiftManager,
+                uploadedData.filterData?.effectivityDate,
+                uploadedData?.comment
+            ]
+        );
+        let savedMainId = mainHeaderResult.rows[0].ID
+
+        //saving fuel input header
+        const fuelHeaderResult = await client.query(
+            `INSERT INTO dailysalesinput_fuelhdr
+                        (
+                            dailysalesinputid,
+                            fueldiscount,
+                            fueltaxexemption
+                        )
+            VALUES      ($1, $2, $3)
+            RETURNING   *`,
+            [
+                savedMainId,
+                uploadedData.fuelData?.discount,
+                uploadedData.fuelData?.taxExemption
+            ]
+        );
+        let savedFuelId = fuelHeaderResult.rows[0].id
+
+        //saving fuel line items
+        await Promise.all(
+            uploadedData.fuelData?.content?.map((item) => {
+                return new Promise(async (resolve, reject) => {
+                    await client.query(
+                        `INSERT INTO dailysalesinput_fuellin
+                                                    (
+                                                        dailysalesinputfuelhdrid,
+                                                        fuelmasterid,
+                                                        transct,
+                                                        volume,
+                                                        amount
+                                                    )
+                                        VALUES      ($1, $2, $3, $4, $5)`,
+                        [
+                            savedFuelId,
+                            item?.fuelId,
+                            item?.transCt,
+                            item?.volume,
+                            item?.amount
+                        ]
+                    );
+                    return resolve(true)
+                })
+            })
+        )
+
+        //saving tank input header
+        const tankHeaderResult = await client.query(
+            `INSERT INTO dailysalesinput_tankhdr
+                            (
+                                input_id
+                            )
+                VALUES      ($1)
+                RETURNING   *`,
+            [
+                savedMainId
+            ]
+        );
+        let savedTankId = tankHeaderResult.rows[0].ID
+        //saving tank line items
+        await Promise.all(
+            uploadedData.tankData?.map((item) => {
+                return new Promise(async (resolve, reject) => {
+                    await client.query(
+                        `INSERT INTO dailysalesinput_tanklin
+                                        (
+                                            tank_hdr,
+                                            fuel_id,
+                                            price,
+                                            dip,
+                                            volume,
+                                            tank
+                                        )
+                            VALUES      ($1, $2, $3, $4, $5, $6)`,
+                        [
+                            savedTankId,
+                            item?.fuelId,
+                            item?.price,
+                            item?.dip,
+                            item?.volume,
+                            item?.tank
+                        ]
+                    );
+                    return resolve(true)
+                })
+            })
+        )
+
+        //saving tax totals data
+        await client.query(
+            `INSERT INTO dailysalesinput_taxtotals
+                (
+                    input_id,
+                    vatables_sales,
+                    vat_amount,
+                    vat_exempt_sales,
+                    vat_zero_rated_sales,
+                    total
+                )
+            VALUES      ($1, $2, $3, $4, $5, $6)
+            RETURNING   *`,
+            [
+                savedMainId,
+                uploadedData.vatableSales,
+                uploadedData.vatAmount,
+                uploadedData.vatExemptSales,
+                uploadedData.vatZeroRatedSales,
+                uploadedData.managerTotal
+                
+            ]
+        );
+
+        await client.query("COMMIT");
+
+        console.log("success: " + savedMainId)
+        res.status(201).json({ success: true, message: "successfully saved with an id of " + savedMainId });
     }
     catch (err) {
-        console.error(err);
+        console.log(err)
+        await client.query("ROLLBACK");
+
         res.status(500).json({ error: "Database query error" });
+    }
+    finally {
+        client.release();
     }
 });
 
@@ -118,6 +236,10 @@ router.get("/getDailySalesForecourtData", async (req, res) => {
         cashResult = await Promise.all(
             cashResult.rows?.map((item) => {
                 return new Promise(async (resolve, reject) => {
+                    var input = item?.time;
+                    var parts = input.split(':');
+                    var minutes = parts[0] * 60 + parts[1];
+                    var inputDate = new Date(minutes * 60 * 1000);
                     const billsQuery = await pool.query(
                         `   
                             SELECT      b.*
@@ -128,7 +250,9 @@ router.get("/getDailySalesForecourtData", async (req, res) => {
                         `
                     );
                     let res = {
-                        ...item,
+                        recievedBy: item?.recieved_id,
+                        total: item?.total,
+                        time: inputDate,
                         bills: billsQuery.rows
                     }
                     return resolve(res)
@@ -280,7 +404,7 @@ router.get("/getDailySalesForecourtData", async (req, res) => {
                 WHERE       a."input_id" = $1
             `
         let checkResult = await pool.query(query, [inputId]);
-
+        console.log(redemptionResult.rows)
         returnData = {
             header: result.rows[0],
             cashData: {
@@ -290,11 +414,27 @@ router.get("/getDailySalesForecourtData", async (req, res) => {
                 total: cashHeaderResult.rows[0]?.total
             },
             poData: {
-                content: poResult.rows,
+                content: poResult.rows.map((item)=> {
+                    return {
+                        id: item?.ID,
+                        invoiceNo: item?.invoice_no,
+                        customerName: item?.customer_id,
+                        product: item?.product_id,
+                        quantity: item?.quantity,
+                        poAmount: item?.amount
+                    }
+                }),
                 total: poHeaderResult.rows[0]?.total !== null ? poHeaderResult.rows[0]?.total : 0
             },
             redemptionData: {
-                content: redemptionResult.rows,
+                content: redemptionResult.rows.map((item)=> {
+                    return {
+                        id: item?.ID,
+                        payment: item?.payment_mode_id,
+                        quantity: item?.quantity,
+                        amount: item?.amount
+                    }
+                }),
                 total: redemptionHeaderResult.rows[0]?.total !== null ? redemptionHeaderResult.rows[0]?.total : 0
             },
             cardData: {
@@ -325,82 +465,6 @@ router.get("/getDailySalesForecourtData", async (req, res) => {
             },
         }
 
-        res.status(201).json({ success: true, message: returnData });
-    }
-    catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Database query error" });
-    }
-});
-
-router.get("/getCashierFuelData", async (req, res) => {
-    try {
-        const { effectivityDate, selectedStation, selectedShift } = req.query;
-
-        let query = `
-            SELECT 		b.*,  
-                        c.code, 
-                        c.color
-            FROM 		public.dailysalesinput_fuelhdr AS a
-            LEFt JOIN	public.dailysalesinput_fuellin AS b
-            ON			b.dailysalesinputfuelhdrid = a.id
-            LEFT JOIN	public.fuelmaster AS c
-            ON			b.fuelmasterid = c.id
-            WHERE		b.dailysalesinputfuelhdrid IN (
-                            SELECT 		b.id
-                            FROM 		public.dailysalesinput_hdr AS a
-                            LEFt JOIN	public.dailysalesinput_fuelhdr AS b
-                            ON			b.dailysalesinputid = a."ID"
-                            WHERE		a.effectivity_date='${effectivityDate}'
-                            AND			a.station_id=${selectedStation}
-                            AND			a.shift_id=${selectedShift}
-                            AND			a.input_mode IN (1,2)
-			            )
-        `
-        let result = await pool.query(query);
-        let data = result.rows
-        let fuelRef = new Map()
-
-        for (let i = 0; i < data.length; i++) {
-            if (fuelRef.has(data[i].fuelmasterid)) {
-                fuelRef.set(data[i].fuelmasterid, {
-                    fuelId: Number(data[i].fuelmasterid),
-                    fuelName: data[i].code,
-                    color: data[i].color,
-                    transCSt: Number(fuelRef.get(data[i].fuelmasterid).transct) + Number(data[i].transct),
-                    volume: Number(fuelRef.get(data[i].fuelmasterid).volume) + Number(data[i].volume),
-                    amount: Number(fuelRef.get(data[i].fuelmasterid).amount) + Number(data[i].amount)
-                })
-            } else {
-                fuelRef.set(data[i].fuelmasterid, {
-                    fuelId: Number(data[i].fuelmasterid),
-                    fuelName: data[i].code,
-                    color: data[i].color,
-                    transCt: Number(data[i].transct),
-                    volume: Number(data[i].volume),
-                    amount: Number(data[i].amount)
-                })
-            }
-        }
-        if (fuelRef.size > 0) {
-            query = `
-                SELECT 		b.fueldiscount, b.fueltaxexemption
-                FROM 		public.dailysalesinput_hdr AS a
-                LEFt JOIN	public.dailysalesinput_fuelhdr AS b
-                ON			b.dailysalesinputid = a."ID"
-                WHERE		a.effectivity_date='${effectivityDate}'
-                AND			a.station_id=${selectedStation}
-                AND			a.shift_id=${selectedShift}
-                AND			a.input_mode IN (1,2)           
-            `
-            result = await pool.query(query);
-        }
-        const returnData = {
-            content: [...fuelRef.values()],
-            discount: fuelRef.size > 0 ? Number(result.rows[0].fueldiscount) : 0,
-            taxExemption: fuelRef.size > 0 ? Number(result.rows[0].fueltaxexemption) : 0,
-            total: 0
-        }
         res.status(201).json({ success: true, message: returnData });
     }
     catch (err) {

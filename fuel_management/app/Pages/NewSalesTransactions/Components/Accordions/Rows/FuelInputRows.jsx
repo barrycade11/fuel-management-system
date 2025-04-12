@@ -8,6 +8,17 @@ export const FuelInputRows = ({fuelData, fuelSales, setFuelSales}) => {
     const [volume, setVolume] = useState(fuelData?.volume)
     const [amount, setAmount] = useState(fuelData?.amount)
 
+    useEffect(() => {
+        const compute = () => {
+            if (fuelData!==undefined) {
+                setTransCt(fuelData?.transCt)
+                setVolume(fuelData?.volume)
+                setAmount(fuelData?.amount)
+            } 
+        }
+        compute()
+    }, [fuelData])
+
     useEffect(()=> {
         const updateFuelData = () => {
             let tempArray = fuelSales?.content.map((item) => {
@@ -34,7 +45,7 @@ export const FuelInputRows = ({fuelData, fuelSales, setFuelSales}) => {
             <td className="px-8 fuelDatas-center">
                 <ColorBGText 
                     text={fuelData.fuelName.toUpperCase()} 
-                    color={Fuels.find((fuel) => fuelData.fuelName.toUpperCase() == fuel.name).color} 
+                    color={fuelData.color} 
                 />
             </td>
             <td className="px-8 fuelDatas-center">

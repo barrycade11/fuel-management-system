@@ -58,14 +58,14 @@ const InputMode = [
 
 const Bills = [
     { id: 1, description: "1" },
-    { id: 2, description: "5" },
-    { id: 3, description: "10" },
-    { id: 4, description: "20" },
-    { id: 5, description: "50" },
-    { id: 6, description: "100" },
-    { id: 7, description: "200" },
-    { id: 8, description: "500" },
-    { id: 9, description: "1000" }
+    { id: 5, description: "5" },
+    { id: 10, description: "10" },
+    { id: 20, description: "20" },
+    { id: 50, description: "50" },
+    { id: 100, description: "100" },
+    { id: 200, description: "200" },
+    { id: 500, description: "500" },
+    { id: 1000, description: "1000" }
 ]
 
 const PaymentMode = [
