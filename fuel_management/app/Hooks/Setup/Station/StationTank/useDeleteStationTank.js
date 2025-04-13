@@ -1,13 +1,14 @@
+import { useMutation } from "@tanstack/react-query";
 import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
 
-export const deleteStationTank = async (stationId, id) => {
-    try {
-        const response = await apiClient.delete(`${endPoints.GlobalRecords}/Station/${stationId}/Tank/${id}`);
+const useDeleteStationTankMutation = () => {
+  return useMutation({
+    mutationFn: async ({ stationId, tankId }) => {
+      const response = await apiClient.delete(`${endPoints.Stations}/station/${stationId}/tank/${tankId}`);
+      return response.data;
+    }
+  })
+}
 
-        return response.data;
-    }
-    catch (error) {
-        throw error;
-    }
-};
+export default useDeleteStationTankMutation;

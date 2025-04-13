@@ -4,6 +4,7 @@ import { useFetchStations } from "~/Hooks/Setup/Station/Station/useStations";
 import TableSkeleton from "~/Components/TableSkeleton";
 import { useNavigate } from "react-router";
 import StringRoutes from "~/Constants/StringRoutes";
+import useStationStore from "~/Hooks/Setup/Station/Station/useStationStore";
 
 
 const TableRow = ({ children }) => {
@@ -16,6 +17,7 @@ const TableRow = ({ children }) => {
 
 const StationTable = () => {
   const { isLoading, isError, error, data } = useFetchStations();
+  const { onSetFetchTanks } = useStationStore()
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -41,6 +43,7 @@ const StationTable = () => {
   }
 
   const handleView = (item) => {
+    onSetFetchTanks([])// clear when viweing
     navigate(StringRoutes.stationDetail + `/${item.id}`);
   }
 
