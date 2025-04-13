@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../../Config/Connection");
+const pool = require("../Config/Connection");
 
 router.get("/fuelPrice/:fuelPriceId/items", async (req, res) => {
   try {

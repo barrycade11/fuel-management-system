@@ -1,6 +1,7 @@
 const enum endPoints {
     GlobalRecords = "/Setup/GlobalRecords",
-    Stations = "/Setup/Stations"
+    Stations = "/Setup/Stations",
+    FuelManagements = "/FuelManagement"
 }
 
 export { endPoints }

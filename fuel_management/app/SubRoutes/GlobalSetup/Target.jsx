@@ -167,17 +167,17 @@ const Target = () => {
       targetStatusId: "",
       weightPercentage: null,
       month01: null, 
-      month02: "", 
-      month03: "", 
-      month04: "", 
-      month05: "", 
-      month06: "", 
+      month02: null, 
+      month03: null, 
+      month04: null, 
+      month05: null, 
+      month06: null, 
       month07: null, 
-      month08: "", 
-      month09: "", 
-      month10: "", 
-      month11: "", 
-      month12: ""
+      month08: null, 
+      month09: null, 
+      month10: null, 
+      month11: null, 
+      month12: null
     });
     setIsEditing(true);
   };
@@ -187,16 +187,30 @@ const Target = () => {
 
     console.log(target);
     try {
-      // // Fetch Weeklies 
-      // const rawWeeklies = await fetchTargetsWeekly(target.id);
+      // Fetch Weeklies 
+      const rawWeeklies = await fetchTargetsWeekly(target.id);
       // const weeklies = rawWeeklies.map(w => ({
       //   ...w
       // }));
+      const weeklyTargetMap = rawWeeklies.reduce((acc, w) => {
+        acc[w.dayofweek] = {
+          fullDayPercent: w.fulldayperc,
+          targetValue: w.targetvalue,
+          shifts: {}, 
+        };
+        return acc;
+      }, {});
+
+      setDailyTargets(prev => ({
+        ...prev,
+        ...weeklyTargetMap, 
+      }));
 
       // Fetch Monthlies 
       const rawMonthlies = await fetchTargetsMonthly(target.id);
       const monthlies = rawMonthlies?.[0] || {};
 
+      console.log("weeklies: ", rawWeeklies)
       console.log("monthlies: ", monthlies)
 
       // Fetch Dropdowns 
@@ -297,15 +311,15 @@ const Target = () => {
         console.log("Response: ", response);
         console.log("Target id: ", targetId);
 
-        // // Delete and Add new Target Weeklies 
-        // await deleteTargetWeeklies(targetId);
-
-        // if (targetWeeklies.length > 0) {
-        //   await Promise.all(
-        //     targetWeeklies.map(weekly => addTargetWeekly({ id: targetId, payload: weekly }))
-        //   );
-        // }
-
+        // Delete and Add new Target Weeklies 
+        await deleteTargetWeeklies(targetId);
+        if (targetWeeklies.length > 0) {
+          await Promise.all(
+            targetWeeklies.map(weekly =>
+              addTargetWeeklies({ id: targetId, payload: weekly })
+            )
+          );
+        }
         // Delete and Add new Target Monthlies 
         await deleteTargetMonthlies(targetId);
         await addTargetMonthlies({ id: targetId, payload })
@@ -354,7 +368,7 @@ const Target = () => {
     const handleConfirm = async () => {
         try {
             // Delete all records if Target is deleted
-            // await deleteTargetWeeklies(id);
+            await deleteTargetWeeklies(id);
             await deleteTargetMonthlies(id);
             await deleteTarget(id);
 

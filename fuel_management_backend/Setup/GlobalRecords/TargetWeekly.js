@@ -46,10 +46,13 @@ router.get("/target/:targetId/weekly/:id", async (req, res) => {
 
 router.post("/target/:targetId/weekly", async (req, res) => {
   const client = await pool.connect();
+  const { targetId } = req.params;
+  const { dayOfWeek, fullDayPerc, targetValue } = req.body;
 
+  console.log("target id: ", targetId)
+  console.log("Req body: ", req.body)
   try {
-    const { targetId } = req.params;
-    const { dayOfWeek, fullDayPerc, targetValue } = req.body;
+    
 
     await client.query("BEGIN");
 
