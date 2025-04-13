@@ -22,7 +22,10 @@ const enum DropdownType {
     Nozzles = 21, 
     CashBills = 22,
     TargetStatus = 23,
-    TargetField = 24
+    TargetField = 24,
+    TimePeriod = 25,
+    Brand = 26,
+    LubeType = 27
 }
 
 export { DropdownType }
