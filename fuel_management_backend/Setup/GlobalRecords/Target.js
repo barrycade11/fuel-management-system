@@ -12,13 +12,18 @@ router.get("/targets", async (req, res) => {
                   b.name            station,
                   a.targetFieldId,
                   c.name            targetField,
-                  a.status
-      FROM        shift a
+                  a.targetStatusId,
+                  d.name            targetStatus,
+                  a.weightPercentage 
+      FROM        targets a
       INNER JOIN  station b
               ON  a.stationId = b.id
       INNER JOIN  dropdown c
               ON  a.targetFieldId = c.id
                   AND c.dropdownTypeId = 24
+      INNER JOIN  dropdown d
+              ON  a.targetStatusId = d.id
+                  AND d.dropdownTypeId = 23
     `);
     res.status(201).json(result.rows);
   }
@@ -60,8 +65,9 @@ router.post("/target", async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { name, year, stationId, targetFieldId, status } = req.body;
+    const { name, year, stationId, targetFieldId, targetStatusId, weightPercentage } = req.body;
 
+    console.log(req.body)
     await client.query("BEGIN");
 
     const result = await client.query(`
@@ -71,11 +77,12 @@ router.post("/target", async (req, res) => {
                     year,
                     stationId,
                     targetFieldId,
-                    status
+                    targetStatusId,
+                    weightPercentage
                   )
-      VALUES      ($1, $2, $3, $4, $5)
+      VALUES      ($1, $2, $3, $4, $5, $6)
       RETURNING   id
-    `, [name, year, stationId, targetFieldId, status]);
+    `, [name, year, stationId, targetFieldId, targetStatusId, weightPercentage]);
     
     await client.query("COMMIT");
 
@@ -96,7 +103,7 @@ router.put("/target/:id", async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { name, year, stationId, targetFieldId, status } = req.body;
+    const { name, year, stationId, targetFieldId, targetStatusId, weightPercentage } = req.body;
     
     await client.query("BEGIN")
     
@@ -106,9 +113,11 @@ router.put("/target/:id", async (req, res) => {
                   year = $3,
                   stationId = $4,
                   targetFieldId = $5,
-                  status = $6
-      WHERE       id = $1
-    `, [name, year, stationId, targetFieldId, status]);
+                  targetStatusId = $6, 
+                  weightPercentage = $7 
+      WHERE       id = $1 
+      RETURNING id
+    `, [id, name, year, stationId, targetFieldId, targetStatusId, weightPercentage]);
 
     await client.query("COMMIT");
 
@@ -117,6 +126,7 @@ router.put("/target/:id", async (req, res) => {
   catch (err) {
     await client.query("ROLLBACK");
 
+    console.log(err)
     res.status(500).json({ error: "Database query error" });
   }
   finally {

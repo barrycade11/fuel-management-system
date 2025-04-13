@@ -145,19 +145,19 @@ router.put("/target/:targetId/monthly/:id", async (req, res) => {
   }
 });
 
-router.delete("/target/:targetId/monthly/:id", async (req, res) => {
+router.delete("/target/:targetId/monthly/delete", async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { id } = req.params;
+    const { targetId } = req.params;
     
     await client.query("BEGIN")
     
     const result = await client.query(`
       DELETE
       FROM        targets_monthly
-      WHERE       id = $1
-    `, [id]);
+      WHERE       targetid = $1
+    `, [targetId]);
 
     await client.query("COMMIT");
 

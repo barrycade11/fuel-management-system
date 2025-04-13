@@ -72,6 +72,18 @@ app.use("/Setup/GlobalRecords", customerContactRoutes);
 const customerVehicleRoutes = require("./Setup/GlobalRecords/CustomerVehicle");
 app.use("/Setup/GlobalRecords", customerVehicleRoutes);
 
+// TARGET
+const targetRoutes = require("./Setup/GlobalRecords/Target");
+app.use("/Setup/GlobalRecords", targetRoutes);
+
+// TARGET WEEKLY
+const targetWeeklyRoutes = require("./Setup/GlobalRecords/TargetWeekly");
+app.use("/Setup/GlobalRecords", targetWeeklyRoutes);
+
+// TARGET MONTHLY
+const targetMonthlyRoutes = require("./Setup/GlobalRecords/TargetMonthly");
+app.use("/Setup/GlobalRecords", targetMonthlyRoutes);
+
 // STATION
 const stationRoutes = require("./Setup/Stations/Station");
 app.use("/Setup/Stations", ValidateToken, stationRoutes);

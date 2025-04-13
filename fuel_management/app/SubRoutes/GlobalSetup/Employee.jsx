@@ -609,8 +609,7 @@ const Employee = () => {
       console.error("Error saving contact:", error);
       setNotification({ message: "Error saving contact", type: "error" });
     }
-  };  
-  
+  }; 
 
   const handleDeleteEmployeeContacts = (id) => {
     const handleConfirm = () => {

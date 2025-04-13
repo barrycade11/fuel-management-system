@@ -3,7 +3,7 @@ import { endPoints } from "~/Constants/EndPoints";
 
 export const fetchStationShifts = async (stationId) => {
     try {
-        const response = await apiClient.get(`${endPoints.GlobalRecords}/Station/${stationId}/Shifts`);
+        const response = await apiClient.get(`${endPoints.Stations}/Station/${stationId}/Shifts`);
 
         return response.data;
     }

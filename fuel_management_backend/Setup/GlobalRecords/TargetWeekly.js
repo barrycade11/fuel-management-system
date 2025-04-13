@@ -10,13 +10,7 @@ router.get("/target/:targetId/weekly", async (req, res) => {
       SELECT      id,
                   dayOfWeek,
                   fullDayPerc,
-                  targetValue,
-                  shift1Perc,
-                  shift1Amount,
-                  shift2Perc,
-                  shift2Amount,
-                  shift3Perc,
-                  shift3Amount,
+                  targetValue
       FROM        targets_weekly
       WHERE       targetId = $1
     `, [targetId]);
@@ -24,6 +18,7 @@ router.get("/target/:targetId/weekly", async (req, res) => {
   }
   catch (err) {
     console.error(err);
+    console.log(err)
     res.status(500).json({ error: "Database query error" });
   }
 });
@@ -133,7 +128,7 @@ router.put("/target/:targetId/weekly/:id", async (req, res) => {
   }
 });
 
-router.delete("/target/:targetId/weekly/:id", async (req, res) => {
+router.delete("/target/:targetId/weekly/delete", async (req, res) => {
   const client = await pool.connect();
 
   try {
