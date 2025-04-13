@@ -24,6 +24,38 @@ app.use("/ForecourtSales", forecourtRoutes);
 const selectRoutes = require("./Sales/DailySalesInputSelect");
 app.use("/SelectSales", selectRoutes);
 
+// Manager Sales
+const managerRoutes = require("./Sales/DailySalesInputManager");
+app.use("/ManagerSales", managerRoutes);
+
+// Fuel Price
+const fuelPriceRoutes = require("./FuelManagement/FuelPrice");
+app.use("/FuelManagement", fuelPriceRoutes);
+
+// Fuel Price Item
+const fuelPriceItemRoutes = require("./FuelManagement/FuelPriceItem");
+app.use("/FuelManagement", fuelPriceItemRoutes);
+
+// Fuel Price Attachment
+const fuelPriceAttachmentRoutes = require("./FuelManagement/FuelPriceAttachment");
+app.use("/FuelManagement", fuelPriceAttachmentRoutes);
+
+// Fuel Delivery
+const fuelDeliveryRoutes = require("./FuelManagement/FuelDelivery");
+app.use("/FuelManagement", fuelDeliveryRoutes);
+
+// Fuel Delivery Item
+const fuelDeliveryItemRoutes = require("./FuelManagement/FuelDeliveryItem");
+app.use("/FuelManagement", fuelDeliveryItemRoutes);
+
+// Fuel Delivery Attachment
+const fuelDeliveryAttachmentRoutes = require("./FuelManagement/FuelDeliveryAttachment");
+app.use("/FuelManagement", fuelDeliveryAttachmentRoutes);
+
+// Fuel Lubricant
+const fuelLubricantRoutes = require("./FuelManagement/FuelLubricant");
+app.use("/FuelManagement", fuelLubricantRoutes);
+
 // FUEL MASTER
 const fuelMastersRoutes = require("./Setup/GlobalRecords/FuelMaster");
 app.use("/Setup/GlobalRecords", fuelMastersRoutes);

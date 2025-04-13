@@ -37,7 +37,7 @@ router.post("/login", async (req, res) => {
     const userResult = await pool.query(`
             SELECT id, username, password, role_id
             FROM users
-            WHERE username = $1
+            WHERE username = $1 AND status = true
         `, [username]);
 
     // Check if user exists

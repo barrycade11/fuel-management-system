@@ -31,13 +31,7 @@ router.get("/target/:targetId/weekly/:id", async (req, res) => {
       SELECT      id,
                   dayOfWeek,
                   fullDayPerc,
-                  targetValue,
-                  shift1Perc,
-                  shift1Amount,
-                  shift2Perc,
-                  shift2Amount,
-                  shift3Perc,
-                  shift3Amount,
+                  targetValue
       FROM        targets_weekly
       WHERE       targetId = $1
                   AND id = $2
@@ -55,7 +49,7 @@ router.post("/target/:targetId/weekly", async (req, res) => {
 
   try {
     const { targetId } = req.params;
-    const { dayOfWeek, fullDayPerc, targetValue, shift1Perc, shift1Amount, shift2Perc, shift2Amount, shift3Perc, shift3Amount } = req.body;
+    const { dayOfWeek, fullDayPerc, targetValue } = req.body;
 
     await client.query("BEGIN");
 
@@ -65,17 +59,11 @@ router.post("/target/:targetId/weekly", async (req, res) => {
                     dayOfWeek,
                     fullDayPerc,
                     targetValue,
-                    shift1Perc,
-                    shift1Amount,
-                    shift2Perc,
-                    shift2Amount,
-                    shift3Perc,
-                    shift3Amount,
                     targetId
                   )
-      VALUES      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      VALUES      ($1, $2, $3, $4)
       RETURNING   id
-    `, [dayOfWeek, fullDayPerc, targetValue, shift1Perc, shift1Amount, shift2Perc, shift2Amount, shift3Perc, shift3Amount, targetId]);
+    `, [dayOfWeek, fullDayPerc, targetValue, targetId]);
     
     await client.query("COMMIT");
 
@@ -96,7 +84,7 @@ router.put("/target/:targetId/weekly/:id", async (req, res) => {
 
   try {
     const { targetId, id } = req.params;
-    const { dayOfWeek, fullDayPerc, targetValue, shift1Perc, shift1Amount, shift2Perc, shift2Amount, shift3Perc, shift3Amount } = req.body;
+    const { dayOfWeek, fullDayPerc, targetValue } = req.body;
 
     await client.query("BEGIN");
     
@@ -104,15 +92,9 @@ router.put("/target/:targetId/weekly/:id", async (req, res) => {
       UPDATE      targets_weekly
       SET         dayOfWeek = $1,
                   fullDayPerc = $2,
-                  targetValue = $3,
-                  shift1Perc = $4,
-                  shift1Amount = $5,
-                  shift2Perc = $6,
-                  shift2Amount = $7,
-                  shift3Perc = $8,
-                  shift3Amount = $9
-      WHERE       id = $10
-    `, [dayOfWeek, fullDayPerc, targetValue, shift1Perc, shift1Amount, shift2Perc, shift2Amount, shift3Perc, shift3Amount, id]);
+                  targetValue = $3
+      WHERE       id = $4
+    `, [dayOfWeek, fullDayPerc, targetValue, id]);
 
     await client.query("COMMIT");
 

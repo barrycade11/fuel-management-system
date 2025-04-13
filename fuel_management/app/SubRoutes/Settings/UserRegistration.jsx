@@ -19,32 +19,50 @@ import useAccountDeleteMutation from "~/Hooks/Settings/userAccountDeleteMutation
 
 const UserRegistration = () => {
   const { id } = useParams();
-  //api hooks
   const query = useQueryClient();
-  const { isSuccess: userSuccess, isLoading: userLoading, data: userDetails, error: userError } = useAccountGetById();
-  const { data, isLoading, isSuccess } = useRoles();
-  const { refetch, isSuccess: stationSuccess } = useFetchStationIdAndName()
+  const { data: userDetails, isLoading: userLoading, isSuccess: userSuccess, error: userError, refetch: refetchUser } = useAccountGetById();
+  const { data: rolesData, isLoading: rolesLoading, isSuccess: rolesSuccess, error: rolesError } = useRoles();
+  const { isSuccess: stationSuccess, error: stationError } = useFetchStationIdAndName();
   const accountMutation = useAccountAddMutation();
   const accountUpdateMutation = useAccountUpdateMutation();
   const accountDeleteMutation = useAccountDeleteMutation();
-
-
-  //&& remove the update in state forms to avoid network request
-  //states
   const { accounts, onSetAccounts } = useSettingsState();
   const [formAddLoading, setFormAddLoading] = useState(false);
   const navigate = useNavigate();
+  const [stationIds, setStationIds] = useState(new Set([]));
+  const [currentRoleId, setCurrentRoleId] = useState(new Set()); // Store as string
   const [form, setForm] = useState({
-    username: "",
-    password: "",
-    lastname: "",
-    firstname: "",
+    username: '',
+    password: '',
+    lastname: '',
+    firstname: '',
     stationAssignments: [],
     userRole: null,
-    status: null
+    status: null,
   });
 
-  if (userLoading || isLoading) {
+  useEffect(() => {
+    if ((id !== undefined || id === null) && !userSuccess) {
+      query.invalidateQueries(['accountid', id, 'roles']);
+      refetchUser();
+    }
+
+    if (userSuccess && rolesSuccess && stationSuccess) {
+      const newStationIds = new Set();
+      userDetails?.body?.[0]?.stations?.forEach((item) => {
+        newStationIds.add(item.stationid.toString());
+      });
+      setStationIds(newStationIds);
+      const _currentRoleId = new Set([userDetails.body[0].roleid.toString()]);
+      setCurrentRoleId(_currentRoleId);
+      if (id) {
+        query.invalidateQueries(['accountid', id]);
+      }
+    }
+  }, [userSuccess, rolesSuccess, stationSuccess, id, refetchUser, query, userDetails]);
+
+
+  if (userLoading || rolesLoading) {
     return (
       <div className="flex flex-col bg-white flex-grow justify-center items-center">
         <CircularProgress aria-labelledby="loading" />
@@ -52,18 +70,10 @@ const UserRegistration = () => {
     )
   }
 
-  let ids = null;
-  let currentRoleId = []
-  if (userSuccess && isSuccess && stationSuccess || id !== "0") {
-    ids = userDetails?.body[0]?.stationids;
-    currentRoleId.push(userDetails?.body[0]?.roleid.toString());
-    query.invalidateQueries(['accountid'])
-  }
-
   const cachedData = query.getQueryData(['stationidname'])
 
   if (!cachedData) {
-    refetch();
+    // refetch();
   }
 
 
@@ -96,9 +106,8 @@ const UserRegistration = () => {
   const onSubmit = (e) => {
     e.preventDefault();
     const data = Object.fromEntries((new FormData(e.currentTarget)))
-    const items = [...data.stationAssignments]; //convert Set() to array
-    data.stationAssignments = items; //update to list of station ids
-    return id === "0" ? onManageAccount(data) : onManageAccountUpdate(data);
+    data.stationAssignments = [...stationIds]; //update to list of station ids
+    return id === null || id === undefined ? onManageAccount(data) : onManageAccountUpdate(data);
   }
 
   const onManageAccount = (data) => {
@@ -123,12 +132,15 @@ const UserRegistration = () => {
           return
         }
 
-
         showToast({
           title: "Success",
           description: response.data.message,
           color: 'success',
         })
+
+        setTimeout(() => {
+          navigate(-1)
+        }, 1500)
       }
     })
   }
@@ -158,12 +170,15 @@ const UserRegistration = () => {
         }
         query.invalidateQueries(['accountid', 'roles']);
         onSetAccounts([]) //clear state
-
         showToast({
           title: "Success",
           description: response.data.message,
           color: 'success',
         })
+
+        setTimeout(() => {
+          navigate(-1);
+        }, 2000)
       }
     })
 
@@ -191,7 +206,7 @@ const UserRegistration = () => {
           color: 'success',
         })
 
-        navigate(-1) 
+        navigate(-1)
       }
 
     })
@@ -243,24 +258,24 @@ const UserRegistration = () => {
           <h3 className="text-default-500 font-semibold text-small">Station Assignments</h3>
           <Select
             name="stationAssignments"
-            onChange={(e) => {
-              setForm((prevState) => ({
-                ...prevState,
-                stationAssignments: [...prevState.stationAssignments, e.target.value], // Create a new array
-              }));
-            }}
             aria-labelledby="Station Assignments"
             radius="none"
             placeholder=""
             fullWidth
+            isMultiline
             selectionMode="multiple"
             className="flex-1"
-            defaultSelectedKeys={ids}
+            onSelectionChange={(keys) => {
+              setStationIds(keys)
+            }}
+            selectedKeys={stationIds}
           >
             {
-              cachedData && cachedData.body.map((item) => (
-                <SelectItem key={item.id}>{item.name}</SelectItem>
-              ))
+              cachedData && cachedData.body.map((item) => {
+                return (
+                  <SelectItem key={item.id}>{item.name}</SelectItem>
+                )
+              })
             }
           </Select>
         </div>
@@ -269,6 +284,7 @@ const UserRegistration = () => {
           <h3 className="text-default-500 font-semibold text-small">User Roles</h3>
           <SelectOptionRole
             name="userRole"
+            onChange={setCurrentRoleId}
             defaultSelectedKeys={currentRoleId}
           />
         </div>
@@ -294,7 +310,7 @@ const UserRegistration = () => {
 
           <Button
             onPress={onManageDeleteAccount}
-            disabled={id === "0"}
+            disabled={id === undefined}
             color="ghost"
             radius="none"
             variant='flat'>
@@ -311,7 +327,7 @@ const UserRegistration = () => {
             </Button>
 
             <PrimaryButton
-              title={id === "0" ? 'Save' : 'Update'}
+              title={id === undefined ? 'Save' : 'Update'}
               isLoading={formAddLoading}
               type="sumbmit"
               fullWidth={false} />

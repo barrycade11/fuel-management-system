@@ -6,8 +6,10 @@ import { Button, CircularProgress } from '@heroui/react'
 import StationTable from "./Components/StationTable";
 import { Outlet, useNavigate } from "react-router";
 import StringRoutes from "~/Constants/StringRoutes";
+import useStationStore from "~/Hooks/Setup/Station/Station/useStationStore";
 
 const StationList = () => {
+  const { onSetFetchTanks } = useStationStore()
   const navigate = useNavigate();
   return (
     <div className="flex flex-col bg-white h-full">
@@ -27,7 +29,10 @@ const StationList = () => {
             />
           </div>
           <PrimaryButton
-            onClick={() => navigate(StringRoutes.stationDetail)}
+            onClick={() => {
+              onSetFetchTanks([])// clear when viweing
+              navigate(StringRoutes.stationDetail)
+            }}
             fullWidth={false}
             title="Add New" />
         </div>

@@ -10,6 +10,9 @@ import { useUploadDailySalesInputSelect } from "~/Hooks/Sales/useUploadDailySale
 import { Form } from "@heroui/react"
 import useGetForecourtInput from "~/Hooks/Sales/useGetForecourtInput"
 import useGetSelectInput from "~/Hooks/Sales/useGetSelectInput"
+import useGetFuelSales from "~/Hooks/Sales/useGetFuelSales"
+import { fetchFuelMasters } from "~/Hooks/Setup/GlobalRecords/FuelMaster/useFuelMasters"
+import { useUploadDailySalesInputManager } from "~/Hooks/Sales/useUploadDailySalesManager"
 
 const DailySalesInput = ({
     editId,
@@ -43,43 +46,7 @@ const DailySalesInput = ({
         total: 0
     })
     const [fuelData, setFuelData] = useState({
-        content: [
-            {
-                fuelId: 1,
-                fuelName: "vpr",
-                transCt: 0,
-                volume: 0,
-                amount: 0
-            },
-            {
-                fuelId: 2,
-                fuelName: "vpg",
-                transCt: 0,
-                volume: 0,
-                amount: 0
-            },
-            {
-                fuelId: 3,
-                fuelName: "vpd",
-                transCt: 0,
-                volume: 0,
-                amount: 0
-            },
-            {
-                fuelId: 21,
-                fuelName: "fsg",
-                transCt: 0,
-                volume: 0,
-                amount: 0
-            },
-            {
-                fuelId: 1,
-                fuelName: "fsd",
-                transCt: 0,
-                volume: 0,
-                amount: 0
-            }
-        ],
+        content: [],
         discount: 0,
         taxExemption: 0,
         total: 0
@@ -100,11 +67,78 @@ const DailySalesInput = ({
         content: [],
         total: 0
     })
+    const [tankTotal, setTankTotal] = useState([])
 
     const [salesGrandTotal, setSalesGrandTotal] = useState(0)
     const [netDepartmentTotal, setNetDepartmentTotal] = useState(0)
     const [variance, setVariance] = useState(0)
     const [comment, setComment] = useState('')
+
+    const [vatableSales, setVatableSales] = useState(0)
+    const [vatAmount, setVatAmount] = useState(0)
+    const [vatExemptSales, setVatExemptSales] = useState(0)
+    const [vatZeroRatedSales, setVatZeroRatedSales] = useState(0)
+    const [managerTotal, setManagerTotal] = useState(0)
+
+    //managerTotal computation
+    useEffect(() => {
+        const compute = () => {
+            let sum = Number(vatableSales) + Number(vatAmount) + Number(vatExemptSales) + Number(vatZeroRatedSales)
+            setManagerTotal(sum)
+        }
+        compute()
+    }, [vatableSales, vatAmount, vatExemptSales, vatZeroRatedSales])
+
+    // fetch fuel data for manager input
+    useEffect(() => {
+        const getData = async () => {
+            if (selectedMode == 3 && selectedStation !== '' && selectedShift!=='') {
+                const res = await useGetFuelSales(effectivityDate, selectedStation, selectedShift)
+                if (res.success == true) {
+                    setFuelData(res?.message)
+                }
+            }
+        }
+        getData()
+    }, [selectedMode, effectivityDate, selectedStation, selectedShift])
+
+    useEffect(() => {
+        const getData = async () => {
+            if (fuelData.content.length == 0) {
+                const res = await fetchFuelMasters()
+                let tempArray = []
+                for (let item of res) {
+                    tempArray.push({
+                        fuelId: item.id,
+                        fuelName: item.code,
+                        color: item?.color,
+                        transCt: 0,
+                        volume: 0,
+                        amount: 0
+                    })
+                }
+                setFuelData({
+                    ...fuelData,
+                    content: tempArray
+                })
+
+                let tempArray2 = []
+                for (let i = 0; i < res.length; i++) {
+                    tempArray2.push({
+                        tank: i + 1,
+                        fuelName: res[i]?.code,
+                        fuelId: res[i]?.id,
+                        color: res[i]?.color,
+                        price: 0,
+                        dip: 0,
+                        volume: 0
+                    })
+                }
+                setTankTotal(tempArray2)
+            }
+        }
+        getData()
+    }, [selectedMode, selectedStation])
 
     // fetch data for item update
     useEffect(() => {
@@ -126,7 +160,7 @@ const DailySalesInput = ({
         }
         getData()
     }, [editId])
-    // console.log(cashData)
+
     useEffect(() => {
         const compute = () => {
             let sum = cashData?.content?.reduce((total, data) => {
@@ -267,22 +301,6 @@ const DailySalesInput = ({
             else if (selectedShift == '') alert("Please select a shift!")
             else {
                 const data = new FormData()
-                data.append("cashData", JSON.stringify(cashData))
-                selectedMode == 1 && data.append("poData", JSON.stringify(poData))
-                data.append("redemptionData", JSON.stringify(redemptionData))
-                data.append("cardData", JSON.stringify(cardData))
-
-                selectedMode == 1 && data.append("lubricantSalesData", JSON.stringify(lubricantSalesData))
-                selectedMode == 1 && data.append("fuelData", JSON.stringify(fuelData))
-                data.append("discountData", JSON.stringify(discountData))
-                selectedMode == 1 && data.append("recievableData", JSON.stringify(recievableData))
-                selectedMode == 1 && data.append("checkData", JSON.stringify(checkData))
-                selectedMode == 2 && data.append("inventoryData", JSON.stringify(inventoryData))
-
-                data.append("salesGrandTotal", salesGrandTotal)
-                data.append("netDepartmentTotal", netDepartmentTotal)
-                data.append("variance", variance)
-                data.append("comment", comment)
                 const filterData = {
                     selectedMode,
                     effectivityDate,
@@ -291,15 +309,45 @@ const DailySalesInput = ({
                     selectedShift
                 }
                 data.append("filterData", JSON.stringify(filterData))
+                if (selectedMode != 3) {
+                    data.append("cashData", JSON.stringify(cashData))
+                    selectedMode == 1 && data.append("poData", JSON.stringify(poData))
+                    data.append("redemptionData", JSON.stringify(redemptionData))
+                    data.append("cardData", JSON.stringify(cardData))
 
+                    selectedMode == 1 && data.append("lubricantSalesData", JSON.stringify(lubricantSalesData))
+                    selectedMode == 1 && data.append("fuelData", JSON.stringify(fuelData))
+                    data.append("discountData", JSON.stringify(discountData))
+                    selectedMode == 1 && data.append("recievableData", JSON.stringify(recievableData))
+                    selectedMode == 1 && data.append("checkData", JSON.stringify(checkData))
+                    selectedMode == 2 && data.append("inventoryData", JSON.stringify(inventoryData))
+
+                    data.append("salesGrandTotal", salesGrandTotal)
+                    data.append("netDepartmentTotal", netDepartmentTotal)
+                    data.append("variance", variance)
+                    data.append("comment", comment)
+                } else {
+                    data.append("fuelData", JSON.stringify(fuelData))
+                    data.append("tankTotal", JSON.stringify(tankTotal))
+                    data.append("vatableSales", vatableSales) 
+                    data.append("vatAmount", vatAmount) 
+                    data.append("vatExemptSales", vatExemptSales) 
+                    data.append("vatZeroRatedSales", vatZeroRatedSales) 
+                    data.append("managerTotal", managerTotal)
+                    data.append("comment", comment)
+                }
                 if (selectedMode == 1) {
                     const res = await useUploadDailySalesInputForecourt(data)
                     alert(res.message)
-                    setOpenAdd(false)
+                    // setOpenAdd(false)
                 } else if (selectedMode == 2) {
                     const res = await useUploadDailySalesInputSelect(data)
                     alert(res.message)
-                    setOpenAdd(false)
+                    // setOpenAdd(false)
+                } else if (selectedMode == 3) {
+                    const res = await useUploadDailySalesInputManager(data)
+                    alert(res.message)
+                    // setOpenAdd(false)
                 }
             }
         } catch (err) {
@@ -340,6 +388,8 @@ const DailySalesInput = ({
                     <ManagerInput
                         fuelData={fuelData}
                         setFuelData={setFuelData}
+                        tankTotal={tankTotal}
+                        setTankTotal={setTankTotal}
                     />
                 }
             </div>
@@ -351,7 +401,17 @@ const DailySalesInput = ({
                         variance={variance}
                     />
                     :
-                    <TaxTotals />
+                    <TaxTotals
+                        vatableSales={vatableSales}
+                        vatAmount={vatAmount}
+                        vatExemptSales={vatExemptSales}
+                        vatZeroRatedSales={vatZeroRatedSales}
+                        managerTotal={managerTotal}
+                        setVatableSales={setVatableSales}
+                        setVatAmount={setVatAmount}
+                        setVatExemptSales={setVatExemptSales}
+                        setVatZeroRatedSales={setVatZeroRatedSales}
+                    />
                 }
                 <div className="flex flex-col justify-between">
                     <AdditionalComments

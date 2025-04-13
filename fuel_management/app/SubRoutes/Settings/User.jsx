@@ -97,7 +97,7 @@ const User = () => {
           <Button
             radius="none"
             className="rounded-md bg-primary opacity-80 ml-2 text-white font-semibold"
-            onPress={() => navigate(StringRoutes.register + "/0")}
+            onPress={() => navigate(StringRoutes.register)}
           >
             Add New
           </Button>

@@ -1,7 +1,14 @@
 import { TimeInput, Form, Input, Autocomplete, AutocompleteItem, Progress } from '@heroui/react';
 import { AutoCompleteBarangays, AutoCompleteCityMunicipality, AutoCompleteProvince } from './AutoCompleteFields';
 import { TimerIcon } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useFetchStationId } from '~/Hooks/Setup/Station/Station/useStations';
+import TableSkeleton from '~/Components/TableSkeleton';
+import { useParams } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
+import { Time } from "@internationalized/date";
+import ErrorElement from '~/Components/ErrorElement';
+import useStationStore from '~/Hooks/Setup/Station/Station/useStationStore';
 
 const StationTextFieldBox = ({
   label = "",
@@ -50,40 +57,68 @@ const StationTextFieldBox = ({
 
 const StationFormDetails = () => {
 
+  const { id } = useParams()
+  const { isSuccess, isLoading, isError, error, data: stationData, refetch, } = useFetchStationId(id);
+  const [scheduleOpening, setScheduleOpening] = useState(null)
+  const [scheduleClosing, setScheduleClosing] = useState(null)
+  const { onSetNozzlesCount } = useStationStore(); 
+  const query = useQueryClient();
 
+  //initialize on mount
   useEffect(() => {
-    // Debugging: Set default values
-    const defaultValues = {
-      stationCode: "STN-123",
-      stationName: "Debug Station",
-      details: "Test details",
-      address: "123 Debug Street",
-      openingTime: "08:00",
-      closingTime: "18:00",
-      pumps: "5",
-      nozzles: "10",
-      fillingPosition: "4",
-      posStations: "2",
-      shipToNumber: "40213",
-    };
-
-    Object.entries(defaultValues).forEach(([name, value]) => {
-      const input = document.querySelector(`[name="${name}"]`);
-      if (input) {
-        input.value = value;
-      }
-    });
-
-    // Handle autocomplete defaults. Since these are components, they must be set a little differently.
-    // Assuming you have a way to set the value of these components.
-    // Example (you might need to adapt this to your AutocompleteFields):
-    // setProvinceValue("Debug Province");
-    // setCityMunicipalityValue("Debug City");
-    // setBarangayValue("Debug Barangay");
+    query.invalidateQueries(['stationid', id])
+    if (id !== undefined || id === null) {
+      refetch();
+    }
   }, [])
 
+
+  useEffect(() => {
+    if (isSuccess) {
+      const st = stationData.body[0];
+      onSetNozzlesCount(st.nozzles);
+      const defaultValues = {
+        stationCode: st.code,
+        stationName: st.name,
+        details: st.details,
+        address: st.address,
+        openingTime: st.openingtime,
+        closingTime: st.closingtime,
+        pumps: st.pumps,
+        nozzles: st.nozzles,
+        fillingPosition: st.fillingposition,
+        posStations: st.posstation,
+        shipToNumber: st.shiptonumber,
+      };
+
+      const o = defaultValues.openingTime.split(":");
+      setScheduleOpening(new Time(o[0], o[1], o[2]))
+      const c = defaultValues.closingTime.split(":");
+      setScheduleClosing(new Time(c[0], c[1], c[2]))
+
+      Object.entries(defaultValues).forEach(([name, value]) => {
+        const input = document.querySelector(`[name="${name}"]`);
+        if (input) {
+          input.value = value;
+        }
+      });
+    }
+  }, [isSuccess])
+
+  if (isLoading) {
+    return <TableSkeleton />
+  }
+
+  if(isError) {
     return (
-    <div className='flex flex-col border border-default-200 rounded-sm '>
+      <div className='mt-5'>
+        <ErrorElement>{error.message}</ErrorElement>
+      </div>
+    )
+  }
+
+  return (
+    <div className='flex flex-col border border-default-200 rounded-sm mt-5 '>
       <span className='bg-blue-100 flex-1 text-md font-semibold text-default-600 px-4 py-2'>Station Details</span>
       <div className='grid grid-cols-1 md:grid-cols-5 px-10 py-5 gap-5'>
 
@@ -115,16 +150,19 @@ const StationFormDetails = () => {
             label="Street Address" />
         </div>
 
-        <AutoCompleteProvince />
+        <AutoCompleteProvince preSelected={isSuccess ? stationData?.body[0]?.province : null } />
 
-        <AutoCompleteCityMunicipality />
+        <AutoCompleteCityMunicipality preSelected={isSuccess ? stationData?.body[0]?.city : null}  />
 
-        <AutoCompleteBarangays />
+        <AutoCompleteBarangays preSelected={isSuccess ? stationData?.body[0]?.barangay: null}/>
+
 
         <TimeInput
           isRequired={false}
           labelPlacement='outside'
           name="openingTime"
+          onChange={setScheduleOpening}
+          value={scheduleOpening}
           endContent={
             <TimerIcon />
           }
@@ -135,6 +173,8 @@ const StationFormDetails = () => {
           isRequired={false}
           labelPlacement='outside'
           name="closingTime"
+          onChange={setScheduleClosing}
+          value={scheduleClosing}
           endContent={
             <TimerIcon />
           }
@@ -149,6 +189,7 @@ const StationFormDetails = () => {
 
         <StationTextFieldBox
           isRequired
+          onChange={(e) => onSetNozzlesCount(e.currentTarget.value)}
           name="nozzles"
           type="number"
           label="Nozzles" />
