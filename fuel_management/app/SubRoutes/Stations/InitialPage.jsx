@@ -7,6 +7,7 @@ import useAddStationMutation from "~/Hooks/Setup/Station/Station/useAddStation";
 import { useNavigate, useParams } from "react-router";
 import useUpdateStationMutation from "~/Hooks/Setup/Station/Station/useUpdateStation";
 import useDeleteStationMutation from "~/Hooks/Setup/Station/Station/useDeleteStation";
+import useStationStore from "~/Hooks/Setup/Station/Station/useStationStore";
 
 const InitialPage = () => {
   const addStationMutation = useAddStationMutation();
@@ -14,6 +15,7 @@ const InitialPage = () => {
   const deleteStationMutation = useDeleteStationMutation();
   const navigate = useNavigate();
   const { id } = useParams();
+  const { tanks } = useStationStore();
 
   /**
    * Shows a toast notification.

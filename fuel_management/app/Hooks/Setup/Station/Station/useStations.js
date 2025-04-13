@@ -17,7 +17,7 @@ const useFetchStationId = (id) => {
   return useQuery({
     queryKey: ['stationid', id],
     queryFn: async () => {
-      const response = await apiClient(`${endPoints.Stations}/stations/${id}`)
+      const response = await apiClient.get(`${endPoints.Stations}/stations/${id}`)
       return response.data;
     },
     enabled: false,

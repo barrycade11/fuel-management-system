@@ -8,6 +8,7 @@ import { useParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Time } from "@internationalized/date";
 import ErrorElement from '~/Components/ErrorElement';
+import useStationStore from '~/Hooks/Setup/Station/Station/useStationStore';
 
 const StationTextFieldBox = ({
   label = "",
@@ -60,6 +61,7 @@ const StationFormDetails = () => {
   const { isSuccess, isLoading, isError, error, data: stationData, refetch, } = useFetchStationId(id);
   const [scheduleOpening, setScheduleOpening] = useState(null)
   const [scheduleClosing, setScheduleClosing] = useState(null)
+  const { onSetNozzlesCount } = useStationStore(); 
   const query = useQueryClient();
 
   //initialize on mount
@@ -74,6 +76,7 @@ const StationFormDetails = () => {
   useEffect(() => {
     if (isSuccess) {
       const st = stationData.body[0];
+      onSetNozzlesCount(st.nozzles);
       const defaultValues = {
         stationCode: st.code,
         stationName: st.name,
@@ -186,6 +189,7 @@ const StationFormDetails = () => {
 
         <StationTextFieldBox
           isRequired
+          onChange={(e) => onSetNozzlesCount(e.currentTarget.value)}
           name="nozzles"
           type="number"
           label="Nozzles" />
