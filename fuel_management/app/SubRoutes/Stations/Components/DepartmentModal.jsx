@@ -2,8 +2,9 @@ import { Button, Form, Textarea, Select, SelectItem } from "@heroui/react";
 import HeroUIModal from "~/Components/Modal";
 import { useEffect, useRef, useState } from "react";
 import useStationStore from "~/Hooks/Setup/Station/Station/useStationStore";
-import { useFetchDepartments } from "~/Hooks/Setup/GlobalRecords/Department/useDepartments";
+import { useFetchStationDepartments, useAddDepartmentsMutation, useFetchDepartments } from "~/Hooks/Setup/GlobalRecords/Department/useDepartments";
 import { CheckIcon } from "lucide-react";
+import { useParams } from "react-router";
 
 const SelectDepartmentDropdown = ({
   onChange = null,
@@ -12,36 +13,41 @@ const SelectDepartmentDropdown = ({
   const { isLoading, isError, error, data, isSuccess } = useFetchDepartments();
   const { departmentOnViewId, departmentOnView, onSetDepartments } = useStationStore();
   const [selectedDepName, setSelectedDepName] = useState();
+  const [selectedKeys, setSelectedKey] = useState(new Set());
 
-  const handleSelectDepartment = (selectedKeys) => {
-    const selected = data.find((item) => (item.id).toString() === selectedKeys.currentKey)
-    onSetDepartments(selected);
-    onChange();
-  }
+  useEffect(() => {
+    if (selectedKeys.size !== 0) {
+      const selected = data.find((item) => (item.id).toString() === selectedKeys.currentKey)
+      onSetDepartments(selected);
+      onChange();
+    }
+  }, [selectedKeys])
 
   useEffect(() => {
     if (isSuccess && departmentOnView) {
       const item = data.find(a => a.id === departmentOnViewId);
       setSelectedDepName(item.name);
+      const ids = new Set([item.id.toString()]);
+      setSelectedKey(ids);
     }
-  }, [])
+  }, [isSuccess, data])
 
 
 
   return (
     <Select
-      isDisabled={departmentOnView}
-      onSelectionChange={handleSelectDepartment}
       name="departments"
       isLoading={isLoading}
       isError={isError}
       errorMessage={isError && error.message}
+      placeholder="Select Department"
       isInvalid={isError}
       radius="none"
       labelPlacement="outside"
-      placeholder={departmentOnView ? selectedDepName : "Select Department"}
       label="Departments"
       aria-labelledby="none"
+      onSelectionChange={setSelectedKey}
+      selectedKeys={selectedKeys}
     >
       {
         data && Array.isArray(data) && data.map((item, index) => (
@@ -57,6 +63,7 @@ const DeparmentModal = ({
   isOpen = false,
   onOpenChange = null
 }) => {
+  const { id } = useParams();
   const {
     onSetEditSaveDepartments,
     onSetDeleteSaveDepartments,
@@ -70,10 +77,12 @@ const DeparmentModal = ({
   const [subDeps, setSubDeps] = useState([]);
   const [data, setData] = useState({});
   const [textareaValue, setTextAreaValue] = useState("");
+  const addDepartmentMutation = useAddDepartmentsMutation();
+  
 
   const resetState = () => {
     setTextAreaValue("");
-    setSubDeps([]);
+    // setSubDeps([]);
     setData({});
   }
 
@@ -104,16 +113,7 @@ const DeparmentModal = ({
       return updated;
     })
 
-
-    if (!departmentOnView && departmentOnViewId == null) {
-      onSetSaveDepartments(data);
-    } else {
-      onSetEditSaveDepartments(departmentOnViewId, data);
-      
-    }
-
-    resetState();
-    onOpenChange();
+    onManageAddDepartment(data);
   }
 
   const handleSelectSubDeps = (item) => {
@@ -138,6 +138,30 @@ const DeparmentModal = ({
       departmentLin: subDeps
     }));
   };
+
+  const onManageAddDepartment = (item) => {
+    const params = {
+      departmentId: item.id,
+      details: item.details,
+    }
+
+    addDepartmentMutation.mutate({ params, id }, {
+      onErrror: (error) => {
+        console.error(error);
+      },
+      onSucess: (response) => {
+        console.log(response)
+        if (!departmentOnView && departmentOnViewId == null) {
+          onSetSaveDepartments(data);
+        } else {
+          onSetEditSaveDepartments(departmentOnViewId, data);
+        }
+
+        resetState();
+        onOpenChange()
+      }
+    })
+  }
 
   return (
     <HeroUIModal

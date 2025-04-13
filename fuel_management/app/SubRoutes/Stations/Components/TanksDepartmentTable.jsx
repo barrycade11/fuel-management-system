@@ -1,15 +1,32 @@
 import { Button, } from "@heroui/react"
 import { PlusIcon } from "lucide-react"
 import HeroUIModal from "~/Components/Modal"
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import DeparmentModal from "./DepartmentModal";
 import useStationStore from "~/Hooks/Setup/Station/Station/useStationStore";
 import { useParams } from "react-router";
+import { useFetchStationDepartments } from "~/Hooks/Setup/GlobalRecords/Department/useDepartments";
 
 const TanksDepartmentTable = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { saveDepartments, onDepartmentOnView } = useStationStore();
+  const { departments, onSetDepartments, saveDepartments, onDepartmentOnView } = useStationStore();
   const { id } = useParams();
+  const { data: stationDeps, isLoading, isError, error, refetch, isSuccess } = useFetchStationDepartments(id);
+
+  useEffect(() => {
+    if(id !== undefined || id === null) {
+      refetch();
+    }
+  }, [])
+
+  useEffect(() => {
+    if(isSuccess) {
+      let items = [];
+      stationDeps.map((item) => {
+        console.log(item);
+      })
+    }
+  }, [isSuccess])
 
   const handleViewing = (type = null, id = null) => {
     if (type === "edit") {
@@ -47,7 +64,7 @@ const TanksDepartmentTable = () => {
           </thead>
           <tbody>
             {
-              saveDepartments.length > 0 && saveDepartments.map((dep, index) => {
+              saveDepartments && saveDepartments.length > 0 && saveDepartments.map((dep, index) => {
                 return (
                   <tr key={index} className="text-sm border border-b-default-200 font-semibold text-default-600 h-[40px]">
                     <td align="center">{dep.name}</td>
