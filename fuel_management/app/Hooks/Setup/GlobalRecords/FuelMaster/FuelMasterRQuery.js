@@ -2,15 +2,16 @@ import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
 import { useQuery } from "@tanstack/react-query";
 
-const useStationTanks = (stationId) => {
+const useFetchFuelMasterProducts = () => {
   return useQuery({
-    queryKey: ['tanks', stationId],
+    queryKey: ["fuel-master-stations"],
     queryFn: async () => {
-      const response = await apiClient.get(`${endPoints.Stations}/Station/${stationId}/Tanks`);
+      const response = await apiClient.get(`${endPoints.GlobalRecords}/FuelMasters`);
       return response.data;
     },
-    enabled: false,
   })
 }
 
-export default useStationTanks;
+export {
+  useFetchFuelMasterProducts,
+}

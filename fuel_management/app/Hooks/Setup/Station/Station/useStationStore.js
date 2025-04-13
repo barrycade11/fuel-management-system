@@ -1,17 +1,43 @@
 import { create } from 'zustand';
 
+const defaultViewTankForm = {
+  tankName: "",
+  productId: null,
+  productCode: "",
+  productColor: "",
+  capacity: 0,
+  safeCapacity: 0,
+  details: "",
+  pumpManagement: [],
+};
+
 const useStationStore = create((set, get) => ({
+  nozzleCount: 0,
+  onSetNozzlesCount: (count) => set({ nozzleCount: count }),
+
+  product: null,
+  onSetSelectedProduct: (val) => set({ product: val }),
+
+  viewTank: null,
+  onSetViewTank: (data = null) => set({ viewTank: data || defaultViewTankForm }),
+
   departmentOnView: false,
   departmentOnViewId: null,
   stationDetails: null, // Object expected
   tanks: [],
   departments: null,
   saveDepartments: [],
+  onSetFetchTanks: (items) => set({ tanks: items }),
   onSetStationDetails: (form) => {
     set({ stationDetails: form })
   },
-  onSetTanks: (items) => {
-    set({ tanks: items })
+  onSetDeleteTanks: (items = []) => {
+    set({ tanks: items });
+  },
+  onSetTanks: (item) => {
+    set((state) => ({
+      tanks: [...state.tanks, item],
+    }));
   },
   onSetDepartments: (items) => {
     set({ departments: items })

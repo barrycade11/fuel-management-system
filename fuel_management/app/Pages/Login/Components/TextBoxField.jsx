@@ -8,6 +8,8 @@ const TextBoxField = ({
   onChange,
   value = "",
   endContent = null, // get JSX.Element
+  isRequired = false,
+  readonly = false,
 }) => {
 
   const handleChange = (e) => {
@@ -21,6 +23,8 @@ const TextBoxField = ({
       <h3 className="text-default-500 font-semibold text-small">{label}</h3>
       <div className="flex w-full flex-wrap items-end md:flex-nowrap mb-6 md:mb-0 gap-4">
         <Input
+          isReadOnly={readonly}
+          isRequired={isRequired}
           aria-labelledby="none"
           onChange={handleChange}
           labelPlacement={'outside'}
