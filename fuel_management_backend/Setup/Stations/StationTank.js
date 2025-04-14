@@ -9,6 +9,7 @@ router.get("/station/:stationId/tanks", async (req, res) => {
     const result = await pool.query(`
       SELECT      a.id,
                   a.name,
+                  b.color,
                   a.fuelMasterId,
                   b.name fuelMaster,
                   a.capacity,

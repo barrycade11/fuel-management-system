@@ -31,6 +31,7 @@ const TanksTable = () => {
         items.push({
           id: item.id,
           tankName: item.name,
+          productColor: item.color,
           productId: item.fuelmasterid,
           productName: item.fuelmaster,
           capacity: item.capacity,
@@ -94,7 +95,7 @@ const TanksTable = () => {
                     <tr key={index} className="border border-b-default-200 text-sm font-semibold text-default-600 h-[40px]">
                       <td align="center">{tank.tankName}</td>
                       <td align="center">
-                        <Chip radius="sm" style={{ background: tank.productColor }} >{tank.productName}</Chip>
+                        <Chip radius="sm" className="text-white text-sm font-semibold" style={{ background: tank.productColor }} >{tank.productName}</Chip>
                       </td>
                       <td align="center">{tank.capacity}</td>
                       <td align="center">{tank.safeCapacity}</td>
