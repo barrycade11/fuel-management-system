@@ -1,5 +1,6 @@
 import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
 const fetchTargetsMonthly = async (targetId) => {
     try {
@@ -10,6 +11,40 @@ const fetchTargetsMonthly = async (targetId) => {
     catch (error) {
         throw error;
     }
+};
+
+const useAddTargetMonthliesbyTargetId = (resource) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: async ({ id, payload}) => {
+        const response = await apiClient.post(`${endPoints.GlobalRecords}/${resource}/${id}/Monthly`, payload);
+        return response.data;
+      },
+      onSuccess: (data) => {
+        console.log(`Added ${resource} weeklies successfully:`, data);
+        queryClient.invalidateQueries([`${resource}s`]);
+      },
+      onError: (error) => {
+        console.error(`Failed to add ${resource} weeklies:`, error);
+      },
+    });
+};
+
+const useDeleteTargetMonthliesByTargetId = (resource) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id) => {
+        const response = await apiClient.delete(`${endPoints.GlobalRecords}/${resource}/${id}/Monthly/delete`);
+        return response.data;
+        },
+        onSuccess: (data) => {
+        console.log(`Deleted ${resource} weeklies successfully:`, data);
+        queryClient.invalidateQueries([`${resource}s`]);
+        },
+        onError: (error) => {
+        console.error(`Failed to delete ${resource} weeklies:`, error);
+        },
+    });
 };
 
 const fetchTargetMonthly = async (targetId, id) => {
@@ -58,6 +93,8 @@ const deleteTargetMonthly = async (targetId, id) => {
 
 export {
     fetchTargetsMonthly,
+    useAddTargetMonthliesbyTargetId,
+    useDeleteTargetMonthliesByTargetId,
     fetchTargetMonthly,
     createTargetMonthly,
     updateTargetMonthly,

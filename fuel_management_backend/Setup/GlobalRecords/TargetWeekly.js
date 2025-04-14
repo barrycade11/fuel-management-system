@@ -18,6 +18,7 @@ router.get("/target/:targetId/weekly", async (req, res) => {
   }
   catch (err) {
     console.error(err);
+    console.log(err)
     res.status(500).json({ error: "Database query error" });
   }
 });
@@ -45,10 +46,13 @@ router.get("/target/:targetId/weekly/:id", async (req, res) => {
 
 router.post("/target/:targetId/weekly", async (req, res) => {
   const client = await pool.connect();
+  const { targetId } = req.params;
+  const { dayOfWeek, fullDayPerc, targetValue } = req.body;
 
+  console.log("target id: ", targetId)
+  console.log("Req body: ", req.body)
   try {
-    const { targetId } = req.params;
-    const { dayOfWeek, fullDayPerc, targetValue } = req.body;
+    
 
     await client.query("BEGIN");
 
@@ -109,7 +113,7 @@ router.put("/target/:targetId/weekly/:id", async (req, res) => {
   }
 });
 
-router.delete("/target/:targetId/weekly/:id", async (req, res) => {
+router.delete("/target/:targetId/weekly/delete", async (req, res) => {
   const client = await pool.connect();
 
   try {

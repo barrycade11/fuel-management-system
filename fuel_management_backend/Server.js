@@ -28,6 +28,34 @@ app.use("/SelectSales", selectRoutes);
 const managerRoutes = require("./Sales/DailySalesInputManager");
 app.use("/ManagerSales", managerRoutes);
 
+// Fuel Price
+const fuelPriceRoutes = require("./FuelManagement/FuelPrice");
+app.use("/FuelManagement", fuelPriceRoutes);
+
+// Fuel Price Item
+const fuelPriceItemRoutes = require("./FuelManagement/FuelPriceItem");
+app.use("/FuelManagement", fuelPriceItemRoutes);
+
+// Fuel Price Attachment
+const fuelPriceAttachmentRoutes = require("./FuelManagement/FuelPriceAttachment");
+app.use("/FuelManagement", fuelPriceAttachmentRoutes);
+
+// Fuel Delivery
+const fuelDeliveryRoutes = require("./FuelManagement/FuelDelivery");
+app.use("/FuelManagement", fuelDeliveryRoutes);
+
+// Fuel Delivery Item
+const fuelDeliveryItemRoutes = require("./FuelManagement/FuelDeliveryItem");
+app.use("/FuelManagement", fuelDeliveryItemRoutes);
+
+// Fuel Delivery Attachment
+const fuelDeliveryAttachmentRoutes = require("./FuelManagement/FuelDeliveryAttachment");
+app.use("/FuelManagement", fuelDeliveryAttachmentRoutes);
+
+// Fuel Lubricant
+const fuelLubricantRoutes = require("./FuelManagement/FuelLubricant");
+app.use("/FuelManagement", fuelLubricantRoutes);
+
 // FUEL MASTER
 const fuelMastersRoutes = require("./Setup/GlobalRecords/FuelMaster");
 app.use("/Setup/GlobalRecords", fuelMastersRoutes);
@@ -75,6 +103,18 @@ app.use("/Setup/GlobalRecords", customerContactRoutes);
 // CUSTOMER VEHICLE
 const customerVehicleRoutes = require("./Setup/GlobalRecords/CustomerVehicle");
 app.use("/Setup/GlobalRecords", customerVehicleRoutes);
+
+// TARGET
+const targetRoutes = require("./Setup/GlobalRecords/Target");
+app.use("/Setup/GlobalRecords", targetRoutes);
+
+// TARGET WEEKLY
+const targetWeeklyRoutes = require("./Setup/GlobalRecords/TargetWeekly");
+app.use("/Setup/GlobalRecords", targetWeeklyRoutes);
+
+// TARGET MONTHLY
+const targetMonthlyRoutes = require("./Setup/GlobalRecords/TargetMonthly");
+app.use("/Setup/GlobalRecords", targetMonthlyRoutes);
 
 // STATION
 const stationRoutes = require("./Setup/Stations/Station");
