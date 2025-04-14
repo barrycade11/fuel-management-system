@@ -7,9 +7,12 @@ router.get("/station/:stationId/departments", async (req, res) => {
     const { stationId } = req.params;
 
     const result = await pool.query(`
-      SELECT      id,
-                  details
-      FROM        stationDepartment
+      SELECT      a.id,
+                  b.name,
+                  a.details 
+      FROM        stationDepartment a
+      INNER JOIN  departmenthdr b
+              ON  a.departmentid = b.id
       WHERE       stationId = $1
     `, [stationId]);
     res.status(201).json(result.rows);
@@ -38,7 +41,7 @@ router.get("/station/:stationId/departments/:id", async (req, res) => {
   }
 });
 
-router.post("/station/:stationId/deparment", async (req, res) => {
+router.post("/station/:stationId/department", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -65,7 +68,7 @@ router.post("/station/:stationId/deparment", async (req, res) => {
   }
   catch (err) {
     await client.query("ROLLBACK");
-    
+
     res.status(500).json({ error: "Database query error" });
   }
   finally {
@@ -95,7 +98,7 @@ router.put("/station/:stationId/department/:id", async (req, res) => {
   }
   catch (err) {
     await client.query("ROLLBACK");
-    
+
     res.status(500).json({ error: "Database query error" });
   }
   finally {
@@ -123,7 +126,7 @@ router.delete("/station/:stationId/department/:id", async (req, res) => {
   }
   catch (err) {
     await client.query("ROLLBACK");
-    
+
     res.status(500).json({ error: "Database query error" });
   }
   finally {
