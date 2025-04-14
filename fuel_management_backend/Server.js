@@ -56,6 +56,14 @@ app.use("/FuelManagement", fuelDeliveryAttachmentRoutes);
 const fuelLubricantRoutes = require("./FuelManagement/FuelLubricant");
 app.use("/FuelManagement", fuelLubricantRoutes);
 
+// Fuel Lubricant - Brand
+const fuelLubricantBrandRoutes = require("./FuelManagement/Brand");
+app.use("/FuelManagement", fuelLubricantBrandRoutes);
+
+// Fuel Lubricant - Lube Type
+const fuelLubricantLubeTypeRoutes = require("./FuelManagement/LubeType");
+app.use("/FuelManagement", fuelLubricantLubeTypeRoutes);
+
 // FUEL MASTER
 const fuelMastersRoutes = require("./Setup/GlobalRecords/FuelMaster");
 app.use("/Setup/GlobalRecords", fuelMastersRoutes);
