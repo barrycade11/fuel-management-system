@@ -29,9 +29,9 @@ const StationDetails = () => {
               Stations 
             </NavLink>
             <NavLink
-              to={'permissions'} // Points to "settings/permissions"
+              to={StringRoutes.shifts} // Points to "settings/permissions"
               className={({ isActive }) =>
-                stringRoutes.getCurrentSubRoute(pathname).includes(StringRoutes.permission)
+                stringRoutes.getCurrentSubRoute(pathname).includes(StringRoutes.shifts)
                   ? "border-b-2 pb-3 border-primary font-semibold text-primary"
                   : "text-gray-500 pb-3"
               }
