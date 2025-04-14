@@ -23,12 +23,10 @@ router.get("/fuelLubricants", async (req, res) => {
                     a.details,
                     a.status
         FROM        fuelLubricant a
-        INNER JOIN  dropdown b
+        INNER JOIN  brand b
                 ON  a.brandId = b.id
-                    AND b.dropdownTypeId = 26
-        INNER JOIN  dropdown c
+        INNER JOIN  lubeType c
                 ON  a.lubeTypeId = c.id
-                    AND c.dropdownTypeId = 27
     `);
     res.status(201).json(result.rows);
   }
@@ -60,12 +58,10 @@ router.get("/fuelLubricants/:id", async (req, res) => {
                     a.details,
                     a.status
         FROM        fuelLubricant a
-        INNER JOIN  dropdown b
+        INNER JOIN  brand b
                 ON  a.brandId = b.id
-                    AND b.dropdownTypeId = 26
-        INNER JOIN  dropdown c
+        INNER JOIN  lubeType c
                 ON  a.lubeTypeId = c.id
-                    AND c.dropdownTypeId = 27
         WHERE       a.id = $1
     `, [id]);
     res.status(201).json(result.rows);
