@@ -91,11 +91,11 @@ router.get("/stations/:id", async (req, res) => {
       FROM        station a
       WHERE       a.id = $1
     `, [id]);
-    res.status(201).json({ success: true, message: "Successfully fetch stations", body: result.rows });
+    return res.status(200).json({ success: true, message: "Successfully fetch stations", body: result.rows });
   }
   catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: "Database query error" });
+    return res.status(500).json({ success: false, message: "Database query error" });
   }
 });
 
