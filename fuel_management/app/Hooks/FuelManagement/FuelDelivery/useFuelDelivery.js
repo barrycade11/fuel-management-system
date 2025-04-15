@@ -1,6 +1,8 @@
 import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
+/*
 const fetchfuelDeliveries = async () => {
     try {
         const response = await apiClient.get(`${endPoints.FuelManagements}/fuelDeliveries`);
@@ -11,6 +13,18 @@ const fetchfuelDeliveries = async () => {
         throw error;
     }
 };
+*/
+
+ 
+const fetchfuelDeliveries = (resource) => {
+    return useQuery({
+      queryKey: [resource],
+      queryFn: async () => {
+        const response = await apiClient.get(`${endPoints.FuelManagements}/fuelDeliveries`);
+        return response.data;
+      },
+    });
+  };
 
 const fetchfuelDelivery = async (id) => {
     try {

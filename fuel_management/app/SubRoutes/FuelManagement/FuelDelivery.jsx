@@ -68,7 +68,7 @@ const FuelDelivery = () => {
         </div>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm">Plate No.</label>
+            <label className="block text-sm">Driver</label>
             <input
               type="text"
               className="border px-2 py-1 rounded w-full"

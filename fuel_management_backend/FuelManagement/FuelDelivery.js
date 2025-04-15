@@ -1,14 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../Config/Connection");
-
+ 
 router.get("/fuelDeliveries", async (req, res) => {
   try {
     const result = await pool.query(`
         SELECT      a.id,
                     a.effectiveDate,
                     a.stationId,
-                    b.name            station
+                    b.name            station,
+                    b.code            stationcode,
                     a.shiftManagerId,
                     a.shiftId,
                     d.name            shift,
