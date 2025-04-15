@@ -7,10 +7,13 @@ const { accountToJson } = require('./SettingService');
 const AccountDetailUpdateSchema = require('./Params/AccountDetailUpdateSchema');
 
 router.get("/:id", async (req, res) => {
+  const client = await pool.connect();
 
   try {
     // Correctly format query parameters using positional placeholders
-    const result = await pool.query(
+    await client.query("BEGIN");
+
+    const result = await client.query(
       `
         SELECT 
           usr.id,
@@ -31,6 +34,8 @@ router.get("/:id", async (req, res) => {
       [req.params.id] // Directly pass the array as a parameter
     );
 
+    await client.query("COMMIT");
+
     const json = await accountToJson(result.rows);
 
     return res.status(200).json({
@@ -39,16 +44,21 @@ router.get("/:id", async (req, res) => {
       body: json,
     });
   } catch (error) {
+    await client.query("ROLLBACK");
+
     return res.status(500).json({
       success: false,
       message: "Internal server error",
       error: error.message,
     });
   }
-
+  finally {
+    client.release();
+  }
 })
 
 router.post("/", async (req, res) => {
+  const client = await pool.connect();
   const { stations = [] } = req.body;
 
   try {
@@ -59,8 +69,10 @@ router.post("/", async (req, res) => {
       });
     }
 
+    await client.query("BEGIN");
+
     // Correctly format query parameters using positional placeholders
-    const result = await pool.query(
+    const result = await client.query(
       `
         SELECT 
           usr.id,
@@ -81,6 +93,8 @@ router.post("/", async (req, res) => {
       [stations] // Directly pass the array as a parameter
     );
 
+    await client.query("COMMIT");
+
     const json = await accountToJson(result.rows);
 
     return res.status(200).json({
@@ -89,11 +103,16 @@ router.post("/", async (req, res) => {
       body: json,
     });
   } catch (error) {
+    await client.query("ROLLBACK");
+
     return res.status(500).json({
       success: false,
       message: "Internal server error",
       error: error.message,
     });
+  }
+  finally {
+    client.release();
   }
 });
 
@@ -308,13 +327,19 @@ router.put('/update', async (req, res) => {
  * @param {number} userid - The HTTP response object.
  */
 router.delete('/delete/:userid', async (req, res) => {
+  const client = await pool.connect();
+
   try {
 
     const { userid } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
         DELETE FROM users WHERE id = $1
     `, [userid])
+
+    await client.query("COMMIT");
 
     return res.status(204).json({
       success: true,
@@ -322,10 +347,15 @@ router.delete('/delete/:userid', async (req, res) => {
     })
 
   } catch (error) {
+    await client.query("ROLLBACK");
+
     return res.status(500).json({
       success: false,
       message: error.message,
     })
+  }
+  finally {
+    client.release();
   }
 })
 

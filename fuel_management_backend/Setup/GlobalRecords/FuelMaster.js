@@ -3,8 +3,12 @@ const router = express.Router();
 const pool = require("../../Config/Connection");
 
 router.get("/fuelMasters", async (req, res) => {
+  const client = await pool.connect();
+
   try {
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.code,
                   a.name,
@@ -17,18 +21,30 @@ router.get("/fuelMasters", async (req, res) => {
       INNER JOIN  dropdown b
               ON  a.categoryId = b.id
     `);
+
+    await client.query("COMMIT");
+    
     res.status(200).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/fuelMasters/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { id } = req.params;
-    const result = await pool.query(`
+
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.code,
                   a.name,
@@ -42,13 +58,18 @@ router.get("/fuelMasters/:id", async (req, res) => {
               ON  a.categoryId = b.id
       WHERE       a.id = $1
     `, [id]);
-    res.status(200).json(result.rows);
 
-    console.log(result.rows);
+    await client.query("COMMIT");
+
+    res.status(200).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
