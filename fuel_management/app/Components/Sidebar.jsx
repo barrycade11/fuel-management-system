@@ -149,7 +149,7 @@ const AdminNavItem = () => {
             }}
           >
             <div className="flex items-center">
-              <span className="font-medium text-gray-700">{user.firstname + ' ' + user.lastname}</span>
+              <span className="font-medium text-gray-700">{user?.firstname + ' ' + user?.lastname}</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-4 w-4 ml-1"
@@ -165,7 +165,7 @@ const AdminNavItem = () => {
                 />
               </svg>
             </div>
-            <p className="text-xs text-gray-600">{user.rolename}</p>
+            <p className="text-xs text-gray-600">{user?.rolename}</p>
           </div>
         </li>
       </DropdownTrigger>

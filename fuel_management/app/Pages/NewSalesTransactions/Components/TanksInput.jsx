@@ -2,7 +2,7 @@ import { useState } from "react"
 import { TankInputRows } from "./Accordions/Rows/TankInputRows"
 
 const TanksInput = ({tankTotal, setTankTotal}) => {
-    const tableHeader = ["Tank Name", "Fuel", "Price", "Dip", "Volume"]
+    const tableHeader = ["Tank Name", "Fuel", "Dip 6am", "Sales Volume (in liters)"]
 
     return (
         <div className="h-min w-full border-[1px]">

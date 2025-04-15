@@ -12,6 +12,8 @@ router.get("/station/:stationId/tanks", async (req, res) => {
                   b.color,
                   a.fuelMasterId,
                   b.name fuelMaster,
+                  b.color,
+                  b.code,
                   a.capacity,
                   a.capacitySafe,
                   a.details,

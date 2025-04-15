@@ -7,7 +7,8 @@ import AddReceivable from '../../Modals/AddReceivable';
 
 export const RecievableAccordion = ({
     recievableData,
-    setRecievableData
+    setRecievableData,
+    employee
 }) => {
     const [inHouse, setInhouse] = useState({
         title: "Employees Recievable and Cash Deposit",
@@ -32,6 +33,7 @@ export const RecievableAccordion = ({
                 purpose={purpose}
                 editData={editData}
                 setEditData={setEditData}
+                employeeList={employee}
             />
             <div className="w-full flex justify-end py-4">
                 <Button

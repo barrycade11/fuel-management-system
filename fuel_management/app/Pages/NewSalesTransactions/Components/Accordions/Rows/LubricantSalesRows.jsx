@@ -18,9 +18,6 @@ export const LubricantSalesRows = ({ currentData, content, setContent, setPurpos
                 {CurrencyFormatter(currentData?.amount)}
             </td>
             <td className="px-6 py-1">
-                {CurrencyFormatter(currentData?.discount)}
-            </td>
-            <td className="px-6 py-1">
                 {SampleEmployeeName.filter((item)=>item.id==currentData?.soldBy)[0]?.description}
             </td>
             <td className="py-1">

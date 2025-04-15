@@ -16,7 +16,7 @@ export const CashRows = ({ index, data, content, setContent }) => {
                 if (item.id == index) {
                     return {
                         ...item,
-                        amount: Number(bill) * quantity,
+                        amount: Number(bill),
                         bill: bill,
                         quantity: Number(quantity)
                     }
@@ -51,7 +51,7 @@ export const CashRows = ({ index, data, content, setContent }) => {
                 />
             </td>
             <td className="px-1 min-w-36">
-                <p className="w-full text-right bg-gray-100 p-2 font-semibold rounded-md">{CurrencyFormatter(Number(bill) * quantity)}</p>
+                <p className="w-full text-right bg-gray-100 p-2 font-semibold rounded-md">{CurrencyFormatter(Number(bill))}</p>
             </td>
         </>
     )

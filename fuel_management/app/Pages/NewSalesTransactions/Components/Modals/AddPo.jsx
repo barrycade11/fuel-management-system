@@ -14,6 +14,7 @@ import { CashRows } from "../Accordions/Rows/CashRows";
 import CurrencyFormatter from "~/Components/Lib/CurrencyFormatter";
 import SimpleSelect from "~/Components/SimpleSelect";
 import { PurchaseOrder, SampleEmployeeName } from "~/Constants/Labels";
+import { fetchCustomers } from "~/Hooks/Setup/GlobalRecords/Customer/useCustomers";
 
 const AddPo = ({ openModal, setOpenModal, content, setContent, title, purpose, editData, setEditData }) => {
     const [invoiceNo, setInvoiceNo] = useState('')
@@ -22,9 +23,12 @@ const AddPo = ({ openModal, setOpenModal, content, setContent, title, purpose, e
     const [product, setProduct] = useState('')
     const [quantity, setQuantity] = useState(null)
     const [poAmount, setPoAmount] = useState(null)
+    const [customers, setCustomers] = useState([])
 
     useEffect(() => {
-        const compute = () => {
+        const compute = async () => {
+            const res = await fetchCustomers()
+            setCustomers(res)
             if (purpose === "edit" && editData !== undefined) {
                 setInvoiceNo(editData?.invoiceNo)
                 setCustomerName(editData?.customerName)
@@ -135,13 +139,13 @@ const AddPo = ({ openModal, setOpenModal, content, setContent, title, purpose, e
                     <div className="h-auto grid gap-4">
                         <SimpleInput
                             version={3}
-                            label={"Ivoice No."}
+                            label={"Invoice No."}
                             initialValue={invoiceNo}
                             setInitialValue={setInvoiceNo}
                         />
                         <SimpleSelect
                             label={"Customer Name"}
-                            items={SampleEmployeeName}
+                            items={customers}
                             passedValue={customerName}
                             toUpdate={setCustomerName}
                         />

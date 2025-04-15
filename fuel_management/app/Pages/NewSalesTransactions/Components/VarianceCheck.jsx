@@ -25,7 +25,7 @@ const VarianceCheck = ({
                         {CurrencyFormatter(netDepartmentTotal)}
                     </label>
                 </div>
-                <div className="grid gap-1 w-full">
+                <div className=" gap-1 w-full hidden">
                     <label className="font-semibold text-gray-500">Variance</label>
                     <label className='bg-gray-100 rounded-md mt-1 font-semibold text-right p-2'>
                         {CurrencyFormatter(variance)}
