@@ -1,7 +1,10 @@
 import PrimaryButton from "~/Components/PrimayButton"
 import { CircularProgress } from "@heroui/react"
-import { useFetchStations  } from "~/Hooks/Setup/Station/Station/useStations";
+import { useFetchStations } from "~/Hooks/Setup/Station/Station/useStations";
 import TableSkeleton from "~/Components/TableSkeleton";
+import { useNavigate } from "react-router";
+import StringRoutes from "~/Constants/StringRoutes";
+import useStationStore from "~/Hooks/Setup/Station/Station/useStationStore";
 
 
 const TableRow = ({ children }) => {
@@ -14,6 +17,8 @@ const TableRow = ({ children }) => {
 
 const StationTable = () => {
   const { isLoading, isError, error, data } = useFetchStations();
+  const { onSetFetchTanks } = useStationStore()
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -37,6 +42,11 @@ const StationTable = () => {
     return `${item.address} ${item.barangay} ${item.city} ${item.province}`;
   }
 
+  const handleView = (item) => {
+    onSetFetchTanks([])// clear when viweing
+    navigate(StringRoutes.stationDetail + `/${item.id}`);
+  }
+
   return (
     <div className="px-4 overflow-x-auto">
       <table className="w-full border border-default-200 rounded-sm">
@@ -50,13 +60,14 @@ const StationTable = () => {
         </thead>
         <tbody>
           {
-            data && Array.isArray(data.body) && data.body.map((item) => (
-              < TableRow key={item} >
+            data && Array.isArray(data.body) && data.body.map((item, index) => (
+              < TableRow key={index} >
                 <td align="center" className="whitespace-nowrap">{item.code}</td>
                 <td align="center" className="whitespace-nowrap">{item.name}</td>
                 <td align="center" className="whitespace-nowrap">{combineLocationDetails(item)}</td>
                 <td align="center">
                   <PrimaryButton
+                    onClick={() => handleView(item)}
                     fullWidth={false}
                     variant="ghost"
                     color="primary"

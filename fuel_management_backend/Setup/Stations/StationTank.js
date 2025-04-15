@@ -9,6 +9,7 @@ router.get("/station/:stationId/tanks", async (req, res) => {
     const result = await pool.query(`
       SELECT      a.id,
                   a.name,
+                  b.color,
                   a.fuelMasterId,
                   b.name fuelMaster,
                   b.color,
@@ -61,7 +62,7 @@ router.post("/station/:stationId/tank", async (req, res) => {
 
   try {
     const { stationId } = req.params;
-    const { name, fuelMasterId, capacity, capacitySafe, details, status } = req.body;
+    const { tankName, productId, capacity, safeCapacity, details, status } = req.body;
 
     await client.query("BEGIN");
 
@@ -78,16 +79,16 @@ router.post("/station/:stationId/tank", async (req, res) => {
                   )
       VALUES      ($1, $2, $3, $4, $5, $6, $7)
       RETURNING   id
-    `, [stationId, name, fuelMasterId, capacity, capacitySafe, details, status]);
+    `, [stationId, tankName, productId, capacity, safeCapacity, details, status]);
     
     await client.query("COMMIT");
 
-    res.status(201).json(result.rows);
+    res.status(201).json({ success: true, message: "Succesfully add tank"});
   }
   catch (err) {
     await client.query("ROLLBACK");
 
-    res.status(500).json({ error: "Database query error" });
+    res.status(500).json({ success: false, message: "Database query error" });
   }
   finally {
     client.release();

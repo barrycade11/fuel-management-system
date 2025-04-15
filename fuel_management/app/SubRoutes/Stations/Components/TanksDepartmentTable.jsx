@@ -4,10 +4,12 @@ import HeroUIModal from "~/Components/Modal"
 import { useState, useRef } from 'react';
 import DeparmentModal from "./DepartmentModal";
 import useStationStore from "~/Hooks/Setup/Station/Station/useStationStore";
+import { useParams } from "react-router";
 
 const TanksDepartmentTable = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { saveDepartments, onDepartmentOnView } = useStationStore();
+  const { id } = useParams();
 
   const handleViewing = (type = null, id = null) => {
     if (type === "edit") {
@@ -28,6 +30,7 @@ const TanksDepartmentTable = () => {
             setIsOpen(true)
             onDepartmentOnView(false, null);
           }}
+          disabled={id === undefined || id === null}
           radius="sm">
           <PlusIcon size={15} />
           Add New

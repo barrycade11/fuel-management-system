@@ -121,36 +121,7 @@ router.put("/employee/:employeeId/contact/:id", async (req, res) => {
   }
 });
 
-router.delete("/employee/:employeeId/contact/:id", async (req, res) => {
-  const client = await pool.connect();
-
-  try {
-    const { employeeId, id } = req.params;
-    
-    await client.query("BEGIN")
-    
-    const result = await client.query(`
-      DELETE
-      FROM        employeeContact
-      WHERE       employeeId = $1
-                  AND id = $2
-    `, [employeeId, id]);
-
-    await client.query("COMMIT");
-
-    res.status(201).json(result.rows);
-  }
-  catch (err) {
-    await client.query("ROLLBACK");
-
-    res.status(500).json({ error: "Database query error" });
-  }
-  finally {
-    client.release();
-  }
-});
-
-router.delete("/employee/:employeeId/delete", async (req, res) => {
+router.delete("/employee/:employeeId/contact/delete", async (req, res) => {
   const client = await pool.connect();
 
   try {

@@ -1,16 +1,20 @@
 
-import { Outlet, NavLink, useLocation } from "react-router";
+import { Outlet, NavLink, useLocation, useParams } from "react-router";
 import Navbar from "~/Components/Navbar";
 import StringRoutes from "~/Constants/StringRoutes";
+import useLocationStoreState from "~/Hooks/Locations/useLocationStoreState";
+import { useFetchStationId } from "~/Hooks/Setup/Station/Station/useStations";
 
 const StationDetails = () => {
-  const { pathname } = useLocation()
+  const { id } = useParams();
+  const { pathname, state } = useLocation()
   const stringRoutes = new StringRoutes();
+  const { data } = useFetchStationId(id);
 
   return (
     <div className="flex flex-col bg-white h-full">
 
-      <Navbar title="SH Nuvali">
+      <Navbar title={id !== undefined ? data?.body[0]?.name : "Add Station"}>
         <div className="pt-6">
           <div className="flex space-x-4 flex-row items-center justify-start border-b-1 mx-1">
             <NavLink

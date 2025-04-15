@@ -40,6 +40,74 @@ router.get("/stations", async (req, res) => {
                   a.details,
                   a.address,
                   a.provinceId,
+                  a.province,
+                  a.cityId,
+                  a.city,
+                  a.barangayId,
+                  a.barangay barangay,
+                  a.openingTime,
+                  a.closingTime,
+                  a.pumps,
+                  a.nozzles,
+                  a.fillingPosition,
+                  a.posStation,
+                  a.shipToNumber
+      FROM        station a
+    `);
+    return res.status(201).json({
+      success: true,
+      message: "Successfully fetched stations",
+      body: result.rows,
+    });
+  }
+  catch (err) {
+    return res.status(500).json({ success: false, message: "Database query error" });
+    // res.status(500).json({ error: "Database query error" });
+  }
+});
+
+router.get("/stations/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(`
+      SELECT      a.id,
+                  a.code,
+                  a.name,
+                  a.details,
+                  a.address,
+                  a.provinceId,
+                  a.province,
+                  a.cityId,
+                  a.city,
+                  a.barangayId,
+                  a.barangay,
+                  a.openingTime,
+                  a.closingTime,
+                  a.pumps,
+                  a.nozzles,
+                  a.fillingPosition,
+                  a.posStation,
+                  a.shipToNumber
+      FROM        station a
+      WHERE       a.id = $1
+    `, [id]);
+    return res.status(200).json({ success: true, message: "Successfully fetch stations", body: result.rows });
+  }
+  catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Database query error" });
+  }
+});
+
+router.get("/stations/dropdown", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT      a.id,
+                  a.code,
+                  a.name,
+                  a.details,
+                  a.address,
+                  a.provinceId,
                   b.name province,
                   a.cityId,
                   c.name city,
@@ -75,7 +143,7 @@ router.get("/stations", async (req, res) => {
   }
 });
 
-router.get("/stations/:id", async (req, res) => {
+router.get("/stations/dropdown/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(`
@@ -109,11 +177,11 @@ router.get("/stations/:id", async (req, res) => {
                   AND d.dropdownTypeId = 16
       WHERE       a.id = $1
     `, [id]);
-    res.status(201).json(result.rows);
+    res.status(201).json({ success: true, message: "Successfully fetch stations", body: result.rows });
   }
   catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Database query error" });
+    res.status(500).json({ success: false, message: "Database query error" });
   }
 });
 
@@ -123,7 +191,7 @@ router.post("/station", async (req, res) => {
   try {
     const { error, value } = StationSchema.validate(req.body)
 
-    if(error) {
+    if (error) {
       return res.status(400).json({
         success: false,
         message: error.details.map((err) => err.message),
@@ -156,7 +224,7 @@ router.post("/station", async (req, res) => {
       VALUES      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
       RETURNING   id
     `, [stationCode, stationName, details, address, province, city, barangay, openingTime, closingTime, pumps, nozzles, fillingPosition, posStations, shipToNumber, req.user.username]);
-    
+
     await client.query("COMMIT");
 
     res.status(201).json({
@@ -181,19 +249,28 @@ router.put("/station/:id", async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { code, name, details, address, provinceId, cityId, barangayId, openingTime, closingTime, pumps, nozzles, fillingPosition, posStation, shipToNumber } = req.body;
-    
+    const { error, value } = StationSchema.validate(req.body)
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details.map((err) => err.message),
+      })
+    }
+
+    const { stationCode, stationName, details, address, province, city, barangay, openingTime, closingTime, pumps, nozzles, fillingPosition, posStations, shipToNumber } = value;
+
     await client.query("BEGIN")
-    
+
     const result = await client.query(`
       UPDATE      station
       SET         code = $2,
                   name = $3,
                   details = $4,
                   address = $5,
-                  provinceId = $6,
-                  cityId = $7,
-                  barangayId = $8,
+                  province = $6,
+                  city = $7,
+                  barangay = $8,
                   openingTime = $9,
                   closingTime = $10,
                   pumps = $11,
@@ -202,16 +279,16 @@ router.put("/station/:id", async (req, res) => {
                   posStation = $14,
                   shipToNumber = $15
       WHERE       id = $1
-    `, [id, code, name, details, address, provinceId, cityId, barangayId, openingTime, closingTime, pumps, nozzles, fillingPosition, posStation, shipToNumber]);
+    `, [id, stationCode, stationName, details, address, province, city, barangay, openingTime, closingTime, pumps, nozzles, fillingPosition, posStations, shipToNumber]);
 
     await client.query("COMMIT");
 
-    res.status(201).json(result.rows);
+    res.status(201).json({ success: true,  message: 'Successfully updated station details'});
   }
   catch (err) {
     await client.query("ROLLBACK");
 
-    res.status(500).json({ error: "Database query error" });
+    res.status(500).json({ success: false, message: "Database query error" });
   }
   finally {
     client.release();
@@ -223,9 +300,9 @@ router.delete("/station/:id", async (req, res) => {
 
   try {
     const { id } = req.params;
-    
+
     await client.query("BEGIN")
-    
+
     const result = await client.query(`
       DELETE
       FROM        station

@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require('path');
 const cors = require("cors");
 const ValidateToken = require("./Middleware/TokenValidation");
 require("dotenv").config();
@@ -27,6 +28,42 @@ app.use("/SelectSales", selectRoutes);
 // Manager Sales
 const managerRoutes = require("./Sales/DailySalesInputManager");
 app.use("/ManagerSales", managerRoutes);
+
+// Fuel Price
+const fuelPriceRoutes = require("./FuelManagement/FuelPrice");
+app.use("/FuelManagement", fuelPriceRoutes);
+
+// Fuel Price Item
+const fuelPriceItemRoutes = require("./FuelManagement/FuelPriceItem");
+app.use("/FuelManagement", fuelPriceItemRoutes);
+
+// Fuel Price Attachment
+const fuelPriceAttachmentRoutes = require("./FuelManagement/FuelPriceAttachment");
+app.use("/FuelManagement", fuelPriceAttachmentRoutes);
+
+// Fuel Delivery
+const fuelDeliveryRoutes = require("./FuelManagement/FuelDelivery");
+app.use("/FuelManagement", fuelDeliveryRoutes);
+
+// Fuel Delivery Item
+const fuelDeliveryItemRoutes = require("./FuelManagement/FuelDeliveryItem");
+app.use("/FuelManagement", fuelDeliveryItemRoutes);
+
+// Fuel Delivery Attachment
+const fuelDeliveryAttachmentRoutes = require("./FuelManagement/FuelDeliveryAttachment");
+app.use("/FuelManagement", fuelDeliveryAttachmentRoutes);
+
+// Fuel Lubricant
+const fuelLubricantRoutes = require("./FuelManagement/FuelLubricant");
+app.use("/FuelManagement", fuelLubricantRoutes);
+
+// Fuel Lubricant - Brand
+const fuelLubricantBrandRoutes = require("./FuelManagement/Brand");
+app.use("/FuelManagement", fuelLubricantBrandRoutes);
+
+// Fuel Lubricant - Lube Type
+const fuelLubricantLubeTypeRoutes = require("./FuelManagement/LubeType");
+app.use("/FuelManagement", fuelLubricantLubeTypeRoutes);
 
 // FUEL MASTER
 const fuelMastersRoutes = require("./Setup/GlobalRecords/FuelMaster");
@@ -69,12 +106,24 @@ const customerRoutes = require("./Setup/GlobalRecords/Customer");
 app.use("/Setup/GlobalRecords", customerRoutes);
 
 // CUSTOMER CONTACT
-const customerContactPersonRoutes = require("./Setup/GlobalRecords/CustomerContactPerson");
-app.use("/Setup/GlobalRecords", customerContactPersonRoutes);
+const customerContactRoutes = require("./Setup/GlobalRecords/CustomerContact");
+app.use("/Setup/GlobalRecords", customerContactRoutes);
 
 // CUSTOMER VEHICLE
 const customerVehicleRoutes = require("./Setup/GlobalRecords/CustomerVehicle");
 app.use("/Setup/GlobalRecords", customerVehicleRoutes);
+
+// TARGET
+const targetRoutes = require("./Setup/GlobalRecords/Target");
+app.use("/Setup/GlobalRecords", targetRoutes);
+
+// TARGET WEEKLY
+const targetWeeklyRoutes = require("./Setup/GlobalRecords/TargetWeekly");
+app.use("/Setup/GlobalRecords", targetWeeklyRoutes);
+
+// TARGET MONTHLY
+const targetMonthlyRoutes = require("./Setup/GlobalRecords/TargetMonthly");
+app.use("/Setup/GlobalRecords", targetMonthlyRoutes);
 
 // STATION
 const stationRoutes = require("./Setup/Stations/Station");
@@ -142,5 +191,12 @@ app.use("/testing/token", ValidateToken, async (req, res) => {
 });
 
 const port = process.env.PORT;
+
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, '/build/client')));
+// Fallback to React's index.html for any unmatched route
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, '/build/client', 'index.html'));
+});
 
 app.listen(port, () => console.log(`Server running on port ${port}`));

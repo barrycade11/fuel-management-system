@@ -10,7 +10,7 @@ router.get("/dailySalesInput/:dailySalesInputId/Fuels", async (req, res) => {
       SELECT      id,
                   fuelDiscount,
                   fuelTaxExemption
-      FROM        dailySalesInputFuelHdr
+      FROM        dailySalesInput_FuelHdr
       WHERE       dailySalesInputId = $1
     `, [dailySalesInputId]);
     res.status(201).json(result.rows);
@@ -29,7 +29,7 @@ router.get("/dailySalesInputs/:dailySalesInputId/Fuels/:id", async (req, res) =>
       SELECT      id,
                   fuelDiscount,
                   fuelTaxExemption
-      FROM        dailySalesInputFuelHdr
+      FROM        dailySalesInput_FuelHdr
       WHERE       dailySalesInputId = $1
                   AND id = $2
     `, [dailySalesInputId, id]);
@@ -51,7 +51,7 @@ router.post("/dailySalesInput/:dailySalesInputId/Fuel", async (req, res) => {
     await client.query("BEGIN");
 
     const result = await client.query(`
-      INSERT INTO dailySalesInputFuelHdr
+      INSERT INTO dailySalesInput_FuelHdr
                   (
                     dailySalesInputId,
                     fuelDiscount,
@@ -85,7 +85,7 @@ router.put("/dailySalesInput/:dailySalesInputId/Fuel/:id", async (req, res) => {
     await client.query("BEGIN")
     
     const result = await client.query(`
-      UPDATE      dailySalesInputFuelHdr
+      UPDATE      dailySalesInput_FuelHdr
       SET         fuelDiscount = $2,
                   fuelTaxExemption = $3
       WHERE       dailySalesInputId = $1
@@ -116,7 +116,7 @@ router.delete("/dailySalesInput/:dailySalesInputId/Fuel/:id", async (req, res) =
     
     const result = await client.query(`
       DELETE
-      FROM        dailySalesInputFuelHdr
+      FROM        dailySalesInput_FuelHdr
       WHERE       id = $1
     `, [id]);
 

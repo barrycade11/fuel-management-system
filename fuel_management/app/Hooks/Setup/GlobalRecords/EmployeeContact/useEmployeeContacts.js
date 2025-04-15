@@ -34,7 +34,7 @@ const useDeleteEmployeeContactsByEmployeeId = (resource) => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id) => {
-        const response = await apiClient.delete(`${endPoints.GlobalRecords}/${resource}/${id}/delete`);
+        const response = await apiClient.delete(`${endPoints.GlobalRecords}/${resource}/${id}/contact/delete`);
         return response.data;
         },
         onSuccess: (data) => {

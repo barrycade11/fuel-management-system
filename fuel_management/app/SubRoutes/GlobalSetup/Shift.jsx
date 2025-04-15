@@ -9,7 +9,7 @@ import Notification from "~/Components/Notification";
 import TableSkeleton from "~/Components/TableSkeleton";
 import DropdownStatus from "~/Components/DropdownStatus";
 import TimeInput from "~/Components/TimeInput";
-import { Textarea, Input, Button } from "@heroui/react";
+import { Textarea, Input, Button, Spinner } from "@heroui/react";
 import { 
   fetchShifts, 
   fetchShiftDetails, 
@@ -23,6 +23,7 @@ const Shift = () => {
   const [shifts, setShifts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [notification, setNotification] = useState(null);
   const [newShift, setNewShift] = useState({  
@@ -88,6 +89,9 @@ const Shift = () => {
         return;
     }
 
+    if (isSaving) return;
+    setIsSaving(true);
+
     try {
         if (newShift.id) {
             await updateShift(newShift.id, newShift);
@@ -103,6 +107,8 @@ const Shift = () => {
     } catch (error) {
         setNotification({ message: "Error saving data", type: "error" });
         console.error("Error saving data:", error);
+    } finally {
+      setIsSaving(false); 
     }
   };
 
@@ -257,7 +263,16 @@ const Shift = () => {
                 )}
                 <div className="flex space-x-2">
                   <Button onClick={() => setIsEditing(false)} color="default" className="text-[blue]">Close</Button>
-                  <Button onClick={handleSave} color="primary">Save</Button>
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={isSaving} 
+                    isLoading={isSaving}
+                    spinner={<Spinner size="sm" variant="wave" color="default" />}
+                    spinnerPlacement="end"
+                    color="primary"
+                  >
+                    {isSaving ? "Saving" : "Save"}
+                  </Button>
                 </div>
               </div>
             </div>
