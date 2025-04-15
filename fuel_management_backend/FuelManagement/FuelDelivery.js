@@ -8,7 +8,8 @@ router.get("/fuelDeliveries", async (req, res) => {
         SELECT      a.id,
                     a.effectiveDate,
                     a.stationId,
-                    b.name            station
+                    b.name            station,
+                    b.code            stationcode,
                     a.shiftManagerId,
                     a.shiftId,
                     d.name            shift,

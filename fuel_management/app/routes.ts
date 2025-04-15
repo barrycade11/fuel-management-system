@@ -20,7 +20,7 @@ export default [
             index("./SubRoutes/FuelManagement/FuelMaster.jsx"), // fuelManagement index (fuelMaster)
 
             route("fuel-price", "./SubRoutes/FuelManagement/FuelPrice.jsx"),
-            route("fuel-delivery", "./SubRoutes/FuelManagement/FuelDelivery.jsx"),
+            route("fuel-delivery-list", "./SubRoutes/FuelManagement/FuelDeliveryList.jsx"),
             route("lubricants", "./SubRoutes/FuelManagement/Lubricants.jsx"),
         ]),
 

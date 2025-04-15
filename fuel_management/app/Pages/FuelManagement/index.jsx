@@ -30,7 +30,7 @@ const FuelManagement = () => {
             Fuel Price
           </NavLink>
           <NavLink
-            to={`/${StringRoutes.fuelDelivery}`}
+            to={`/${StringRoutes.fuelDeliveryList}`}
             className={({ isActive }) =>
               `${isActive ? "border-b-2 border-blue-500 font-semibold" : "text-gray-500"}`
             }
