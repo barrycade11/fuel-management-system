@@ -821,7 +821,7 @@ const Employee = () => {
                 />
               </div>
               <div className="col-span-2 gap-3">
-                {/* <AutoCompleteProvince 
+                <AutoCompleteProvince 
                   selectedKey={newEmployee.provinceId} 
                   onSelectionChange={(code) =>
                     setNewEmployee({
@@ -829,10 +829,10 @@ const Employee = () => {
                       provinceId: code 
                     })
                   }
-                /> */}
+                />
               </div>
               <div className="col-span-2 gap-3">
-                {/* <AutoCompleteCityMunicipality
+                <AutoCompleteCityMunicipality
                   selectedKey={newEmployee.cityId} 
                   onSelectionChange={(provinceCode) =>
                     setNewEmployee({
@@ -840,10 +840,10 @@ const Employee = () => {
                       cityId: provinceCode 
                     })
                   }
-                /> */}
+                />
               </div>
               <div className="col-span-2 gap-3">
-                {/* <AutoCompleteBarangays
+                <AutoCompleteBarangays
                   selectedKey={newEmployee.barangayId} 
                   onSelectionChange={(cityCode) =>
                     setNewEmployee({
@@ -851,7 +851,7 @@ const Employee = () => {
                       barangayId: cityCode 
                     })
                   }
-                /> */}
+                />
               </div>
             </div>
 
