@@ -13,6 +13,7 @@ import useGetSelectInput from "~/Hooks/Sales/useGetSelectInput"
 import useGetFuelSales from "~/Hooks/Sales/useGetFuelSales"
 import { fetchFuelMasters } from "~/Hooks/Setup/GlobalRecords/FuelMaster/useFuelMasters"
 import { useUploadDailySalesInputManager } from "~/Hooks/Sales/useUploadDailySalesManager"
+import { fetchStationTanks } from "~/Hooks/Setup/Station/StationTank/useStationTanks"
 
 const DailySalesInput = ({
     editId,
@@ -21,7 +22,8 @@ const DailySalesInput = ({
     effectivityDate,
     selectedStation,
     selectedShiftManager,
-    selectedShift
+    selectedShift,
+    employee
 }) => {
     const [cashData, setCashData] = useState({
         content: [],
@@ -121,14 +123,17 @@ const DailySalesInput = ({
                     ...fuelData,
                     content: tempArray
                 })
+            }
 
+            if (selectedStation!='' && selectedStation!==undefined) {
+                const res2 = await fetchStationTanks(selectedStation)
                 let tempArray2 = []
-                for (let i = 0; i < res.length; i++) {
+                for (let i = 0; i < res2.length; i++) {
                     tempArray2.push({
                         tank: i + 1,
-                        fuelName: res[i]?.code,
-                        fuelId: res[i]?.id,
-                        color: res[i]?.color,
+                        fuelName: res2[i]?.code,
+                        fuelId: res2[i]?.fuelmasterid,
+                        color: res2[i]?.color,
                         price: 0,
                         dip: 0,
                         volume: 0
@@ -175,7 +180,7 @@ const DailySalesInput = ({
     useEffect(() => {
         const compute = () => {
             let sum = poData?.content?.reduce((total, data) => {
-                let result = data?.quantity * data?.poAmount
+                let result = data?.poAmount
                 return total = total + result
             }, 0)
             setPoData({ ...poData, total: sum })
@@ -186,7 +191,7 @@ const DailySalesInput = ({
     useEffect(() => {
         const compute = () => {
             let sum = redemptionData?.content?.reduce((total, data) => {
-                let result = data?.quantity * data?.amount
+                let result = data?.amount
                 return total = total + result
             }, 0)
             setRedemptionData({ ...redemptionData, total: sum })
@@ -218,7 +223,7 @@ const DailySalesInput = ({
     useEffect(() => {
         const compute = () => {
             let sum = lubricantSalesData?.content?.reduce((total, data) => {
-                let result = data?.quantity * data?.amount
+                let result = data?.amount
                 return total = total + result
             }, 0)
             setLubricantSalesData({ ...lubricantSalesData, total: sum })
@@ -239,7 +244,7 @@ const DailySalesInput = ({
     useEffect(() => {
         const compute = () => {
             let sum = discountData?.content?.reduce((total, data) => {
-                let result = data?.quantity * data?.amount
+                let result = data?.amount
                 return total = total + result
             }, 0)
             setDiscountData({ ...discountData, total: sum })
@@ -279,11 +284,11 @@ const DailySalesInput = ({
     //net department sales total computation
     useEffect(() => {
         const compute = () => {
-            let sum = lubricantSalesData?.total + fuelData?.total + inventoryData?.total
+            let sum = (lubricantSalesData?.total + fuelData?.total) - (discountData.total + recievableData.total + checkData.total)
             setNetDepartmentTotal(sum)
         }
         compute()
-    }, [lubricantSalesData?.total, fuelData?.total, inventoryData?.total])
+    }, [lubricantSalesData?.total, fuelData?.total, inventoryData?.total, discountData.total, recievableData.total, checkData.total])
 
     //variance computation
     useEffect(() => {
@@ -339,15 +344,15 @@ const DailySalesInput = ({
                 if (selectedMode == 1) {
                     const res = await useUploadDailySalesInputForecourt(data)
                     alert(res.message)
-                    // setOpenAdd(false)
+                    setOpenAdd(false)
                 } else if (selectedMode == 2) {
                     const res = await useUploadDailySalesInputSelect(data)
                     alert(res.message)
-                    // setOpenAdd(false)
+                    setOpenAdd(false)
                 } else if (selectedMode == 3) {
                     const res = await useUploadDailySalesInputManager(data)
                     alert(res.message)
-                    // setOpenAdd(false)
+                    setOpenAdd(false)
                 }
             }
         } catch (err) {
@@ -362,6 +367,7 @@ const DailySalesInput = ({
                 {selectedMode != 3 ?
                     <CashierInput
                         selectedMode={selectedMode}
+                        employee={employee}
                         cashData={cashData}
                         setCashData={setCashData}
                         poData={poData}
@@ -393,7 +399,7 @@ const DailySalesInput = ({
                     />
                 }
             </div>
-            <div className={`lg:col-span-3 flex lg:flex-col gap-4 ${selectedMode != 3 ? 'lg:mt-6' : ''}`}>
+            <div className={`lg:col-span-3 lg:flex-col lg:flex grid grid-cols-2 gap-4 ${selectedMode != 3 ? 'lg:mt-6' : ''}`}>
                 {selectedMode != 3 ?
                     <VarianceCheck
                         salesGrandTotal={salesGrandTotal}

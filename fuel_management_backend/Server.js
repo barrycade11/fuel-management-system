@@ -108,6 +108,10 @@ app.use("/Setup/Stations", stationTankRoutes);
 const stationTankPumpRoutes = require("./Setup/Stations/StationTankPump");
 app.use("/Setup/Stations", stationTankPumpRoutes);
 
+// STATION Employee
+const stationEmpRoutes = require("./Setup/Stations/StationEmployee");
+app.use("/Setup/Stations", stationEmpRoutes);
+
 // USERS
 const settingsUserRoutes = require("./Settings/Users");
 app.use("/Settings/Users", ValidateToken, settingsUserRoutes);

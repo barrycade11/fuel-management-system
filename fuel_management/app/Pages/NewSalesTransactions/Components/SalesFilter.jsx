@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CustomDatePicker from "~/Components/CustomDatePicker.jsx";
-import { InputMode, Locations, SampleEmployeeName, Shifts } from "~/Constants/Labels.js";
+import { InputMode, SampleEmployeeName } from "~/Constants/Labels.js";
 import SimpleDropdown from "~/Components/SimpleDropdown.jsx";
 import SimpleSelect from "~/Components/SimpleSelect";
+import { fetchStations } from "~/Hooks/Setup/Station/Station/useStations";
 
 const SalesFilter = ({
     activeTab,
@@ -16,8 +17,29 @@ const SalesFilter = ({
     setSelectedShiftManager,
     selectedShift,
     setSelectedShift,
-    openAdd
+    openAdd,
+    shifts,
+    setShifts,
+    employee,
+    setEmployees
 }) => {
+    const [stations, setStations] = useState([]);
+
+    useEffect(() => {
+        const getData = async () => {
+            const result = await fetchStations()
+            let tempArray = []
+            for (let item of result.body) {
+                tempArray.push({
+                    id: item.id,
+                    name: item.name,
+                    description: item.code
+                })
+            }
+            setStations(tempArray)
+        }
+        getData()
+    }, [])
 
     return (
         <div className="grid xl:grid-cols-5 lg:grid-cols-4 sm:grid-cols-3 grid-cols-2 lg:gap-4 gap-2 my-4 items-center">
@@ -38,7 +60,7 @@ const SalesFilter = ({
 
             <SimpleSelect
                 label={"Station"}
-                items={Locations}
+                items={stations}
                 passedValue={selectedStation}
                 toUpdate={setSelectedStation}
             />
@@ -46,13 +68,13 @@ const SalesFilter = ({
                 <>
                     <SimpleSelect
                         label={"Shift No."}
-                        items={Shifts}
+                        items={shifts}
                         passedValue={selectedShift}
                         toUpdate={setSelectedShift}
                     />
                     <SimpleSelect
                         label={"Created by"}
-                        items={SampleEmployeeName}
+                        items={employee}
                         passedValue={selectedShiftManager}
                         toUpdate={setSelectedShiftManager}
                     />

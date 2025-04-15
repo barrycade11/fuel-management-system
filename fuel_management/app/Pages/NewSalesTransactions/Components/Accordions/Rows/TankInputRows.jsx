@@ -55,18 +55,6 @@ export const TankInputRows = ({ tankData, tankTotal, setTankTotal }) => {
                     icon={'₱'}
                     type={"number"}
                     textAlign={"center"}
-                    initialValue={price}
-                    setInitialValue={setPrice}
-                />
-            </td>
-            <td className="text-center tankDatas-center px-6">
-                <SimpleInput
-                    version={1}
-                    label={''}
-                    placeholder={"type here"}
-                    icon={'₱'}
-                    type={"number"}
-                    textAlign={"center"}
                     initialValue={dip}
                     setInitialValue={setDip}
                 />

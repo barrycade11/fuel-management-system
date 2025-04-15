@@ -15,7 +15,6 @@ const LubricantSalesAccordion = ({
             "Lubricants",
             "Quantity",
             "Gross Amount",
-            "Manager Discount",
             "Sold by"
         ]
     })

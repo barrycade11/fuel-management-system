@@ -8,6 +8,7 @@ import CurrencyFormatter from "~/Components/Lib/CurrencyFormatter";
 
 const SalesAccordion = ({
     selectedMode,
+    employee,
     cashData,
     setCashData,
     poData,
@@ -75,6 +76,7 @@ const SalesAccordion = ({
                 }
             >
                 <CashAccordion
+                    employee={employee}
                     cashData={cashData}
                     setCashData={setCashData}
                 />

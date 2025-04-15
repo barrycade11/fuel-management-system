@@ -20,7 +20,7 @@ export const DailySalesTable = ({
         { key: "input_mode", label: "Input Mode", hidden: false },
         { key: "station_id", label: "Station Code", hidden: false },
         { key: "shift_id", label: "Shift No.", hidden: false },
-        { key: "employee_id", label: "Shift Manager", hidden: false }
+        { key: "employee_id", label: "Created By", hidden: false }
     ]
 
     useEffect(() => {

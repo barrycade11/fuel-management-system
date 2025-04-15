@@ -146,14 +146,14 @@ const AddLubricant = ({ openModal, setOpenModal, content, setContent, title, pur
                             initialValue={amount}
                             setInitialValue={setAmount}
                         />
-                        <SimpleInput
+                        {/* <SimpleInput
                             version={3}
                             label={"Manager Given Discount"}
                             type={"number"}
                             textAlign={"right"}
                             initialValue={discount}
                             setInitialValue={setDiscount}
-                        />
+                        /> */}
                         <SimpleSelect
                             label={"Sold By"}
                             items={SampleEmployeeName}

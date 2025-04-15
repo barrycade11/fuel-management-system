@@ -20,7 +20,8 @@ const DepartmentSales = ({
     checkData,
     setCheckData,
     inventoryData,
-    setInventoryData
+    setInventoryData,
+    employee
 }) => {
     return (
         <Accordion
@@ -75,7 +76,7 @@ const DepartmentSales = ({
                     className="w-full bg-gray-100 shadow-none overflow-hidden"
                     key={"Inventory Sales"}
                     aria-label={"Inventory Sales"}
-                    title={"Inventory Sales"}
+                    title={"Category Sales"}
                 >
                     <InventoryAccordion 
                         inventoryData={inventoryData}
@@ -120,7 +121,7 @@ const DepartmentSales = ({
                 className="w-full bg-gray-100 shadow-none overflow-hidden"
                 key={"Discounts Charged to Shell"}
                 aria-label={"Discounts Charged to Shell"}
-                title={selectedMode == 1 ? "Discounts Charged to Shell" : "Discounts"}
+                title={"Discounts"}
             >
                 <DiscountAccordion
                     discountData={discountData}
@@ -138,6 +139,7 @@ const DepartmentSales = ({
                     <RecievableAccordion
                         recievableData={recievableData}
                         setRecievableData={setRecievableData}
+                        employee={employee}
                     />
                 </AccordionItem>
             )}
