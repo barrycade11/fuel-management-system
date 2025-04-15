@@ -38,12 +38,12 @@ const FuelManagement = () => {
             Fuel Delivery
           </NavLink>
           <NavLink
-            to={`/${StringRoutes.lubricants}`}
+            to={`/${StringRoutes.lubesMaster}`}
             className={({ isActive }) =>
               `${isActive ? "border-b-2 border-blue-500 font-semibold" : "text-gray-500"}`
             }
           >
-            Lubricants
+            Lubes Master
           </NavLink>
         </div>
 

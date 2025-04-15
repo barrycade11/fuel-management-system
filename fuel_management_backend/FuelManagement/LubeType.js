@@ -82,7 +82,7 @@ router.put("/lubeType/:id", async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { code, name, details, status } = req.body;
+    const { code, name, incentive, details, status } = req.body;
     
     await client.query("BEGIN")
     

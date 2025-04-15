@@ -21,7 +21,7 @@ export default [
 
             route("fuel-price", "./SubRoutes/FuelManagement/FuelPrice.jsx"),
             route("fuel-delivery", "./SubRoutes/FuelManagement/FuelDelivery.jsx"),
-            route("lubricants", "./SubRoutes/FuelManagement/Lubricants.jsx"),
+            route("lubes-master", "./SubRoutes/FuelManagement/LubesMaster.jsx"),
         ]),
 
 

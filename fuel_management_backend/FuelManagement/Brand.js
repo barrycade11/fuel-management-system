@@ -16,6 +16,7 @@ router.get("/brands", async (req, res) => {
   }
   catch (err) {
     console.error(err);
+    console.log(err)
     res.status(500).json({ error: "Database query error" });
   }
 });
