@@ -1,5 +1,6 @@
 import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
+import { useQuery } from "@tanstack/react-query";
 
 const useGenerateCustomerCode = (resource) => {
     return useQuery({
