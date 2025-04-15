@@ -146,9 +146,9 @@ const Employee = () => {
     genderId: "", 
     civilStatusId: "", 
     address: "", 
-    // provinceId: null, 
-    // cityId: null, 
-    // barangayId: null, 
+    provinceId: null, 
+    cityId: null, 
+    barangayId: null, 
     dateHired: null, 
     stationId: "", 
     departmentId: "", 
@@ -172,9 +172,9 @@ const Employee = () => {
       genderId: "",
       civilStatusId: "",
       address: "",
-      // provinceId: null,
-      // cityId: null,
-      // barangayId: null,
+      provinceId: null,
+      cityId: null,
+      barangayId: null,
       dateHired: null,
       stationId: "",
       departmentId: "",
@@ -239,17 +239,17 @@ const Employee = () => {
       // Fetch Dropdowns 
       const [genderData, 
         civilStatusData, 
-        // provinceData, 
-        // cityData, 
-        // barangayData, 
+        provinceData, 
+        cityData, 
+        barangayData, 
         designationData, 
         employeeStatusData
       ] = await Promise.all([
         fetchDropdownTypeList(4, employee.genderid),
         fetchDropdownTypeList(5, employee.civilstatusid),
-        // fetchDropdownTypeList(14, employee.provinceid),
-        // fetchDropdownTypeList(15, employee.cityid),
-        // fetchDropdownTypeList(16, employee.barangayid),
+        fetchDropdownTypeList(14, employee.provinceid),
+        fetchDropdownTypeList(15, employee.cityid),
+        fetchDropdownTypeList(16, employee.barangayid),
         fetchDropdownTypeList(2, employee.designationid),
         fetchDropdownTypeList(7, employee.employeestatusid)
       ]);
@@ -297,9 +297,9 @@ const Employee = () => {
         lastName: employee.lastname,
         genderId: employee.genderid,
         civilStatusId: employee.civilstatusid,
-        // provinceId: employee.provinceid,
-        // cityId: employee.cityid,
-        // barangayId: employee.barangayid,
+        provinceId: employee.provinceid,
+        cityId: employee.cityid,
+        barangayId: employee.barangayid,
         stationId: employee.stationid,
         departmentId: employee.departmentid,
         designationId: employee.designationid,
@@ -324,19 +324,20 @@ const Employee = () => {
     if (!newEmployee.firstName || !newEmployee.middleName || !newEmployee.lastName ||
         !newEmployee.birthDate || !newEmployee.genderId || !newEmployee.civilStatusId || 
         !newEmployee.address || 
-        // !newEmployee.provinceId || !newEmployee.cityId || !newEmployee.barangayId || 
+        !newEmployee.provinceId || !newEmployee.cityId || !newEmployee.barangayId || 
         !newEmployee.dateHired || !newEmployee.stationId || 
         !newEmployee.departmentId || !newEmployee.designationId || !newEmployee.employeeStatusId || 
-        !newEmployee.contactNo || !newEmployee.email
+        !newEmployee.contactNo 
+        // || !newEmployee.email
       ) {
         setNotification({ message: "All fields are required.", type: "error" });
         return;
     }
 
-    if (!imageFile && !image) {
-      setNotification({ message: "Please upload a photo.", type: "error" });
-      return;
-    }
+    // if (!imageFile && !image) {
+    //   setNotification({ message: "Please upload a photo.", type: "error" });
+    //   return;
+    // }
 
     if (isSaving) return;
     setIsSaving(true);
@@ -354,9 +355,9 @@ const Employee = () => {
       genderId: parseInt(newEmployee.genderId, 10), 
       civilStatusId: parseInt(newEmployee.civilStatusId, 10),
       address: newEmployee.address, 
-      // provinceId: newEmployee.provinceId,
-      // cityId: newEmployee.cityId,
-      // barangayId: newEmployee.barangayId,
+      provinceId: newEmployee.provinceId,
+      cityId: newEmployee.cityId,
+      barangayId: newEmployee.barangayId,
       datehired: formatDate(newEmployee.dateHired), 
       stationId: parseInt(newEmployee.stationId, 10),
       departmentId: parseInt(newEmployee.departmentId, 10),
@@ -478,9 +479,9 @@ const Employee = () => {
     { key: "gender", label: "Gender", hidden: true },
     { key: "civilstatus", label: "Civil Status", hidden: true },
     { key: "address", label: "Address", hidden: true },
-    // { key: "province", label: "Province", hidden: true },
-    // { key: "city", label: "City", hidden: true },
-    // { key: "barangay", label: "Barangay", hidden: true },
+    { key: "province", label: "Province", hidden: true },
+    { key: "city", label: "City", hidden: true },
+    { key: "barangay", label: "Barangay", hidden: true },
     { key: "datehired", label: "Date Hired", hidden: true },
     { key: "station", label: "Station", hidden: true },
     { key: "department", label: "Department", hidden: false },
