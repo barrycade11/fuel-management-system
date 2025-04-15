@@ -187,7 +187,7 @@ const FuelDeliveryList = () => {
     { key: "shiftManagerId", label: "Shift Manager", hidden: false },
     { key: "deliveryNo", label: "Delivery Receipt No", hidden: false },
   ]
-
+ 
   const customRender = {
     effectivedate: (item) => {
       if (!item) return '';

@@ -15,7 +15,7 @@ const fetchfuelDeliveries = async () => {
 };
 */
 
-
+ 
 const fetchfuelDeliveries = (resource) => {
     return useQuery({
       queryKey: [resource],
