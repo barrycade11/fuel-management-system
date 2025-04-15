@@ -36,6 +36,7 @@ class StringRoutes {
 
   static stationList = 'station/list';
   static stationDetail = 'details';
+  static shifts = 'shifts';
 
   /**
    * Retrieves the current sub-route from a given pathname.
