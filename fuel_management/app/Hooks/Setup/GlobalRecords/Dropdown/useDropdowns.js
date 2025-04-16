@@ -28,12 +28,16 @@ const fetchDropdownTypeList = async (typeId, id) => {
         console.error("Invalid parameters:", { typeId, id });
         return;
     }
+    console.log("PARAMS", { typeId, id } )
     try {
         const response = await apiClient.get(`${endPoints.GlobalRecords}/Dropdowns/${typeId}/${id}`);
-
+        console.log(response.data, typeId)
         return response.data;
+        
     }
     catch (error) {
+        console.log("FAILED TO FETCH", typeId)
+        console.log("ERROR", error)
         throw error;
     }
 };

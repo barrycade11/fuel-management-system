@@ -50,9 +50,10 @@ router.post("/login", async (req, res) => {
     const passwordMatch = await bcrypt.compare(password, storedHash);
 
     if (!passwordMatch) {
+      console.log("Local Test: Failed login")
       return res.status(401).json({ success: false, message: "Login failed" });
     }
-
+    console.log("Local Test: Successful login")
     // If password matches, fetch the complete user data with permissions
     const result = await pool.query(`
             Select 

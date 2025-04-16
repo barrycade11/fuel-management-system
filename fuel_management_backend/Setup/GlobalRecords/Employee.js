@@ -44,11 +44,11 @@ router.get("/employees", async (req, res) => {
                   a.civilStatusId,
                   c.name civilStatus,
                   a.address,
-                  -- a.provinceId,
+                  a.provinceId,
                   -- d.name province,
-                  -- a.cityId,
+                  a.cityId,
                   -- e.name city,
-                  -- a.barangayId,
+                  a.barangayId,
                   -- f.name barangay,
                   a.dateHired,
                   a.stationId,
@@ -68,7 +68,7 @@ router.get("/employees", async (req, res) => {
       INNER JOIN  dropdown c
               ON  a.civilStatusId = c.id
                   AND c.dropdownTypeId = 5
-      -- INNER JOIN  dropdown d ON  a.provinceId = d.id AND d.dropdownTypeId = 14
+      -- INNER JOIN  dropdown d ON CAST(a.provinceId as INTEGER) = d.id AND d.dropdownTypeId = 14
       -- INNER JOIN  dropdown e ON  a.cityId = e.id AND e.dropdownTypeId = 15
       -- INNER JOIN  dropdown f ON  a.barangayId = f.id AND f.dropdownTypeId = 16
       INNER JOIN  station g
@@ -131,13 +131,13 @@ router.get("/employees/:id", async (req, res) => {
               ON  a.civilStatusId = c.id
                   AND c.dropdownTypeId = 5
       INNER JOIN  dropdown d
-              ON  a.provinceId = d.id
+              ON  CAST(a.provinceId as INTEGER) = d.id
                   AND d.dropdownTypeId = 14
       INNER JOIN  dropdown e
-              ON  a.cityId = e.id
+              ON  CAST(a.cityId as INTEGER) = e.id
                   AND e.dropdownTypeId = 15
       INNER JOIN  dropdown f
-              ON  a.barangayId = f.id
+              ON  CAST(a.barangayId as INTEGER) = f.id
                   AND f.dropdownTypeId = 16
       INNER JOIN  stationHdr g
               ON  a.stationId = g.id

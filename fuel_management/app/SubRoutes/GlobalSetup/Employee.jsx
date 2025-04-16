@@ -236,6 +236,10 @@ const Employee = () => {
       const mainPhoto = employeePhotos[0] ? employeePhotos[0].photo : null;
       const photoId = employeePhotos[0] ? employeePhotos[0].id : null;
 
+      // 14 15 16 passing undefined to fetchDropdownTypeList
+      console.log("Checking before fetch", employee)
+      //employee does not have .provinceid et al
+
       // Fetch Dropdowns 
       const [genderData, 
         civilStatusData, 
@@ -253,7 +257,7 @@ const Employee = () => {
         fetchDropdownTypeList(2, employee.designationid),
         fetchDropdownTypeList(7, employee.employeestatusid)
       ]);
-
+      console.log("Test Fetching Province", provinceData)
       if (mainPhoto) {
         const fixedPath = mainPhoto.replace(/\\/g, '/');
         setImage(`http://${API_BASE_URL}:${API_PORT}/global-setup/${fixedPath}`);
@@ -311,7 +315,8 @@ const Employee = () => {
         photo: mainPhoto, 
         photoId: photoId
       }));
-  
+      console.log("From loading employee", employee.provinceid)
+  console.log("Checking new employee", newEmployee, newEmployee.provinceId, newEmployee.provinceid)
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
