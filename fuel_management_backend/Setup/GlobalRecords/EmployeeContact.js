@@ -3,9 +3,14 @@ const router = express.Router();
 const pool = require("../../Config/Connection");
 
 router.get("/employee/:employeeId/contacts", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { employeeId } = req.params;
-    const result = await pool.query(`
+    
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.relationshipId,
                   b.name relationship,
@@ -18,18 +23,30 @@ router.get("/employee/:employeeId/contacts", async (req, res) => {
                   AND b.dropdownTypeId = 6
       WHERE       a.employeeId = $1
     `, [employeeId]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/employee/:employeeId/contacts/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { employeeId, id } = req.params;
-    const result = await pool.query(`
+
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.relationshipId,
                   b.name relationship,
@@ -42,11 +59,18 @@ router.get("/employee/:employeeId/contacts/:id", async (req, res) => {
       WHERE       a.employeeId = $1
                   AND a.id = $2
     `, [employeeId, id]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 

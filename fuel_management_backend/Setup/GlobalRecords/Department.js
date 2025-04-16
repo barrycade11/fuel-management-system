@@ -3,9 +3,12 @@ const router = express.Router();
 const pool = require("../../Config/Connection");
 
 router.get("/departments", async (req, res) => {
-  // console.log("fetching departments")
+  const client = await pool.connect();
+
   try {
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.name,
                   a.details,
@@ -21,6 +24,9 @@ router.get("/departments", async (req, res) => {
               ON  b.subDepartmentId = c.Id
                   AND c.dropdownTypeId = 19
     `);
+
+    await client.query("COMMIT");
+
     const resultFormatted = {};
 
     result.rows.forEach(row => {
@@ -48,15 +54,24 @@ router.get("/departments", async (req, res) => {
     res.status(200).json(Object.values(resultFormatted));
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/departments/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { id } = req.params;
-    const result = await pool.query(`
+
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.name,
                   a.details,
@@ -73,6 +88,9 @@ router.get("/departments/:id", async (req, res) => {
                   AND c.dropdownTypeId = 19
       WHERE       a.id = $1
     `, [id]);
+
+    await client.query("COMMIT");
+    
     const resultFormatted = {};
 
     result.rows.forEach(row => {
@@ -97,8 +115,12 @@ router.get("/departments/:id", async (req, res) => {
     res.status(201).json(Object.values(resultFormatted));
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+    
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 

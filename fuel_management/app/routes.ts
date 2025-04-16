@@ -56,6 +56,8 @@ export default [
             index("./Pages/Station/StationList.jsx"),
             route('details/:id?', "./Pages/Station/StationDetails.jsx", [
                 index("./SubRoutes/Stations/InitialPage.jsx"),
+            
+                route(StringRoutes.shifts, './SubRoutes/Stations/ShiftsPage.jsx'),
             ])
         ]),
 

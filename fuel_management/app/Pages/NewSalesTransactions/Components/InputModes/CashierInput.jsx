@@ -3,6 +3,7 @@ import SalesAccordion from "../Accordions/SalesAccordion"
 
 const CashierInput = ({
     selectedMode,
+    employee,
     cashData,
     setCashData,
     poData,
@@ -30,6 +31,7 @@ const CashierInput = ({
                 <label className="font-semibold px-2">Sales</label>
                 <SalesAccordion 
                     selectedMode={selectedMode}
+                    employee={employee}
                     cashData={cashData}
                     setCashData={setCashData}
                     poData={poData}
@@ -56,6 +58,7 @@ const CashierInput = ({
                     setCheckData={setCheckData}
                     inventoryData={inventoryData}
                     setInventoryData={setInventoryData}
+                    employee={employee}
                 />
             </div>
         </>

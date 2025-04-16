@@ -96,7 +96,7 @@ router.post("/dailySalesInputSelect", upload.single("pos"), async (req, res) => 
                         [
                             savedCashId,
                             item?.total,
-                            item?.time.hour + ':' + item?.time.minute,
+                            item?.time,
                             item?.recievedBy
                         ]
                     );

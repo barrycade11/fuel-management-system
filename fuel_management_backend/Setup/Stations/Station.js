@@ -8,8 +8,12 @@ const StationSchema = require("./Params/StationSchema");
  *
  */
 router.get('/', async (req, res) => {
+  const client = await pool.connect();
+
   try {
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT 
           id,
           code,
@@ -17,23 +21,33 @@ router.get('/', async (req, res) => {
       FROM station
     `)
 
+    await client.query("COMMIT");
+
     return res.status(200).json({
       success: true,
       message: "Successfully fetch stations.",
       body: result.rows,
     });
   } catch (error) {
+    await client.query("ROLLBACK");
+
     res.status(500).json({
       success: false,
       message: error.message
     })
   }
-
+  finally {
+    client.release();
+  }
 })
 
 router.get("/stations", async (req, res) => {
+  const client = await pool.connect();
+
   try {
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.code,
                   a.name,
@@ -54,6 +68,9 @@ router.get("/stations", async (req, res) => {
                   a.shipToNumber
       FROM        station a
     `);
+
+    await client.query("COMMIT");
+
     return res.status(201).json({
       success: true,
       message: "Successfully fetched stations",
@@ -61,15 +78,25 @@ router.get("/stations", async (req, res) => {
     });
   }
   catch (err) {
+    await client.query("ROLLBACK");
+
     return res.status(500).json({ success: false, message: "Database query error" });
     // res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/stations/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { id } = req.params;
-    const result = await pool.query(`
+
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.code,
                   a.name,
@@ -91,17 +118,28 @@ router.get("/stations/:id", async (req, res) => {
       FROM        station a
       WHERE       a.id = $1
     `, [id]);
-    res.status(201).json({ success: true, message: "Successfully fetch stations", body: result.rows });
+
+    await client.query("COMMIT");
+
+    return res.status(200).json({ success: true, message: "Successfully fetch stations", body: result.rows });
   }
   catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Database query error" });
+    await client.query("ROLLBACK");
+    
+    return res.status(500).json({ success: false, message: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/stations/dropdown", async (req, res) => {
+  const client = await pool.connect();
+
   try {
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.code,
                   a.name,
@@ -131,6 +169,9 @@ router.get("/stations/dropdown", async (req, res) => {
               ON  a.barangayId = d.id
                   AND d.dropdownTypeId = 16
     `);
+
+    await client.query("COMMIT");
+
     return res.status(201).json({
       success: true,
       message: "Successfully fetched stations",
@@ -138,15 +179,25 @@ router.get("/stations/dropdown", async (req, res) => {
     });
   }
   catch (err) {
+    await client.query("ROLLBACK");
+
     return res.status(500).json({ success: false, message: "Database query error" });
     // res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/stations/dropdown/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { id } = req.params;
-    const result = await pool.query(`
+
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.code,
                   a.name,
@@ -177,11 +228,18 @@ router.get("/stations/dropdown/:id", async (req, res) => {
                   AND d.dropdownTypeId = 16
       WHERE       a.id = $1
     `, [id]);
+
+    await client.query("COMMIT");
+
     res.status(201).json({ success: true, message: "Successfully fetch stations", body: result.rows });
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ success: false, message: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 

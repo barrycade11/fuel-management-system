@@ -15,7 +15,7 @@ import CurrencyFormatter from "~/Components/Lib/CurrencyFormatter";
 import SimpleSelect from "~/Components/SimpleSelect";
 import { DummyDesc, SampleEmployeeName } from "~/Constants/Labels";
 
-const AddReceivable = ({ openModal, setOpenModal, content, setContent, title, purpose, editData, setEditData }) => {
+const AddReceivable = ({ openModal, setOpenModal, content, setContent, title, purpose, editData, setEditData, employeeList }) => {
     const [employee, setEmployee] = useState('')
     const [amount, setAmount] = useState(0)
     const [description, setDescription] = useState('')
@@ -117,7 +117,7 @@ const AddReceivable = ({ openModal, setOpenModal, content, setContent, title, pu
                     <div className="h-auto grid gap-4">
                         <SimpleSelect
                             label={"Employee Name"}
-                            items={SampleEmployeeName}
+                            items={employeeList}
                             passedValue={employee}
                             toUpdate={setEmployee}
                         />

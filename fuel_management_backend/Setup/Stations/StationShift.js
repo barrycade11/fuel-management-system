@@ -3,10 +3,14 @@ const router = express.Router();
 const pool = require("../../Config/Connection");
 
 router.get("/station/:stationId/shifts", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { stationId } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.shiftId,
                   b.name shift,
@@ -18,19 +22,30 @@ router.get("/station/:stationId/shifts", async (req, res) => {
               ON  a.shiftId = b.id
       WHERE       a.stationId = $1
     `, [stationId]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/station/:stationId/shifts/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { stationId, id } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.shiftId,
                   b.name shift,
@@ -43,11 +58,18 @@ router.get("/station/:stationId/shifts/:id", async (req, res) => {
       WHERE       a.stationId = $1
                   AND a.id = $2
     `, [stationId, id]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 

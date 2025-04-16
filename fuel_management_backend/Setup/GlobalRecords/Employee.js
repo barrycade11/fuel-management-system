@@ -3,13 +3,19 @@ const router = express.Router();
 const pool = require("../../Config/Connection");
 
 router.get("/employee/generate-emp-code", async (req, res) => {
+  const client = await pool.connect();
+
   try {
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT code FROM employee
       WHERE code LIKE 'EMP-%'
       ORDER BY id DESC
       LIMIT 1
     `);
+
+    await client.query("COMMIT");
 
     let newCode = "EMP-00001"; 
 
@@ -23,15 +29,23 @@ router.get("/employee/generate-emp-code", async (req, res) => {
 
     res.status(200).json({ code: newCode });
   } catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/employees", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     // const { typeId } = req.params;
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.code,
                   a.firstName,
@@ -83,18 +97,29 @@ router.get("/employees", async (req, res) => {
                   AND j.dropdownTypeId = 7
     `);
 
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/employees/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { id } = req.params;
-    const result = await pool.query(`
+
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.code,
                   a.firstName,
@@ -151,11 +176,18 @@ router.get("/employees/:id", async (req, res) => {
                   AND j.dropdownTypeId = 7
       WHERE       a.id = $1
     `, [id]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 

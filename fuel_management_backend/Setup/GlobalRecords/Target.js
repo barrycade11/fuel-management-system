@@ -3,8 +3,12 @@ const router = express.Router();
 const pool = require("../../Config/Connection");
 
 router.get("/targets", async (req, res) => {
+  const client = await pool.connect();
+
   try {
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.name,
                   a.year,
@@ -25,18 +29,30 @@ router.get("/targets", async (req, res) => {
               ON  a.targetStatusId = d.id
                   AND d.dropdownTypeId = 23
     `);
+
+    await client.query("COMMIT");
+    
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/targets/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { id } = req.params;
-    const result = await pool.query(`
+
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.name,
                   a.year,
@@ -53,11 +69,18 @@ router.get("/targets/:id", async (req, res) => {
                   AND c.dropdownTypeId = 24
       WHERE       a.id = $1
     `, [id]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 

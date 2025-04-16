@@ -21,37 +21,61 @@ const upload = multer({
 }).single('photo');
 
 router.get("/employee/:employeeId/photo", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { employeeId } = req.params;
-    const result = await pool.query(`
+
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      id,
                   photo
       FROM        employeePhoto
       WHERE       employeeId = $1
     `, [employeeId]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/employee/:employeeId/photo/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { employeeId, id } = req.params;
-    const result = await pool.query(`
+
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      id,
                   photo
       FROM        employeePhoto
       WHERE       employeeId = $1
                   AND id = $2
     `, [employeeId, id]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 

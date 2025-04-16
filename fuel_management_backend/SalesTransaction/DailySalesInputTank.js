@@ -3,10 +3,14 @@ const router = express.Router();
 const pool = require("../Config/Connection");
 
 router.get("/dailySalesInput/:dailySalesInputId/Tanks", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { dailySalesInputId } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.stationTankId,
                   b.name stationTank,
@@ -18,19 +22,30 @@ router.get("/dailySalesInput/:dailySalesInputId/Tanks", async (req, res) => {
               ON  a.stationTankId = b.id
       WHERE       a.dailySalesInputId = $1
     `, [dailySalesInputId]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/dailySalesInputs/:dailySalesInputId/Tanks/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { dailySalesInputId, id } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.stationTankId,
                   b.name stationTank,
@@ -43,11 +58,17 @@ router.get("/dailySalesInputs/:dailySalesInputId/Tanks/:id", async (req, res) =>
       WHERE       a.dailySalesInputId = $1
                   AND a.id = $2
     `, [dailySalesInputId, id]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
     console.error(err);
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 

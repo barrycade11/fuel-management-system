@@ -16,7 +16,7 @@ import SimpleSelect from "~/Components/SimpleSelect";
 import { SampleEmployeeName } from "~/Constants/Labels";
 import moment from "moment";
 
-const AddCash = ({ openModal, setOpenModal, content, setContent, title, purpose, editData, setEditData }) => {
+const AddCash = ({ openModal, setOpenModal, content, setContent, title, purpose, editData, setEditData, employee }) => {
     const tableHeader = [
         "Bills",
         "Quantity",
@@ -24,7 +24,7 @@ const AddCash = ({ openModal, setOpenModal, content, setContent, title, purpose,
     ]
     const [billsData, setBillsData] = useState([])
     const [totalAmount, setTotalAmount] = useState(0);
-    const [time, setTime] = useState(new Date(Date.now()));
+    const [time, setTime] = useState(undefined);
     const [receivedBy, setReceivedBy] = useState('');
 
     useEffect(() => {
@@ -37,7 +37,7 @@ const AddCash = ({ openModal, setOpenModal, content, setContent, title, purpose,
             } else {
                 setBillsData([])
                 setTotalAmount(0)
-                setTime(new Date(Date.now()))
+                setTime(null)
                 setReceivedBy('')
             }
         }
@@ -47,7 +47,7 @@ const AddCash = ({ openModal, setOpenModal, content, setContent, title, purpose,
     useEffect(() => {
         const compute = () => {
             let sum = billsData?.reduce((total, data) => {
-                return total = total + (Number(data.bill) * data.quantity)
+                return total = total + Number(data.bill)
             }, 0)
             setTotalAmount(sum)
         }
@@ -181,18 +181,20 @@ const AddCash = ({ openModal, setOpenModal, content, setContent, title, purpose,
                         <p className="w-full text-left bg-gray-100 p-2 font-semibold rounded-md">{CurrencyFormatter(totalAmount)}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="h-8">
-                            <SimpleInput
+                        <div className="h-8 grid gap-1">
+                            {/* <SimpleInput
                                 version={4}
                                 label={"Time"}
                                 initialValue={time}
                                 setInitialValue={setTime}
-                            />
+                            /> */}
+                            <label className="text-gray-700">Time</label>
+                            <input className="p-1.5 border-2 rounded-xl" type="time" value={time} onChange={(e)=>setTime(e.target.value)}/>
                         </div>
                         <div>
                             <SimpleSelect
                                 label={"Received By"}
-                                items={SampleEmployeeName}
+                                items={employee}
                                 passedValue={receivedBy}
                                 toUpdate={setReceivedBy}
                             />

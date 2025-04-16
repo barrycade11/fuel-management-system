@@ -4,39 +4,6 @@ const pool = require("../Config/Connection");
 
 router.get("/Fuel-Sales", async (req, res) => {
     try {
-        // const { startDate, endDate, stations } = req.query
-        // let cleanStations = stations.reduce((station, accumulator)=> accumulator+= "'"+station+"'", '')
-        // const result = await pool.query(`
-        //         SELECT      *
-        //         FROM        fuelsales
-        //         WHERE       soldat  BETWEEN'${startDate}' AND '${endDate}'
-        //                     station IN (${cleanStations})
-        // `);
-
-        // let mongthlySales = []
-        // for (let i=1; i<13; i++){
-        //     filteredOrders = await orders.aggregate([
-        //         {$addFields: { "month" : {$month: '$createdAt'}, "year": { $year: '$createdAt' }}},
-        //         {$match: {$and: [ {month: i}, {year: Number(moment(req.query.end).format('YYYY')) } ]}}
-        //     ])
-        //     let sum1 = 0
-        //     for (let n=0; n<filteredOrders.length; n++){
-        //         sum1 = sum1 + filteredOrders[n].amountpaid 
-        //     }
-        //     let sum2 = 0
-        //     for (let n=0; n<filteredOrders.length; n++){
-        //         sum2 = sum2 + filteredOrders[n].netamount
-        //     }
-
-        //     mongthlySales = mongthlySales.concat({
-        //         id: i,
-        //         sales: sum1,
-        //         netamount: sum2,
-        //         data: filteredOrders
-        //     })
-        // }
-        // res.status(201).json(result.rows);
-
         let tempData =
             [
                 {
@@ -65,7 +32,39 @@ router.get("/Fuel-Sales", async (req, res) => {
                     data: ["123134", "34531", "34563", "50000"],
                 }
             ]
-        console.log(req.query)
+
+        // const { selectedStations, startDate, endDate } = req.query;
+        
+        // const queryResults = await Promise.all(
+        //     JSON.parse(selectedStations)?.map((item) => {
+        //         return new Promise(async (resolve, reject) => {
+        //             const res = await pool.query(
+        //                 `
+        //                     SELECT 		a.fuelmasterid, b.code, CAST(SUM(a.amount) AS double precision)
+        //                     FROM 		public.dailysalesinput_fuellin AS a
+        //                     LEFT JOIN	public.fuelmaster AS b
+        //                     ON			a.fuelmasterid = b.id
+        //                     WHERE		dailysalesinputfuelhdrid IN (
+        //                                     SELECT 		b.id 
+        //                                     FROM 		public.dailysalesinput_hdr AS a
+        //                                     LEFT JOIN	public.dailysalesinput_fuelhdr AS b
+        //                                     ON			a."ID" = b.dailysalesinputid
+        //                                     WHERE 		a.station_id = $1
+        //                                     AND			a.effectivity_date BETWEEN $2 AND $3
+        //                                     --AND			a.input_mode = 3
+        //                                 )
+        //                     GROUP BY a.fuelmasterid, b.code
+        //                 `,
+        //                 [
+        //                     item,
+        //                     startDate,
+        //                     endDate
+        //                 ]
+        //             );
+        //             return resolve(res.rows)
+        //         })
+        //     })
+        // )
         res.status(201).json(tempData);
     }
     catch (err) {

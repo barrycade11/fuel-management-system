@@ -9,6 +9,7 @@ import { CashRows2 } from '../Rows/CashRows2';
 import CurrencyFormatter from '~/Components/Lib/CurrencyFormatter';
 
 export const CashAccordion = ({
+    employee,
     cashData,
     setCashData
 }) => {
@@ -17,7 +18,7 @@ export const CashAccordion = ({
         tableHeaders: [
             "Amount",
             "Time",
-            "Recieved by"
+            "Received by"
         ]
     })
     const [totalAmount, setTotalAmount] = useState(0);
@@ -60,6 +61,7 @@ export const CashAccordion = ({
                 purpose={purpose}
                 editData={editData}
                 setEditData={setEditData}
+                employee={employee}
             />
 
             <div className="w-full flex justify-between items-baseline py-4">
