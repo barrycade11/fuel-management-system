@@ -1,7 +1,7 @@
 import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
 
-export const fetchStationShifts = async (stationId) => {
+const fetchStationShifts = async (stationId) => {
     try {
         const response = await apiClient.get(`${endPoints.Stations}/Station/${stationId}/Shifts`);
 
@@ -10,4 +10,21 @@ export const fetchStationShifts = async (stationId) => {
     catch (error) {
         throw error;
     }
+};
+
+const fetchStationShifts2 = async (stationId, shiftmanagerid) => {
+    try {
+        const response = await apiClient.get(`${endPoints.Stations}/Station/${stationId}/${shiftmanagerid}/Shifts2`);
+
+        return response.data;
+    }
+    catch (error) {
+        throw error;
+    }
+};
+
+
+export {
+    fetchStationShifts,
+    fetchStationShifts2, 
 };

@@ -127,7 +127,7 @@ app.use("/Setup/GlobalRecords", targetMonthlyRoutes);
 
 // STATION
 const stationRoutes = require("./Setup/Stations/Station");
-app.use("/Setup/Stations", ValidateToken, stationRoutes);
+app.use("/Setup/Stations", stationRoutes);
 
 // STATION DEPARTMENT
 const stationDepartmentRoutes = require("./Setup/Stations/StationDepartment");
