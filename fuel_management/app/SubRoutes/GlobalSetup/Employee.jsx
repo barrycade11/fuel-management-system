@@ -228,7 +228,7 @@ const Employee = () => {
       const rawContacts = await fetchEmployeeContacts(employee.id);
       const contacts = rawContacts.map(c => ({
         ...c,
-        contactNo2: c.contactno2,
+        contactNo2: c.contactno2, 
       }));
 
       // Fetch Photo 
