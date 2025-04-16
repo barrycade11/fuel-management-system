@@ -95,7 +95,7 @@ router.get("/Lubricants/:id", async (req, res) => {
   }
 });
 
-router.post("/fuelLubricant", async (req, res) => {
+router.post("/Lubricant", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -139,7 +139,7 @@ router.post("/fuelLubricant", async (req, res) => {
   }
 });
 
-router.put("/fuelLubricant/:id", async (req, res) => {
+router.put("/Lubricant/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -182,7 +182,7 @@ router.put("/fuelLubricant/:id", async (req, res) => {
   }
 });
 
-router.delete("/fuelLubricant/:id", async (req, res) => {
+router.delete("/Lubricant/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {
