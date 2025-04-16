@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../Config/Connection");
 
-router.get("/Lubricants", async (req, res) => {
+router.get("/fuelLubricants", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -47,7 +47,7 @@ router.get("/Lubricants", async (req, res) => {
   }
 });
 
-router.get("/Lubricants/:id", async (req, res) => {
+router.get("/fuelLubricants/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -95,7 +95,7 @@ router.get("/Lubricants/:id", async (req, res) => {
   }
 });
 
-router.post("/Lubricant", async (req, res) => {
+router.post("/fuelLubricant", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -139,7 +139,7 @@ router.post("/Lubricant", async (req, res) => {
   }
 });
 
-router.put("/Lubricant/:id", async (req, res) => {
+router.put("/fuelLubricant/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {
@@ -163,7 +163,7 @@ router.put("/Lubricant/:id", async (req, res) => {
                     netMargin = $12,
                     netMarginPerc = $13,
                     details = $14,
-                    status = $15 
+                    status = $15,
         WHERE       id = $1
     `, [id, code, name, brandId, lubeTypeId, liters, qty, cost, selling, margins, incentives, netMargin, netMarginPerc, details, status]);
 
@@ -174,7 +174,6 @@ router.put("/Lubricant/:id", async (req, res) => {
   catch (err) {
     await client.query("ROLLBACK");
 
-    console.log(err)
     res.status(500).json({ error: "Database query error" });
   }
   finally {
@@ -182,7 +181,7 @@ router.put("/Lubricant/:id", async (req, res) => {
   }
 });
 
-router.delete("/Lubricant/:id", async (req, res) => {
+router.delete("/fuelLubricant/:id", async (req, res) => {
   const client = await pool.connect();
 
   try {
