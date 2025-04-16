@@ -1,45 +1,232 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, lazy } from "react";
+import { useParams } from "react-router-dom";
+import Notification from "~/Components/Notification";
+import { useNavigate } from "react-router";
+import StringRoutes from "~/Constants/StringRoutes";
+import { useGetStationRecords } from "~/Hooks/Setup/Station/useStationRecordsApi";
+import { Input, Button, Spinner, Select, SelectItem } from "@heroui/react";
+const SettingsMultiSelectDropdown = lazy(() => import("../Settings/Components/SettingsMultiSelectDropdown"));
 
-const FuelDelivery = () => {
-  const [date, setDate] = useState("");
-  const [station, setStation] = useState("SH Nuvali");
-  const [shiftManager, setShiftManager] = useState("Feeney, Alice");
+
+import { fetchStationEmployees, fetchStationShiftManagers, fetchStationStationManagers } from "~/Hooks/Setup/Station/StationEmployee/useStationEmployee";
+import { fetchStationShifts, fetchStationShifts2 } from "~/Hooks/Setup/Station/StationShift/useStationShifts";
+
+
+const FuelDelivery = () => { 
+
+  const navigate = useNavigate();
+  const [notification, setNotification] = useState(null);
+  const [selectedStation, setSelectedStation] = useState("");
+  const [date, setDate] = useState( new Date().toISOString().split("T")[0] );  
+  const [shiftManager, setShiftManager] = useState([]);
+  const [stationManager, setStationManager] = useState([]);
   const [shiftNo, setShiftNo] = useState("2nd Shift");
   const [receiver, setReceiver] = useState("Sample Receiver 1");
+
+  const [selectedStationManager, setSelectedStationManager] = useState('')
+  const [selectedShiftManager, setSelectedShiftManager] = useState('')
+  const [selectedShift, setSelectedShift] = useState('')
+  const [shifts, setShifts] = useState([]);   
+
+
+
+  const  { 
+    data: stations,
+    isLoading: isLoadingStations,
+    error: errorStations 
+  } = useGetStationRecords('Stations'); 
+
   
-  const fuelData = [
+  const [fuelData,setFuelData] = useState([
     { id: 1, fuel: "VPR", price: 72.5, beginningDip: "14,284", endDip: "19,155", delivery: "5,000", grossIncrease: "4,871", interimSales: 51, shortOver: 0 },
     { id: 2, fuel: "VPG", price: 70.4, beginningDip: "", endDip: "", delivery: "", grossIncrease: "", interimSales: "", shortOver: "" },
     { id: 3, fuel: "VPD", price: 69.6, beginningDip: "", endDip: "", delivery: "", grossIncrease: "", interimSales: "", shortOver: "" },
-  ];
+  ]);
+
+
+  const handleBack = () => { 
+    navigate(-1);
+  }
+  const handleAttachement = () => {
+    navigate(`/${StringRoutes.fuelDeliveryAttachment}`);
+  };
+
+  const handleInputChange = (index, field, value) => {
+    index = index-1;
+    const updatedData = [...fuelData];
+    updatedData[index][field] = value;
+
+ 
+    //Auto compute. formula = (Delivery Value) - (Gross Increase)
+    if (field === "delivery" || field === "grossIncrease") {
+      const deliveryValue = parseFloat(updatedData[index].delivery.replace(/,/g, "")) || 0;
+      const grossIncreaseValue = parseFloat(updatedData[index].grossIncrease.replace(/,/g, "")) || 0;
+      const interimSalesValue = deliveryValue - grossIncreaseValue;
+      updatedData[index].interimSales = (interimSalesValue);
+
+      // console.log( "deliveryValue", deliveryValue, "grossIncreaseValue", grossIncreaseValue, "interimSalesValue", interimSalesValue, formatNumber(interimSalesValue));
+    }
+  
+    // Auto compute: End Dip - (Beginning Dip + Delivery) - Interim Sales
+    if (field === "endDip" || field === "beginningDip" || field === "delivery") {
+      const beginningDipValue = parseFloat(updatedData[index].beginningDip.replace(/,/g, "")) || 0;
+      const endDipValue = parseFloat(updatedData[index].endDip.replace(/,/g, "")) || 0;
+      const deliveryValue = parseFloat(updatedData[index].delivery.replace(/,/g, "")) || 0;
+      const interimSalesValue = parseFloat(updatedData[index].interimSales.replace(/,/g, "")) || 0;
+  
+      const shortOverValue = endDipValue - (beginningDipValue + deliveryValue) - interimSalesValue;
+      updatedData[index].shortOver = (shortOverValue);
+
+      // console.log( "beginningDipValue", beginningDipValue, "endDipValue", endDipValue, "deliveryValue", deliveryValue, "interimSalesValue", interimSalesValue, "shortOverValue", shortOverValue);
+    }
+
+    setFuelData(updatedData);
+  }
+  
+  const formatNumber = (value) => {
+    if (!value) return "0";
+    const number = parseFloat(value.toString().replace(/,/g, "")); // Remove commas and parse as a number
+    if (isNaN(number)) return value; // Return original value if it's not a valid number
+    return new Intl.NumberFormat("en-US").format(number); // Format with commas
+  };
+
+    useEffect(() => {
+        const getData = async () => {
+
+          if (selectedStation !== '' && selectedStation !== undefined) {
+            const result = await fetchStationShiftManagers(selectedStation)
+            let tmpResultShiftManagers = []
+            for (let item of result) {
+              tmpResultShiftManagers.push({
+                    id: item.id,
+                    name: item.description
+                })
+            }
+            setShiftManager(tmpResultShiftManagers)
+          }
+
+          if (selectedShiftManager !== '' && selectedShiftManager !== undefined) {
+            const result = await fetchStationShifts2(selectedStation, selectedShiftManager) 
+            let tmpResultShifts = []
+            for (let item of result) {
+                tmpResultShifts.push({
+                    id: item.id,
+                    name: item.shift
+                })
+            }
+            setShifts(tmpResultShifts)               
+          }
+
+          if ( (selectedStation !== '' && selectedStation !== undefined) && (selectedShift !== '' && selectedShift !== undefined) ) {
+            const result = await fetchStationStationManagers(selectedStation, selectedShift)
+            let tmpResultStationManagers = []
+            for (let item of result) {
+              tmpResultStationManagers.push({
+                    id: item.id,
+                    name: item.description
+                })
+            }
+            setStationManager(tmpResultStationManagers)
+          }
+
+        }
+        getData()
+    }, [selectedStation, selectedShiftManager, selectedShift] )
+
+// console.log("shifts",shifts, "selectedStation",selectedStation,"selectedshift",selectedShift);
+// console.log("shiftManager",shiftManager, "selectedShiftManager",selectedShiftManager);
+// console.log("stationManager",stationManager, "selectedStationManager",selectedStationManager);
+
+
+ 
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
+      <div>  
+        <p>Creating a New Fuel Delivery</p> 
+      </div>
+      <br/>
+      <br/>
+
+        {notification && 
+        <Notification 
+          message={notification.message} 
+          type={notification.type} 
+          onClose={() => setNotification(null)}
+          onConfirm={notification.onConfirm} 
+          onCancel={notification.onCancel}  
+        />}
+
       <div className="grid grid-cols-4 gap-4 mb-4">
         <div>
           <label className="block text-sm">Effective Date</label>
           <input type="date" className="w-full border p-2 rounded" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
         <div>
-          <label className="block text-sm">Station</label>
-          <select className="w-full border p-2 rounded" value={station} onChange={(e) => setStation(e.target.value)}>
-            <option>SH Nuvali</option>
-            <option>Other Station</option>
-          </select>
+          <label className="block text-sm">Stations</label>
+                <Select
+                    aria-label="Stations"
+                    className="w-full" 
+                    variant="bordered"
+                    labelPlacement="outside" 
+                    placeholder="Select"
+                    selectionMode="multiple"
+                    selectedKey={[selectedStation]} 
+                    onChange={(e) => {
+                      setSelectedStation(e.target.value);  
+                    }}
+                    classNames={{
+                        value: 'font-semibold text-gray-400'
+                    }}
+                >
+                    {stations?.body?.map((item) => (
+                        <SelectItem key={item?.id}>{item?.name}</SelectItem>
+                    ))}
+                </Select> 
         </div>
         <div>
           <label className="block text-sm">Shift Manager</label>
-          <select className="w-full border p-2 rounded" value={shiftManager} onChange={(e) => setShiftManager(e.target.value)}>
-            <option>Feeney, Alice</option>
-            <option>Other Manager</option>
-          </select>
+                <Select
+                    aria-label="Shift Manager"
+                    className="w-full" 
+                    variant="bordered"
+                    labelPlacement="outside" 
+                    placeholder="Select"
+                    selectionMode="single"
+                    selectedKey={[selectedShiftManager]} 
+                    onChange={(e) => {
+                      setSelectedShiftManager(e.target.value);  
+                    }}
+                    classNames={{
+                        value: 'font-semibold text-gray-400'
+                    }}
+                >
+                    {shiftManager?.map((item) => (
+                        <SelectItem key={item?.id}>{item?.name}</SelectItem>
+                    ))}
+                </Select> 
         </div>
         <div>
           <label className="block text-sm">Shift No.</label>
-          <select className="w-full border p-2 rounded" value={shiftNo} onChange={(e) => setShiftNo(e.target.value)}>
-            <option>2nd Shift</option>
-            <option>1st Shift</option>
-          </select>
+          <Select
+                    aria-label="Shifts"
+                    className="w-full" 
+                    variant="bordered"
+                    labelPlacement="outside" 
+                    placeholder="Select"
+                    selectionMode="single"
+                    selectedKey={[selectedShift]} 
+                    onChange={(e) => {
+                      setSelectedShift(e.target.value);  
+                    }}
+                    classNames={{
+                        value: 'font-semibold text-gray-400'
+                    }}
+                >
+                    {shifts?.map((item) => (
+                        <SelectItem key={item?.id}>{item?.name}</SelectItem>
+                    ))}
+          </Select>  
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4 mb-4">
@@ -75,11 +262,26 @@ const FuelDelivery = () => {
             />
           </div>
           <div>
-            <label className="block text-sm">Receiver</label>
-            <select className="w-full border p-2 rounded" value={receiver} onChange={(e) => setReceiver(e.target.value)}>
-              <option>Sample Receiver 1</option>
-              <option>Sample Receiver 2</option>
-            </select>
+            <label className="block text-sm">Receiver</label>            
+            <Select
+                      aria-label="Receiver"
+                      className="w-full" 
+                      variant="bordered"
+                      labelPlacement="outside" 
+                      placeholder="Select"
+                      selectionMode="single"
+                      selectedKey={[selectedStationManager]} 
+                      onChange={(e) => {
+                        setSelectedStationManager(e.target.value);  
+                      }}
+                      classNames={{
+                          value: 'font-semibold text-gray-400'
+                      }}
+                  >
+                      {stationManager?.map((item) => (
+                          <SelectItem key={item?.id}>{item?.name}</SelectItem>
+                      ))}
+            </Select>
           </div>
         </div>
       </div>
@@ -109,8 +311,8 @@ const FuelDelivery = () => {
                   <input
                     type="text"
                     className="border px-2 py-1 rounded w-full"
-                    value={row.beginningDip}
-                    onChange={(e) => handleInputChange(index, "beginningDip", e.target.value)}
+                    value={ formatNumber(row.beginningDip)}
+                    onChange={(e) => handleInputChange(row.id, "beginningDip", e.target.value)}
                     placeholder="type here"
                   />
                 </td>
@@ -118,8 +320,8 @@ const FuelDelivery = () => {
                   <input
                     type="text"
                     className="border px-2 py-1 rounded w-full"
-                    value={row.endDip}
-                    onChange={(e) => handleInputChange(index, "endDip", e.target.value)}
+                    value={formatNumber(row.endDip)}
+                    onChange={(e) => handleInputChange(row.id, "endDip", e.target.value)}
                     placeholder="type here"
                   />
                 </td>
@@ -127,8 +329,8 @@ const FuelDelivery = () => {
                   <input
                     type="text"
                     className="border px-2 py-1 rounded w-full"
-                    value={row.delivery}
-                    onChange={(e) => handleInputChange(index, "delivery", e.target.value)}
+                    value={formatNumber(row.delivery)}
+                    onChange={(e) => handleInputChange(row.id, "delivery", e.target.value)}
                     placeholder="type here"
                   />
                 </td>
@@ -136,8 +338,8 @@ const FuelDelivery = () => {
                   <input
                     type="text"
                     className="border px-2 py-1 rounded w-full"
-                    value={row.grossIncrease}
-                    onChange={(e) => handleInputChange(index, "grossIncrease", e.target.value)}
+                    value={formatNumber(row.grossIncrease)}
+                    onChange={(e) => handleInputChange(row.id, "grossIncrease", e.target.value)}
                     placeholder="type here"
                   />
                 </td>
@@ -145,22 +347,33 @@ const FuelDelivery = () => {
                   <input
                     type="text"
                     className="border px-2 py-1 rounded w-full"
-                    value={row.interimSales}
-                    onChange={(e) => handleInputChange(index, "interimSales", e.target.value)}
+                    value={formatNumber(row.interimSales)}
+                    //onChange={(e) => handleInputChange(row.id, "interimSales", e.target.value)}
                     placeholder="type here"
+                    readOnly={true}
                   />
                 </td>
-                <td className="border p-2 text-center">{row.shortOver || <input className="border p-1 w-full" placeholder="type here" />}</td>
+                <td className="border p-2 text-center">
+                  <input
+                    type="text"
+                    className="border px-2 py-1 rounded w-full"
+                    value={formatNumber(row.shortOver)}
+                    //onChange={(e) => handleInputChange(row.id, "interimSales", e.target.value)}
+                    placeholder="type here"
+                    readOnly={true}
+                  />
+                </td> 
+ 
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <div className="flex justify-between items-center mt-4">
-        <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">+ Attachment</button>
+        <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600" onClick={handleAttachement}>+ Attachment</button>
       </div>
       <div className="flex justify-end items-center gap-2 mb-4">
-        <button className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">Back</button>
+        <button className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600" onClick={handleBack}>Back</button>
         <button className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200">Delete</button>
         <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Save</button>
         <button className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200">View History</button>

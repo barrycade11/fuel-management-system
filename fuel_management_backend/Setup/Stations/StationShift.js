@@ -26,6 +26,35 @@ router.get("/station/:stationId/shifts", async (req, res) => {
   }
 });
 
+router.get("/station/:stationId/:shiftmanagerId/shifts2", async (req, res) => {
+  try {
+    const { stationId, shiftmanagerId } = req.params;
+
+    const stationIdsArray = stationId.split(',').map(id => parseInt(id.trim()));     
+    const shiftmanagerIdsArray = shiftmanagerId.split(',').map(id => parseInt(id.trim())); 
+
+
+    const result = await pool.query(`
+          SELECT DISTINCT 
+              a.shiftId AS id,
+              b.name shift 	
+          FROM stationShift a
+          INNER JOIN  shift b
+              ON  a.shiftId = b.id 
+          INNER JOIN stationShiftCrew crew 
+              ON crew.stationshiftid = b.id 
+          WHERE   1=1
+            AND   a.stationId = ANY ($1::int[]) 
+            AND   crew.employeeid = ANY ($2::int[]) 
+    `, [stationIdsArray, shiftmanagerIdsArray]); 
+    res.status(201).json(result.rows);
+  }
+  catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database query error" });
+  }
+});
+
 router.get("/station/:stationId/shifts/:id", async (req, res) => {
   try {
     const { stationId, id } = req.params;

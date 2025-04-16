@@ -25,4 +25,64 @@ router.get("/Station/:stationId/:shiftId/Employees", async (req, res) => {
     }
 });
 
+
+router.get("/Station/:stationId/ShiftManager", async (req, res) => {
+    const { stationId } = req.params;
+    const stationIdsArray = stationId.split(',').map(id => parseInt(id.trim())); 
+    try {
+        const result = await pool.query(`
+            SELECT 	DISTINCT	
+                    emp.id,
+                    fn_getEmployeeName( cast( emp.id as integer) )  AS description
+            FROM 	public.stationshift AS a
+            JOIN	public.stationshiftcrew AS b
+                ON		a.shiftid = b.stationshiftid
+            JOIN	public.employee AS emp
+                ON		b.employeeid = emp.id
+            JOIN    public.dropdown dd 
+                ON emp.designationid = dd.id 
+            WHERE 1=1
+            AND	dd.name = 'Shift Manager'
+            AND a.stationid = ANY ($1::int[])  
+        `, [stationIdsArray]);
+        res.status(201).json(result.rows);
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Database query error", StationId: stationIdsArray });
+    }
+});
+
+
+router.get("/Station/:stationId/:shiftId/StationManager", async (req, res) => {
+    try {
+        const { stationId, shiftId  } = req.params;
+        const stationIdsArray = stationId.split(',').map(id => parseInt(id.trim())); 
+        const shiftIdsArray = shiftId.split(',').map(id => parseInt(id.trim())); 
+        
+        const result = await pool.query(`
+            SELECT 	DISTINCT	
+                    emp.id,
+                    fn_getEmployeeName( cast( emp.id as integer) )  AS description 
+            FROM 	public.stationshift AS a
+            JOIN	public.stationshiftcrew AS b
+                ON		a.shiftid = b.stationshiftid
+            JOIN	public.employee AS emp
+                ON		b.employeeid = emp.id
+            JOIN    public.dropdown dd 
+                ON emp.designationid = dd.id 
+            WHERE 1=1
+            AND	dd.name = 'Station Manager'
+            AND a.stationid = ANY ($1::int[])
+            AND a.shiftid = ANY ($2::int[]) 
+      `, [stationIdsArray, shiftIdsArray]); 
+      res.status(201).json(result.rows);
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Database query error"});
+    }
+});
+
+
 module.exports = router;

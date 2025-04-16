@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require("../Config/Connection");
  
 router.get("/fuelDeliveries", async (req, res) => {
-  try {
+  try {  
     const result = await pool.query(`
         SELECT      a.id,
                     a.effectiveDate,
@@ -11,9 +11,10 @@ router.get("/fuelDeliveries", async (req, res) => {
                     b.name            station,
                     b.code            stationcode,
                     a.shiftManagerId,
+                    fn_getEmployeeName( cast( a.shiftManagerId as integer) ) shiftmanager,
                     a.shiftId,
                     d.name            shift,
-                    a.deliveryNo,
+                    a.deliveryNo      deliveryno,
                     a.hauler,
                     a.plateNo,
                     a.driver,
@@ -23,7 +24,7 @@ router.get("/fuelDeliveries", async (req, res) => {
         INNER JOIN  station b
                 ON  a.stationId = b.id
         INNER JOIN  stationShift c
-                ON  a.id = c.stationId
+                ON  b.id = c.stationId
         INNER JOIN  shift d
                 ON  c.shiftId = d.id
         INNER JOIN  stationShiftCrew e
@@ -31,13 +32,59 @@ router.get("/fuelDeliveries", async (req, res) => {
         INNER JOIN  employee f
                 ON  e.employeeId = f.id
     `);
-    res.status(201).json(result.rows);
+    res.status(201).json( result.rows ); 
   }
   catch (err) {
     console.error(err);
     res.status(500).json({ error: "Database query error" });
   }
 });
+
+router.get("/fuelDeliveries/:effectiveDate/:stationids", async (req, res) => {
+
+  const { effectiveDate, stationids  } = req.params;
+  const stationIdsArray = stationids.split(',').map(id => parseInt(id.trim()));
+  try {
+     // Extract effectiveDate from the path parameter
+
+    const result = await pool.query(`
+        SELECT      a.id,
+                    a.effectiveDate,
+                    a.stationId,
+                    b.name AS station,
+                    b.code AS stationcode,
+                    a.shiftManagerId,
+                    fn_getEmployeeName( cast( a.shiftManagerId as integer) ) shiftmanager,
+                    a.shiftId,
+                    d.name AS shift,
+                    a.deliveryNo deliveryno,
+                    a.hauler,
+                    a.plateNo,
+                    a.driver,
+                    a.receiverId,
+                    f.lastName AS receiver
+        FROM        fuelDelivery a
+        INNER JOIN  station b
+                ON  a.stationId = b.id
+        INNER JOIN  stationShift c
+                ON  b.id = c.stationId
+        INNER JOIN  shift d
+                ON  c.shiftId = d.id
+        INNER JOIN  stationShiftCrew e
+                ON  c.id = e.stationShiftId
+        INNER JOIN  employee f
+                ON  e.employeeId = f.id
+        WHERE       a.effectiveDate <= $1
+        and      a.stationId = ANY ($2::int[])
+    `, [effectiveDate, stationIdsArray]); // Use effectiveDate in the query
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database query error", params: {effectiveDate, stationIdsArray} });
+  }
+});
+
 
 router.get("/fuelDeliveries/:id", async (req, res) => {
   try {
@@ -60,7 +107,7 @@ router.get("/fuelDeliveries/:id", async (req, res) => {
         INNER JOIN  station b
                 ON  a.stationId = b.id
         INNER JOIN  stationShift c
-                ON  a.id = c.stationId
+                ON  b.id = c.stationId
         INNER JOIN  shift d
                 ON  c.shiftId = d.id
         INNER JOIN  stationShiftCrew e
