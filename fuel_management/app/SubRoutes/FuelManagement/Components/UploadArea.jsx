@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { UploadIcon } from "lucide-react";
 import AttachmentsTable from "./AttachmentsTable";
-import FilePreview from "./FilePreview";
+//import FilePreview from "./FilePreview";
 import { Modal, ModalContent } from "@heroui/react";
 
 const UploadArea = ({files, setFiles}) => {
