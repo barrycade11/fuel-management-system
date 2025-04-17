@@ -3,10 +3,14 @@ const router = express.Router();
 const pool = require("../Config/Connection");
 
 router.get("/dailySalesInput/:dailySalesInputId/Fuel/:fuelId/items", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { dailySalesInputId, fuelId } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.fuelMasterId,
                   b.name fuelMaster,
@@ -18,11 +22,18 @@ router.get("/dailySalesInput/:dailySalesInputId/Fuel/:fuelId/items", async (req,
               ON  a.fuelMasterId = b.id
       WHERE       a.dailySalesInputFuelHdr = $1
     `, [fuelId]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 

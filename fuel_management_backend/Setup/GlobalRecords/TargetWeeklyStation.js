@@ -4,10 +4,14 @@ const pool = require("../../Config/Connection");
 const { id } = require("../Stations/Params/StationSchema");
 
 router.get("/target/:targetId/weekly/:targetWeeklyId/stations", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { targetWeeklyId } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.stationId,
                   a.name        station,
@@ -18,19 +22,30 @@ router.get("/target/:targetId/weekly/:targetWeeklyId/stations", async (req, res)
               ON  a.stationId = b.id
       WHERE       a.targetWeeklyId = $1
     `, [targetWeeklyId]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/target/:targetId/weekly/:targetWeeklyId/stations/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { targetWeeklyId, id } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.stationId,
                   a.name        station,
@@ -42,11 +57,18 @@ router.get("/target/:targetId/weekly/:targetWeeklyId/stations/:id", async (req, 
       WHERE       a.targetWeeklyId = $1
                   AND id = $2
     `, [targetWeeklyId, id]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 

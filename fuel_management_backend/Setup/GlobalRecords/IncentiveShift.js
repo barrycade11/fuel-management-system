@@ -3,10 +3,14 @@ const router = express.Router();
 const pool = require("../../Config/Connection");
 
 router.get("/incentive/:incentiveId/shift", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { incentiveId } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.departmentId,
                   b.name        department,
@@ -16,19 +20,30 @@ router.get("/incentive/:incentiveId/shift", async (req, res) => {
               ON  a.stationId = b.id
       WHERE       a.incentiveId = $1
     `, [incentiveId]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/incentive/:incentiveId/stations/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { incentiveId, id } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.stationId,
                   b.name        station
@@ -38,11 +53,18 @@ router.get("/incentive/:incentiveId/stations/:id", async (req, res) => {
       WHERE       a.incentiveId = $1
                   AND a.id = $2
     `, [incentiveId, id]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 

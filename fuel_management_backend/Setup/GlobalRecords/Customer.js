@@ -3,13 +3,19 @@ const router = express.Router();
 const pool = require("../../Config/Connection");
 
 router.get("/customer/generate-cus-code", async (req, res) => {
+  const client = await pool.connect();
+
   try {
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT code FROM customer
       WHERE code LIKE 'CUS-%'
       ORDER BY id DESC
       LIMIT 1
     `);
+
+    await client.query("COMMIT");
 
     let newCode = "CUS-00001"; 
 
@@ -23,14 +29,22 @@ router.get("/customer/generate-cus-code", async (req, res) => {
 
     res.status(200).json({ code: newCode });
   } catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/customers", async (req, res) => {
+  const client = await pool.connect();
+
   try {
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.code,
                   a.name,
@@ -61,6 +75,9 @@ router.get("/customers", async (req, res) => {
       LEFT JOIN  station h
               ON  g.stationid = h.id
     `);
+
+    await client.query("COMMIT");
+
     const resultFormatted = {};
 
     result.rows.forEach(row => {
@@ -98,15 +115,24 @@ router.get("/customers", async (req, res) => {
     res.status(201).json(Object.values(resultFormatted));
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/customer/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { id } = req.params;
-    const result = await pool.query(`
+
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.code,
                   a.name,
@@ -142,11 +168,17 @@ router.get("/customer/:id", async (req, res) => {
                   AND f.dropdownTypeId = 8
       WHERE       id = $1
     `, [id]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 

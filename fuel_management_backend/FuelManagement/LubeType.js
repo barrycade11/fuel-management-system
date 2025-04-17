@@ -3,8 +3,12 @@ const router = express.Router();
 const pool = require("../Config/Connection");
 
 router.get("/lubeTypes", async (req, res) => {
+  const client = await pool.connect();
+
   try {
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
         SELECT      a.id,
                     a.code,
                     a.name,
@@ -13,18 +17,30 @@ router.get("/lubeTypes", async (req, res) => {
                     a.status
         FROM        lubeType a
     `);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/lubeTypes/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { id } = req.params;
-    const result = await pool.query(`
+
+    await client.query("BEGIN");
+
+    const result = await client.query(`
         SELECT      a.id,
                     a.code,
                     a.name,
@@ -34,11 +50,18 @@ router.get("/lubeTypes/:id", async (req, res) => {
         FROM        lubeType a
         WHERE       a.id = $1
     `, [id]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
@@ -82,7 +105,7 @@ router.put("/lubeType/:id", async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { code, name, details, status } = req.body;
+    const { code, name, incentive, details, status } = req.body;
     
     await client.query("BEGIN")
     

@@ -3,8 +3,12 @@ const router = express.Router();
 const pool = require("../../Config/Connection");
 
 router.get("/discounts", async (req, res) => {
+  const client = await pool.connect();
+
   try {
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.code,
                   a.name,
@@ -39,6 +43,9 @@ router.get("/discounts", async (req, res) => {
       LEFT JOIN  departmentHdr f
               ON  e.applicabilityId = f.id
     `);
+
+    await client.query("COMMIT");
+
     const resultFormatted = {};
 
     result.rows.forEach(row => {
@@ -75,15 +82,23 @@ router.get("/discounts", async (req, res) => {
     res.status(201).json(Object.values(resultFormatted));
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/discounts/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { id } = req.params;
-    const result = await pool.query(`
+
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       SELECT      a.id,
                   a.code,
                   a.name,
@@ -119,6 +134,9 @@ router.get("/discounts/:id", async (req, res) => {
               ON  e.applicabilityId = f.id
       WHERE       a.id = $1
     `, [id]);
+
+    await client.query("COMMIT");
+
     const resultFormatted = {};
 
     result.rows.forEach(row => {
@@ -155,8 +173,12 @@ router.get("/discounts/:id", async (req, res) => {
     res.status(201).json(Object.values(resultFormatted));
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+    
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 

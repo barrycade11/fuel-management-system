@@ -1,4 +1,4 @@
-iimport { apiClient } from "~/Constants/ApiClient";
+import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
 import { useQuery } from "@tanstack/react-query";
 

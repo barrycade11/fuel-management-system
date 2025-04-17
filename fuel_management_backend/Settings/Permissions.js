@@ -14,10 +14,14 @@ const AddNewRoleSchema = require("./Params/AddNewRoleSchema");
  * @returns {Object} JSON response indicating success or failure.
  */
 router.get('/:roleid', async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { roleid } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
         SELECT 			rlp.id,
                     rlp.roleid,
                     rl.name as rolename,
@@ -35,21 +39,29 @@ router.get('/:roleid', async (req, res) => {
         WHERE 			roleid = $1
     `, [roleid]);
 
+    await client.query("COMMIT");
+
     return res.status(200).json({
       success: true,
       message: "Successfully fetch permissions",
       body: result.rows,
     });
   } catch (error) {
+    await client.query("ROLLBACK");
+
     return res.status(500).json({
       success: false,
       message: error
     })
   }
-
+  finally {
+    client.release();
+  }
 });
 
 router.post('/generate', async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { error, value } = AddNewRoleSchema.validate(req.body);
 
@@ -60,11 +72,15 @@ router.post('/generate', async (req, res) => {
       })
     }
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
       INSERT INTO roles (name, details, created_by)
       VALUES ($1, $2, $3)
       RETURNING id
     `, [value.role, value.role_detail, req.user.username])
+
+    await client.query("COMMIT");
 
     const id = result.rows[0].id; // Retrieve the newly inserted ID
 
@@ -79,10 +95,15 @@ router.post('/generate', async (req, res) => {
     })
 
   } catch (error) {
+    await client.query("ROLLBACK");
+
     return res.status(500).json({
       success: false,
       message: error.message,
     });
+  }
+  finally {
+    client.release();
   }
 });
 

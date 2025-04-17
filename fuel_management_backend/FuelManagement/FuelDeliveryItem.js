@@ -3,10 +3,14 @@ const router = express.Router();
 const pool = require("../Config/Connection");
 
 router.get("/fuelDelivery/:fuelDeliveryId/items", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { fuelDeliveryId } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
         SELECT      a.id,
                     a.tankId,
                     b.name      tank,
@@ -21,19 +25,30 @@ router.get("/fuelDelivery/:fuelDeliveryId/items", async (req, res) => {
                 ON  b.id = a.tankId
                     AND a.fuelDeliveryId = $1
     `, [fuelDeliveryId]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/fuelDeliverys/:fuelDeliveryId/items/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { fuelDeliveryId, id } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
         SELECT      a.id,
                     a.tankId,
                     b.name      tank,
@@ -49,11 +64,18 @@ router.get("/fuelDeliverys/:fuelDeliveryId/items/:id", async (req, res) => {
                     AND a.fuelDeliveryId = $1
                     AND a.id = $2
     `, [fuelDeliveryId, id]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 

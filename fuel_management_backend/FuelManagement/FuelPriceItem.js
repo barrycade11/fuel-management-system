@@ -3,10 +3,14 @@ const router = express.Router();
 const pool = require("../Config/Connection");
 
 router.get("/fuelPrice/:fuelPriceId/items", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { fuelPriceId } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
         SELECT      a.id,
                     a.fuelId,
                     b.name      fuel,
@@ -17,19 +21,30 @@ router.get("/fuelPrice/:fuelPriceId/items", async (req, res) => {
                 ON  a.fuelId = b.id
         WHERE       a.fuelPriceId = $1
     `, [fuelPriceId]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
 router.get("/fuelPrices/:fuelPriceId/items/:id", async (req, res) => {
+  const client = await pool.connect();
+
   try {
     const { fuelPriceId, id } = req.params;
 
-    const result = await pool.query(`
+    await client.query("BEGIN");
+
+    const result = await client.query(`
         SELECT      a.id,
                     a.fuelId,
                     b.name      fuel,
@@ -41,11 +56,18 @@ router.get("/fuelPrices/:fuelPriceId/items/:id", async (req, res) => {
         WHERE       a.fuelPriceId = $1
                     AND a.id = $2
     `, [fuelPriceId, id]);
+
+    await client.query("COMMIT");
+
     res.status(201).json(result.rows);
   }
   catch (err) {
-    console.error(err);
+    await client.query("ROLLBACK");
+
     res.status(500).json({ error: "Database query error" });
+  }
+  finally {
+    client.release();
   }
 });
 
