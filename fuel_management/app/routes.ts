@@ -25,7 +25,7 @@ export default [
             route("fuel-delivery/:fuelDeliveryId?", "./SubRoutes/FuelManagement/FuelDeliveryEdit.jsx"),
             route("fuel-delivery-list", "./SubRoutes/FuelManagement/FuelDeliveryList.jsx"),
             route("fuel-delivery-attachment/:fuelDeliveryId?", "./SubRoutes/FuelManagement/FuelDeliveryAttachment.jsx"),
-            route("lubricants", "./SubRoutes/FuelManagement/Lubricants.jsx"),
+            route("lubricants", "./SubRoutes/FuelManagement/Lubricant.jsx"),
 
             route("lubes-master", "./SubRoutes/FuelManagement/LubesMaster.jsx"),
 
