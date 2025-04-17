@@ -13,6 +13,12 @@ class StringRoutes {
   static fuelManagement = 'fuel-management';
   static fuelPrice = 'fuel-management/fuel-price';
   static fuelDelivery = 'fuel-management/fuel-delivery';
+
+  static fuelDeliveryEdit = 'fuel-management/fuel-delivery-edit';
+  static fuelDeliveryList = 'fuel-management/fuel-delivery-list';
+  static fuelDeliveryAttachment = 'fuel-management/fuel-delivery-attachment';
+  static lubricants = 'fuel-management/lubricants';
+
   static lubesMaster = 'fuel-management/lubes-master';
 
   static serviceManagement = 'service-management';

@@ -1,9 +1,16 @@
+import { use,useEffect } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import Navbar from "~/Components/Navbar"
 import StringRoutes from "~/Constants/StringRoutes";
 
+
 const FuelManagement = () => {
   const { pathname } = useLocation(); 
+
+  useEffect(() => {
+    localStorage.removeItem('fuel-delivery.station') 
+    localStorage.removeItem('fuel-delivery.effectivedate') 
+  }, []);
 
   return (
     <>
@@ -30,7 +37,7 @@ const FuelManagement = () => {
             Fuel Price
           </NavLink>
           <NavLink
-            to={`/${StringRoutes.fuelDelivery}`}
+            to={`/${StringRoutes.fuelDeliveryList}`}
             className={({ isActive }) =>
               `${isActive ? "border-b-2 border-blue-500 font-semibold" : "text-gray-500"}`
             }

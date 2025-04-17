@@ -17,7 +17,7 @@ const Chip = ({
 }
 
 const ChipCount = ({ count = 0 }) => {
-  return (
+  return ( 
     <div className="flex flex-row my-1  bg-gray-200 px-1" style={{ height: '20px' }}>
       <div className="h-full border border-l-2 border-l-gray-400 rounded-l-lg" />
       <div className="h-full border border-l-2 border-l-gray-400 rounded-l-lg" />
