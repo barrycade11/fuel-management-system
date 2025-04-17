@@ -1,6 +1,7 @@
 import React from "react";
 
 const AttachmentsTable = ({ files, onDelete, onPreview }) => {
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -20,6 +21,15 @@ const AttachmentsTable = ({ files, onDelete, onPreview }) => {
             </th>
           </tr>
         </thead>
+        {files?.length === 0 ? (
+          <tbody>
+            <tr>
+              <td colSpan="4" className="text-center py-4 text-gray-500">
+                No files uploaded yet.
+              </td>
+            </tr>
+          </tbody>
+        ): (
         <tbody>
           {files?.map((file, index) => (
             <tr key={index} className="bg-blue-50">
@@ -44,7 +54,7 @@ const AttachmentsTable = ({ files, onDelete, onPreview }) => {
               </td>
             </tr>
           ))}
-        </tbody>
+        </tbody>)}
       </table>
     </div>
   );

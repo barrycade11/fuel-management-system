@@ -1,18 +1,21 @@
 import React, { useState, useEffect, lazy } from "react";
 import { useParams } from "react-router-dom";
-import Notification from "~/Components/Notification";
 import { useNavigate } from "react-router";
-import StringRoutes from "~/Constants/StringRoutes";
 import { useGetStationRecords } from "~/Hooks/Setup/Station/useStationRecordsApi";
-import { Input, Button, Spinner, Select, SelectItem } from "@heroui/react";
-const SettingsMultiSelectDropdown = lazy(() => import("../Settings/Components/SettingsMultiSelectDropdown"));
+import { Input, Button, Spinner, Select, SelectItem, Modal,     ModalContent,     ModalHeader,     ModalBody,     ModalFooter     } from "@heroui/react"; 
 
+import StringRoutes from "~/Constants/StringRoutes";
+import Notification from "~/Components/Notification";
+import FuelDeliveryAttachment from "./FuelDeliveryAttachment";
 
+import { fetchFuelMasters } from "~/Hooks/Setup/GlobalRecords/FuelMaster/useFuelMasters";
 import { fetchStationEmployees, fetchStationShiftManagers, fetchStationStationManagers } from "~/Hooks/Setup/Station/StationEmployee/useStationEmployee";
 import { fetchStationShifts, fetchStationShifts2 } from "~/Hooks/Setup/Station/StationShift/useStationShifts";
 
-
 const FuelDelivery = () => { 
+
+  const { fuelDeliveryId, setFuelDeliveryId } = useState(0);
+
 
   const navigate = useNavigate();
   const [notification, setNotification] = useState(null);
@@ -26,7 +29,10 @@ const FuelDelivery = () => {
   const [selectedStationManager, setSelectedStationManager] = useState('')
   const [selectedShiftManager, setSelectedShiftManager] = useState('')
   const [selectedShift, setSelectedShift] = useState('')
-  const [shifts, setShifts] = useState([]);   
+  const [shifts, setShifts] = useState([]); 
+  const [isLoading, setIsLoading] = useState(false); 
+  const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
+   
 
 
 
@@ -38,21 +44,53 @@ const FuelDelivery = () => {
 
   
   const [fuelData,setFuelData] = useState([
-    { id: 1, fuel: "VPR", price: 72.5, beginningDip: "14,284", endDip: "19,155", delivery: "5,000", grossIncrease: "4,871", interimSales: 51, shortOver: 0 },
-    { id: 2, fuel: "VPG", price: 70.4, beginningDip: "", endDip: "", delivery: "", grossIncrease: "", interimSales: "", shortOver: "" },
-    { id: 3, fuel: "VPD", price: 69.6, beginningDip: "", endDip: "", delivery: "", grossIncrease: "", interimSales: "", shortOver: "" },
+    { id: 1, name: "Fuel 1", fuel: "VPR", price: 72.5, color:`#FFFFF`, beginningDip: "14,284", endDip: "19,155", delivery: "5,000", grossIncrease: "4,871", interimSales: 51, shortOver: 0 },
+    { id: 2, name: "Fuel 2", fuel: "VPG", price: 70.4, color:`#FFFFF`, beginningDip: "", endDip: "", delivery: "", grossIncrease: "", interimSales: "", shortOver: "" },
+    { id: 3, name: "Fuel 3", fuel: "VPD", price: 69.6, color:`#FFFFF`, beginningDip: "", endDip: "", delivery: "", grossIncrease: "", interimSales: "", shortOver: "" },
   ]);
 
+
+  
+    const getFuelMasters = async () => { 
+      try {
+          const result = await fetchFuelMasters(); 
+          let tmpResultFuelMaster = []
+          for (let item of result) { 
+            tmpResultFuelMaster.push({
+                  id: item.id,
+                  name: item.name,
+                  fuel: item.code,
+                  price: item.price,
+                  color: item.color,
+                  beginningDip: "0",
+                  endDip: "0",
+                  delivery: "0",
+                  grossIncrease: "0",
+                  interimSales: "0",
+                  shortOver: "0"
+              })
+          }
+          setFuelData(tmpResultFuelMaster); 
+          console.log("fetchFuelMasters", result, tmpResultFuelMaster);
+      } catch (error) {
+          console.error("Error fetching data:", error);
+      } finally { 
+      }
+    };
+  
+    useEffect(() => {
+        getFuelMasters();
+    }, []);
 
   const handleBack = () => { 
     navigate(-1);
   }
   const handleAttachement = () => {
-    navigate(`/${StringRoutes.fuelDeliveryAttachment}`);
+    navigate(`/${StringRoutes.fuelDeliveryAttachment}/${fuelDeliveryId??0}`);
   };
 
   const handleInputChange = (index, field, value) => {
-    index = index-1;
+    console.log("handleInputChange", index, field, value); 
     const updatedData = [...fuelData];
     updatedData[index][field] = value;
 
@@ -70,9 +108,9 @@ const FuelDelivery = () => {
     // Auto compute: End Dip - (Beginning Dip + Delivery) - Interim Sales
     if (field === "endDip" || field === "beginningDip" || field === "delivery") {
       const beginningDipValue = parseFloat(updatedData[index].beginningDip.replace(/,/g, "")) || 0;
-      const endDipValue = parseFloat(updatedData[index].endDip.replace(/,/g, "")) || 0;
-      const deliveryValue = parseFloat(updatedData[index].delivery.replace(/,/g, "")) || 0;
-      const interimSalesValue = parseFloat(updatedData[index].interimSales.replace(/,/g, "")) || 0;
+      const endDipValue = parseFloat(updatedData[index].endDip?.replace(/,/g, "")) || 0;
+      const deliveryValue = parseFloat(updatedData[index].delivery?.replace(/,/g, "")) || 0;
+      const interimSalesValue = parseFloat(updatedData[index].interimSales ) || 0;
   
       const shortOverValue = endDipValue - (beginningDipValue + deliveryValue) - interimSalesValue;
       updatedData[index].shortOver = (shortOverValue);
@@ -138,7 +176,8 @@ const FuelDelivery = () => {
 // console.log("stationManager",stationManager, "selectedStationManager",selectedStationManager);
 
 
- 
+const handleOpenModal = () => setIsAttachmentModalOpen(true);
+const handleCloseModal = () => setIsAttachmentModalOpen(false);
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
@@ -148,6 +187,16 @@ const FuelDelivery = () => {
       <br/>
       <br/>
 
+      <Modal isOpen={isAttachmentModalOpen}  
+              style={{ maxHeight: "80vh", minHeight: '50vh', minWidth: '50vw', maxWidth: '90vwh' }} 
+              scrollBehavior={"inside"}
+              onClose={handleCloseModal}
+      >
+        <ModalContent>
+            <FuelDeliveryAttachment handleCloseModal={handleCloseModal} fuelDeliveryId={fuelDeliveryId??0}/>
+        </ModalContent>
+      </Modal>
+  
         {notification && 
         <Notification 
           message={notification.message} 
@@ -302,17 +351,17 @@ const FuelDelivery = () => {
             </tr>
           </thead>
           <tbody>
-            {fuelData.map((row) => (
+            {fuelData.map((row, index) => (
               <tr key={row.id}>
-                <td className="border p-2 text-center">{row.id}</td>
-                <td className="border p-2 text-center"><span className={`px-2 py-1 rounded text-white ${row.fuel === "VPR" ? "bg-red-500" : row.fuel === "VPG" ? "bg-green-500" : "bg-yellow-500"}`}>{row.fuel}</span></td>
+                <td className="border p-2 text-center">{row.name}</td>
+                <td className="border p-2 text-center"><span style={{ backgroundColor: `${row.color}` }}>{row.fuel}</span></td>
                 <td className="border p-2 text-center">{row.price}</td>
                 <td className="border p-2 text-center">
                   <input
                     type="text"
                     className="border px-2 py-1 rounded w-full"
                     value={ formatNumber(row.beginningDip)}
-                    onChange={(e) => handleInputChange(row.id, "beginningDip", e.target.value)}
+                    onChange={(e) => handleInputChange(index, "beginningDip", e.target.value)}
                     placeholder="type here"
                   />
                 </td>
@@ -321,7 +370,7 @@ const FuelDelivery = () => {
                     type="text"
                     className="border px-2 py-1 rounded w-full"
                     value={formatNumber(row.endDip)}
-                    onChange={(e) => handleInputChange(row.id, "endDip", e.target.value)}
+                    onChange={(e) => handleInputChange(index, "endDip", e.target.value)}
                     placeholder="type here"
                   />
                 </td>
@@ -330,7 +379,7 @@ const FuelDelivery = () => {
                     type="text"
                     className="border px-2 py-1 rounded w-full"
                     value={formatNumber(row.delivery)}
-                    onChange={(e) => handleInputChange(row.id, "delivery", e.target.value)}
+                    onChange={(e) => handleInputChange(index, "delivery", e.target.value)}
                     placeholder="type here"
                   />
                 </td>
@@ -339,7 +388,7 @@ const FuelDelivery = () => {
                     type="text"
                     className="border px-2 py-1 rounded w-full"
                     value={formatNumber(row.grossIncrease)}
-                    onChange={(e) => handleInputChange(row.id, "grossIncrease", e.target.value)}
+                    onChange={(e) => handleInputChange(index, "grossIncrease", e.target.value)}
                     placeholder="type here"
                   />
                 </td>
@@ -370,7 +419,7 @@ const FuelDelivery = () => {
         </table>
       </div>
       <div className="flex justify-between items-center mt-4">
-        <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600" onClick={handleAttachement}>+ Attachment</button>
+        <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600" onClick={handleOpenModal}>+ Attachment</button>
       </div>
       <div className="flex justify-end items-center gap-2 mb-4">
         <button className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600" onClick={handleBack}>Back</button>

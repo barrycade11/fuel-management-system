@@ -25,10 +25,10 @@ import { useNavigate } from "react-router";
 
 const FuelDeliveryList = () => {
   const navigate = useNavigate();  
-  const [date, setDate] = useState( new Date().toISOString().split("T")[0] ); 
+  const [date, setDate] = useState( localStorage.getItem('fuel-delivery.effectivedate') || new Date().toISOString().split("T")[0] ); 
   const [station, setStation] = useState(false);  
   const [notification, setNotification] = useState(null);
-  const [selectedStation, setSelectedStation] = useState("");
+  const [selectedStation, setSelectedStation] = useState( localStorage.getItem('fuel-delivery.station') || "");
   const [newFuelDeliveries, setNewFuelDeliveries] = useState([]); 
   const [loading, setLoading] = useState(false);  
   const [fuelDeliveryId, setFuelDeliveryId] = useState(0);
@@ -54,16 +54,18 @@ const FuelDeliveryList = () => {
         } 
     };
   
-    useEffect(() => { 
-      getFuelDeliveries(); 
+  useEffect(() => { 
+      getFuelDeliveries();      
+      localStorage.setItem('fuel-delivery.effectivedate', date);
+      localStorage.setItem('fuel-delivery.station', selectedStation); 
     }, [date,selectedStation]);
+     
 
-  const handleAdd = async () => {   
+  const handleAdd = async () => {       
     navigate(`/${StringRoutes.fuelDelivery}`); 
   }
 
-  const handleEdit = async (fuelDelivery) => {
-    console.log("handleEdit",`/${StringRoutes.fuelDeliveryEdit}/${fuelDelivery.id}`,fuelDelivery)      
+  const handleEdit = async (fuelDelivery) => {    
     navigate(`/${StringRoutes.fuelDelivery}/${fuelDelivery.id}`);
   }
   
@@ -90,12 +92,13 @@ const FuelDeliveryList = () => {
         onClick={() => handleEdit(item)} 
         className="px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
       >
-        Edit
+        View
       </Button>
     ),
   };
 
-   
+  console.log("Selected Date:", localStorage.getItem('fuel-delivery.effectivedate'));
+  console.log("Selected Station:", localStorage.getItem('fuel-delivery.station'));
   //  console.log("Stations:", stations);  
   //  console.log("Selected Station:", selectedStation);  
   return ( 
