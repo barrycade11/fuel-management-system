@@ -1,9 +1,17 @@
 import React, { useState } from "react";
 import { UploadIcon } from "lucide-react";
 import AttachmentsTable from "./AttachmentsTable";
+import FilePreview from "./FilePreview";
+import { Modal, ModalContent } from "@heroui/react";
 
-const UploadArea = () => {
-  const [files, setFiles] = useState([]);
+const UploadArea = ({files, setFiles}) => {
+  // const [files, setFiles] = useState([]);
+
+const [previewFile, setPreviewFile] = useState(null); // State to hold the file to preview
+const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
+const handleOpenModal = () => setIsAttachmentModalOpen(true);
+const handleCloseModal = () => setIsAttachmentModalOpen(false);
+
 
   const handleFileChange = (event) => {
     const selectedFiles = Array.from(event.target.files).map((file) => ({
@@ -20,8 +28,9 @@ const UploadArea = () => {
   };
 
   const handlePreview = (file) => {
-    alert(`Previewing file: ${file.name}`);
-    // Add logic to preview the file (e.g., open in a modal or new tab)
+    console.log("Previewing file:", file);
+    setPreviewFile(file.content); // Set the file to preview
+    setIsAttachmentModalOpen(true); 
   };
 
   const handleDrop = (event) => {
@@ -39,6 +48,43 @@ const UploadArea = () => {
 
   return (
     <div className="p-4 bg-white rounded shadow-md">
+      <Modal isOpen={isAttachmentModalOpen}   
+                size="full"
+                scrollBehavior={"inside"}
+                onClose={handleCloseModal}
+        >
+            <ModalContent  >                
+                <div style={{height:'100%'}} className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
+                <div style={{height:'100%'}} className="bg-white p-6 rounded shadow-lg w-3/4 max-h-[100vh] overflow-auto">
+                    <h2 className="text-lg font-semibold mb-4">PDF Preview</h2>
+                    <div className="mb-4" style={{height:'90%'}}>
+                    {previewFile?.type === "application/pdf" ? (
+                        <iframe
+                        src={URL.createObjectURL(previewFile)}
+                        title={previewFile?.name}
+                        className="w-full h-96 border"
+                        style={{height:'100%'}}
+                        ></iframe>
+                    ) : (
+                        <p className="text-gray-600">This component only supports PDF files.</p>
+                    )}
+                    </div>
+                    <div className="flex justify-end">
+                    <button
+                        onClick={handleCloseModal}
+                        className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                    >
+                        Close
+                    </button>
+                    </div>
+                </div>
+                </div>
+                
+
+            </ModalContent>
+        </Modal>
+
+
        
     <div
       className="border border-gray-200 rounded-md p-4 mb-6 flex flex-col items-center justify-center"

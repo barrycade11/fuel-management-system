@@ -62,21 +62,23 @@ router.get("/fuelDeliveries/:effectiveDate/:stationids", async (req, res) => {
                     a.plateNo,
                     a.driver,
                     a.receiverId,
-                    f.lastName AS receiver
+                    fn_getEmployeeName( cast( a.receiverId as integer) ) AS receiver
         FROM        fuelDelivery a
         INNER JOIN  station b
                 ON  a.stationId = b.id
         INNER JOIN  stationShift c
                 ON  b.id = c.stationId
+				        AND c.shiftid = a.shiftid
         INNER JOIN  shift d
                 ON  c.shiftId = d.id
-        INNER JOIN  stationShiftCrew e
-                ON  c.id = e.stationShiftId
-        INNER JOIN  employee f
-                ON  e.employeeId = f.id
-        WHERE       a.effectiveDate <= $1
-        and      a.stationId = ANY ($2::int[])
-    `, [effectiveDate, stationIdsArray]); // Use effectiveDate in the query
+        --INNER JOIN  stationShiftCrew e
+        --        ON  c.id = e.stationShiftId
+        --INNER JOIN  employee f
+        --        ON  e.employeeId = f.id
+        WHERE    1=1
+        AND      a.effectiveDate <= $1
+        AND      a.stationId = ANY ($2::int[])
+    `, [effectiveDate, stationIdsArray]); // Use effectiveDate in the query 
 
     res.status(200).json(result.rows);
   } catch (err) {
