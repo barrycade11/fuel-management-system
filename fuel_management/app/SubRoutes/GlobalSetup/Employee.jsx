@@ -36,9 +36,12 @@ import { useGenerateEmployeeCode } from "~/Hooks/Setup/GlobalRecords/Employee/us
 import { useGetStationRecords } from "~/Hooks/Setup/Station/useStationRecordsApi";
 import { fetchDropdowns, fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
 import { AutoCompleteProvince, AutoCompleteCityMunicipality, AutoCompleteBarangays } from "./Components/AutoCompleteFields";
+import UserRegistration from "../Settings/UserRegistration";
+import { useNavigate } from "react-router";
+import StringRoutes from "~/Constants/StringRoutes";
 
 const Employee = () => {
-
+  const navigate = useNavigate();
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const API_PORT = import.meta.env.VITE_API_PORT;
 
@@ -938,8 +941,16 @@ console.log(newEmployee.cityId, "TEST LOAD CITY")
                   isRequired
                 />
               </div>
-              <div></div>
+
+
+
+              <div className="col-span-2 gap-3"><Button radius="none"
+            className="rounded-md bg-primary opacity-80 ml-2 text-white font-semibold"
+            onPress={() => navigate(`signup?id=${newEmployee.id}`)} >Create User Account</Button></div>
             </div>
+
+
+            
           </AccordionItem>
           <AccordionItem key="emergency_contacts" aria-label="Emergency Contacts" title="Emergency Contacts">
             {loadingEmployeeContacts ? (

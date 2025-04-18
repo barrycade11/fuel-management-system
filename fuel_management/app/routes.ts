@@ -39,6 +39,7 @@ export default [
             route("employees", "./SubRoutes/GlobalSetup/Employee.jsx"),
             route("customers", "./SubRoutes/GlobalSetup/Customer.jsx"),
             route("targets", "./SubRoutes/GlobalSetup/Target.jsx"),
+            route("employees/signup", "./SubRoutes/GlobalSetup/Signup.jsx")
             // route("incentives", "./SubRoutes/GlobalSetup/Incentive.jsx"),
         ]),
 

@@ -26,6 +26,7 @@ class StringRoutes {
   static discounts = 'global-setup/discounts';
   static dropdownRecords = 'global-setup/dropdown-records';
   static employees = 'global-setup/employees';
+  static signup = 'global-setup/employees/signup';
   static customers = 'global-setup/customers';
   static targets = 'global-setup/targets';
   static incentives = 'global-setup/incentives';
