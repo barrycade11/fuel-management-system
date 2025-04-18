@@ -237,10 +237,10 @@ const Employee = () => {
       const photoId = employeePhotos[0] ? employeePhotos[0].id : null;
 
       // 14 15 16 passing undefined to fetchDropdownTypeList
-      console.log("Checking before fetch", employee)
+
       //employee does not have .provinceid et al
 
-      // Fetch Dropdowns 
+      // Fetch Dropdowns - actually not used at all
       const [genderData, 
         civilStatusData, 
         provinceData, 
@@ -257,7 +257,7 @@ const Employee = () => {
         fetchDropdownTypeList(2, employee.designationid),
         fetchDropdownTypeList(7, employee.employeestatusid)
       ]);
-      console.log("Test Fetching Province", provinceData)
+
       if (mainPhoto) {
         const fixedPath = mainPhoto.replace(/\\/g, '/');
         setImage(`http://${API_BASE_URL}:${API_PORT}/global-setup/${fixedPath}`);
@@ -315,8 +315,8 @@ const Employee = () => {
         photo: mainPhoto, 
         photoId: photoId
       }));
-      console.log("From loading employee", employee.provinceid)
-  console.log("Checking new employee", newEmployee, newEmployee.provinceId, newEmployee.provinceid)
+
+  
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -671,7 +671,8 @@ const Employee = () => {
       setImage(URL.createObjectURL(file)); 
     }
   }
-
+console.log(newEmployee.provinceId, "TEST LOAD PROV")
+console.log(newEmployee.cityId, "TEST LOAD CITY")
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
       {notification && 

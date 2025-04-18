@@ -60,6 +60,7 @@ router.get("/provinces", async (_, res) => {
 });
 
 router.post('/city-municipality', async (req, res) => {
+  console.log("ROUTER CITY-MUNICPALITY")
   try {
     const url = `${process.env.LOCATION_API_URL}/provinces/${req.body.code}/cities-municipalities/`;
 
