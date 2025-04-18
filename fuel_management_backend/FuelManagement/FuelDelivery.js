@@ -89,9 +89,10 @@ router.get("/fuelDeliveries/:effectiveDate/:stationids", async (req, res) => {
 
 
 router.get("/fuelDeliveries/:id", async (req, res) => {
-  try {
+  
     const { id } = req.params;
-    const result = await pool.query(`
+
+    const query = `
         SELECT      a.id,
                     a.effectiveDate,
                     a.stationId,
@@ -117,12 +118,44 @@ router.get("/fuelDeliveries/:id", async (req, res) => {
         INNER JOIN  employee f
                 ON  e.employeeId = f.id
         WHERE       a.id = $1
+    `
+    try {
+    const result = await pool.query(`
+        
+        SELECT      a.id,
+                    a.effectiveDate,
+                    a.stationId,
+                    b.name AS station,
+                    b.code AS stationcode,
+                    a.shiftManagerId,
+                    fn_getEmployeeName( cast( a.shiftManagerId as integer) ) shiftmanager,
+                    a.shiftId,
+                    d.name AS shift,
+                    a.deliveryNo deliveryno,
+                    a.hauler,
+                    a.plateNo,
+                    a.driver,
+                    a.receiverId,
+                    fn_getEmployeeName( cast( a.receiverId as integer) ) AS receiver
+        FROM        fuelDelivery a
+        INNER JOIN  station b
+                ON  a.stationId = b.id
+        INNER JOIN  stationShift c
+                ON  b.id = c.stationId
+				        AND c.shiftid = a.shiftid
+        INNER JOIN  shift d
+                ON  c.shiftId = d.id
+        --INNER JOIN  stationShiftCrew e
+        --        ON  c.id = e.stationShiftId
+        --INNER JOIN  employee f
+        --        ON  e.employeeId = f.id 
+        WHERE       a.id = $1
     `, [id]);
     res.status(201).json(result.rows);
   }
   catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Database query error" });
+    res.status(500).json({ error: "Database query error", query:query, params: id });
   }
 });
 
@@ -130,7 +163,7 @@ router.post("/fuelDelivery", async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { effectiveDate, stationId, shiftManagerId, deliveryNo, hauler, plateNo, driver, receiverId } = req.body;
+  const { effectiveDate, stationId, shiftManagerId, deliveryNo, hauler, plateNo, driver, receiverId, shiftId } = req.body;
 
     await client.query("BEGIN");
 
@@ -144,11 +177,12 @@ router.post("/fuelDelivery", async (req, res) => {
                         hauler,
                         plateNo,
                         driver,
-                        receiverId
+                        receiverId,
+                        shiftId
                     )
-        VALUES      ($1, $2, $3, $4, $5, $6, $7, $8)
+        VALUES      ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING   id
-    `, [effectiveDate, stationId, shiftManagerId, deliveryNo, hauler, plateNo, driver, receiverId]);
+    `, [effectiveDate, stationId, shiftManagerId, deliveryNo, hauler, plateNo, driver, receiverId,  shiftId]);
 
     await client.query("COMMIT");
 
@@ -157,7 +191,7 @@ router.post("/fuelDelivery", async (req, res) => {
   catch (err) {
     await client.query("ROLLBACK");
 
-    res.status(500).json({ error: "Database query error" });
+    res.status(500).json({ error: "Database query error", query: err.query, params: req.body });
   }
   finally {
     client.release();

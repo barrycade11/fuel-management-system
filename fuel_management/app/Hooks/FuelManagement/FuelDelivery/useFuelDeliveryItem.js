@@ -1,9 +1,22 @@
 import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
 
+
+const fetchfuelDeliveryStationedItems = async (fuelDeliveryId, stationId) => {
+    try {
+        const response = await apiClient.get(`${endPoints.FuelManagements}/fuelDelivery/${fuelDeliveryId}/${stationId}/StationedItems`);
+
+        return response.data;
+    }
+    catch (error) {
+        throw error;
+    }
+};
+
+
 const fetchfuelDeliveryItems = async (fuelDeliveryId) => {
     try {
-        const response = await apiClient.get(`${endPoints.GlobalRecords}/fuelDelivery/${fuelDeliveryId}/Items`);
+        const response = await apiClient.get(`${endPoints.FuelManagements}/fuelDelivery/${fuelDeliveryId}/Items`);
 
         return response.data;
     }
@@ -14,7 +27,7 @@ const fetchfuelDeliveryItems = async (fuelDeliveryId) => {
 
 const fetchfuelDeliveryItem = async (fuelDeliveryId, id) => {
     try {
-        const response = await apiClient.get(`${endPoints.GlobalRecords}/fuelDelivery/${fuelDeliveryId}/Items/${id}`);
+        const response = await apiClient.get(`${endPoints.FuelManagements}/fuelDelivery/${fuelDeliveryId}/Items/${id}`);
 
         return response.data;
     }
@@ -25,7 +38,7 @@ const fetchfuelDeliveryItem = async (fuelDeliveryId, id) => {
 
 const createfuelDeliveryItem = async (fuelDeliveryId, data) => {
     try {
-        const response = await apiClient.post(`${endPoints.GlobalRecords}/fuelDelivery/${fuelDeliveryId}/Item`, data);
+        const response = await apiClient.post(`${endPoints.FuelManagements}/fuelDelivery/${fuelDeliveryId}/Item`, data);
 
         return response.data;
     }
@@ -36,7 +49,7 @@ const createfuelDeliveryItem = async (fuelDeliveryId, data) => {
 
 const updatefuelDeliveryItem = async (fuelDeliveryId, id, data) => {
     try {
-        const response = await apiClient.put(`${endPoints.GlobalRecords}/fuelDelivery/${fuelDeliveryId}/Item/${id}`, data);
+        const response = await apiClient.put(`${endPoints.FuelManagements}/fuelDelivery/${fuelDeliveryId}/Item/${id}`, data);
 
         return response.data;
     }
@@ -47,7 +60,19 @@ const updatefuelDeliveryItem = async (fuelDeliveryId, id, data) => {
 
 const deletefuelDeliveryItem = async (fuelDeliveryId, id) => {
     try {
-        const response = await apiClient.delete(`${endPoints.GlobalRecords}/fuelDelivery/${fuelDeliveryId}/Item/${id}`);
+        const response = await apiClient.delete(`${endPoints.FuelManagements}/fuelDelivery/${fuelDeliveryId}/Item/${id}`);
+
+        return response.data;
+    }
+    catch (error) {
+        throw error;
+    }
+};
+
+
+const deletefuelDeliveryItems = async (fuelDeliveryId, id) => {
+    try {
+        const response = await apiClient.delete(`${endPoints.FuelManagements}/fuelDelivery/${fuelDeliveryId}/items/${id}`);
 
         return response.data;
     }
@@ -57,9 +82,11 @@ const deletefuelDeliveryItem = async (fuelDeliveryId, id) => {
 };
 
 export {
+    fetchfuelDeliveryStationedItems,
     fetchfuelDeliveryItems,
     fetchfuelDeliveryItem,
     createfuelDeliveryItem,
     updatefuelDeliveryItem,
     deletefuelDeliveryItem,
+    deletefuelDeliveryItems,
 };

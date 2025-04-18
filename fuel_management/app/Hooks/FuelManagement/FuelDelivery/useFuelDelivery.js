@@ -8,8 +8,8 @@ const fetchfuelDeliveries = async (resource) => {
         const {effectivedate, stationids} = resource;
         const response = await apiClient.get(`${endPoints.FuelManagements}/fuelDeliveries/${effectivedate}/${stationids}`);
  
-        console.log("effectivedate", effectivedate);
-        console.log("station", stationids);
+        // console.log("effectivedate", effectivedate);
+        // console.log("station", stationids);
         return response.data;
     }
     catch (error) {

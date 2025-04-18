@@ -4,7 +4,8 @@ const pool = require("../../Config/Connection");
 
 router.get("/station/:stationId/tanks", async (req, res) => {
   try {
-    const { stationId } = req.params;
+    const { stationId } = req.params;    
+    const stationIdsArray = stationId.split(',').map(id => parseInt(id.trim()));
 
     const result = await pool.query(`
       SELECT      a.id,
@@ -21,8 +22,8 @@ router.get("/station/:stationId/tanks", async (req, res) => {
       FROM        stationTank a
       INNER JOIN  fuelMaster b
               ON  a.fuelMasterId = b.id
-      WHERE       stationId = $1
-    `, [stationId]);
+      WHERE       stationId = ANY ($1::int[])
+    `, [stationIdsArray]);
     res.status(201).json(result.rows);
   }
   catch (err) {
