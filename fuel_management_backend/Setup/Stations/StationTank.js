@@ -6,7 +6,8 @@ router.get("/station/:stationId/tanks", async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { stationId } = req.params;
+    const { stationId } = req.params;  
+    const stationIdsArray = stationId.split(',').map(id => parseInt(id.trim()));
 
     await client.query("BEGIN");
 
@@ -25,8 +26,8 @@ router.get("/station/:stationId/tanks", async (req, res) => {
       FROM        stationTank a
       INNER JOIN  fuelMaster b
               ON  a.fuelMasterId = b.id
-      WHERE       stationId = $1
-    `, [stationId]);
+      WHERE       stationId = ANY ($1::int[])
+    `, [stationIdsArray]);
 
     await client.query("COMMIT");
 

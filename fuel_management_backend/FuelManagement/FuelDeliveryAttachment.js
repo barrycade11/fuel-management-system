@@ -2,6 +2,26 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../Config/Connection");
 
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'Uploads/'); 
+  },
+  filename: (req, file, cb) => {
+    const fileNameWithoutExt = path.basename(file.originalname, path.extname(file.originalname)); // Remove extension
+    const fileName = `FDA-${req.params.fuelDeliveryId}-${fileNameWithoutExt}${path.extname(file.originalname)}`;
+    cb(null, fileName); 
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, 
+}).single('file');
+
 router.get("/fuelDelivery/:fuelDeliveryId/attachment", async (req, res) => {
   const client = await pool.connect();
 
@@ -65,10 +85,19 @@ router.get("/fuelDeliverys/:fuelDeliveryId/attachment/:id", async (req, res) => 
   }
 });
 
-router.post("/fuelDelivery/:fuelDeliveryId/attachment", async (req, res) => {
+router.post("/fuelDelivery/:fuelDeliveryId/attachment", upload, async (req, res) => {
   const client = await pool.connect();
 
+  const { file } = req;
+  
+  // if (!file) {
+  //   return res.status(400).json({ message: "No file uploaded" });
+  // }
+
   try {
+    
+    const FilePath = file.path;
+
     const { fuelDeliveryId } = req.params;
     const { filename, uploadedBy, dateUploaded } = req.body;
 
@@ -79,12 +108,15 @@ router.post("/fuelDelivery/:fuelDeliveryId/attachment", async (req, res) => {
                     (
                         fuelDeliveryId,
                         filename,
+                        filepath,
+                        mimetype,
+                        size,
                         uploadedBy,
                         dateUploaded
                     )
-        VALUES      ($1, $2, $3, $4)
+        VALUES      ($1, $2, $3, $4, $5, $6, $7)
         RETURNING   id
-    `, [fuelDeliveryId, filename, uploadedBy, dateUploaded]);
+    `, [fuelDeliveryId, file.originalname, file.path, file.mimetype, file.size, uploadedBy, dateUploaded]);
 
     await client.query("COMMIT");
 
