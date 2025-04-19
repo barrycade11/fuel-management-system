@@ -798,28 +798,37 @@ const Customer = () => {
                 />
               </div>
               <div className="col-span-3 gap-3">
-                {/* <Dropdown 
-                  label="Province"
-                  typeId={14} 
-                  value={newCustomer.provinceId} 
-                  onChange={(e) => setNewCustomer({ ...newCustomer, provinceId: e.target.value })} 
-                /> */}
+                <AutoCompleteProvince 
+                                  selectedKey={newCustomer.provinceId} 
+                                  onSelectionChange={(code) =>
+                                    setNewCustomer({
+                                      ...newCustomer,
+                                      provinceId: code 
+                                    })
+                                  }
+                                />
               </div>
               <div className="col-span-3 gap-3">
-                {/* <Dropdown 
-                  label="City"
-                  typeId={15} 
-                  value={newCustomer.cityId} 
-                  onChange={(e) => setNewCustomer({ ...newCustomer, cityId: e.target.value })} 
-                /> */}
+                <AutoCompleteCityMunicipality
+                                  selectedKey={newCustomer.cityId} 
+                                  onSelectionChange={(provinceCode) =>
+                                    setNewCustomer({
+                                      ...newCustomer,
+                                      cityId: provinceCode 
+                                    })
+                                  }
+                                />
               </div>
               <div className="col-span-3 gap-3">
-                {/* <Dropdown 
-                  label="Barangay"
-                  typeId={16} 
-                  value={newCustomer.barangayId} 
-                  onChange={(e) => setNewCustomer({ ...newCustomer, barangayId: e.target.value })} 
-                /> */}
+                <AutoCompleteBarangays
+                                  selectedKey={newCustomer.barangayId} 
+                                  onSelectionChange={(cityCode) =>
+                                    setNewCustomer({
+                                      ...newCustomer,
+                                      barangayId: cityCode 
+                                    })
+                                  }
+                                />
               </div>
             </div>
 

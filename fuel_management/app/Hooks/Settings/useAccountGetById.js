@@ -4,6 +4,7 @@ import { useParams } from "react-router";
 
 const useAccountGetById = () => {
   const { id } = useParams()
+  // console.log("Getting acc by ID", id)
 
   return useQuery({
     queryKey: ['accountid', id],

@@ -36,9 +36,12 @@ import { useGenerateEmployeeCode } from "~/Hooks/Setup/GlobalRecords/Employee/us
 import { useGetStationRecords } from "~/Hooks/Setup/Station/useStationRecordsApi";
 import { fetchDropdowns, fetchDropdownTypeList } from "~/Hooks/Setup/GlobalRecords/Dropdown/useDropdowns";
 import { AutoCompleteProvince, AutoCompleteCityMunicipality, AutoCompleteBarangays } from "./Components/AutoCompleteFields";
+import UserRegistration from "../Settings/UserRegistration";
+import { useNavigate } from "react-router";
+import StringRoutes from "~/Constants/StringRoutes";
 
 const Employee = () => {
-
+  const navigate = useNavigate();
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const API_PORT = import.meta.env.VITE_API_PORT;
 
@@ -146,9 +149,9 @@ const Employee = () => {
     genderId: "", 
     civilStatusId: "", 
     address: "", 
-    // provinceId: null, 
-    // cityId: null, 
-    // barangayId: null, 
+    provinceId: null, 
+    cityId: null, 
+    barangayId: null, 
     dateHired: null, 
     stationId: "", 
     departmentId: "", 
@@ -172,9 +175,9 @@ const Employee = () => {
       genderId: "",
       civilStatusId: "",
       address: "",
-      // provinceId: null,
-      // cityId: null,
-      // barangayId: null,
+      provinceId: null,
+      cityId: null,
+      barangayId: null,
       dateHired: null,
       stationId: "",
       departmentId: "",
@@ -236,20 +239,24 @@ const Employee = () => {
       const mainPhoto = employeePhotos[0] ? employeePhotos[0].photo : null;
       const photoId = employeePhotos[0] ? employeePhotos[0].id : null;
 
-      // Fetch Dropdowns 
+      // 14 15 16 passing undefined to fetchDropdownTypeList
+
+      //employee does not have .provinceid et al
+
+      // Fetch Dropdowns - actually not used at all
       const [genderData, 
         civilStatusData, 
-        // provinceData, 
-        // cityData, 
-        // barangayData, 
+        provinceData, 
+        cityData, 
+        barangayData, 
         designationData, 
         employeeStatusData
       ] = await Promise.all([
         fetchDropdownTypeList(4, employee.genderid),
         fetchDropdownTypeList(5, employee.civilstatusid),
-        // fetchDropdownTypeList(14, employee.provinceid),
-        // fetchDropdownTypeList(15, employee.cityid),
-        // fetchDropdownTypeList(16, employee.barangayid),
+        fetchDropdownTypeList(14, employee.provinceid),
+        fetchDropdownTypeList(15, employee.cityid),
+        fetchDropdownTypeList(16, employee.barangayid),
         fetchDropdownTypeList(2, employee.designationid),
         fetchDropdownTypeList(7, employee.employeestatusid)
       ]);
@@ -297,9 +304,9 @@ const Employee = () => {
         lastName: employee.lastname,
         genderId: employee.genderid,
         civilStatusId: employee.civilstatusid,
-        // provinceId: employee.provinceid,
-        // cityId: employee.cityid,
-        // barangayId: employee.barangayid,
+        provinceId: employee.provinceid,
+        cityId: employee.cityid,
+        barangayId: employee.barangayid,
         stationId: employee.stationid,
         departmentId: employee.departmentid,
         designationId: employee.designationid,
@@ -311,6 +318,7 @@ const Employee = () => {
         photo: mainPhoto, 
         photoId: photoId
       }));
+
   
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -320,23 +328,24 @@ const Employee = () => {
   };
 
   const handleSave = async () => {
-    console.log(newEmployee)
+    // console.log(newEmployee)
     if (!newEmployee.firstName || !newEmployee.middleName || !newEmployee.lastName ||
         !newEmployee.birthDate || !newEmployee.genderId || !newEmployee.civilStatusId || 
         !newEmployee.address || 
-        // !newEmployee.provinceId || !newEmployee.cityId || !newEmployee.barangayId || 
+        !newEmployee.provinceId || !newEmployee.cityId || !newEmployee.barangayId || 
         !newEmployee.dateHired || !newEmployee.stationId || 
         !newEmployee.departmentId || !newEmployee.designationId || !newEmployee.employeeStatusId || 
-        !newEmployee.contactNo || !newEmployee.email
+        !newEmployee.contactNo 
+        // || !newEmployee.email
       ) {
         setNotification({ message: "All fields are required.", type: "error" });
         return;
     }
 
-    if (!imageFile && !image) {
-      setNotification({ message: "Please upload a photo.", type: "error" });
-      return;
-    }
+    // if (!imageFile && !image) {
+    //   setNotification({ message: "Please upload a photo.", type: "error" });
+    //   return;
+    // }
 
     if (isSaving) return;
     setIsSaving(true);
@@ -354,9 +363,9 @@ const Employee = () => {
       genderId: parseInt(newEmployee.genderId, 10), 
       civilStatusId: parseInt(newEmployee.civilStatusId, 10),
       address: newEmployee.address, 
-      // provinceId: newEmployee.provinceId,
-      // cityId: newEmployee.cityId,
-      // barangayId: newEmployee.barangayId,
+      provinceId: newEmployee.provinceId,
+      cityId: newEmployee.cityId,
+      barangayId: newEmployee.barangayId,
       datehired: formatDate(newEmployee.dateHired), 
       stationId: parseInt(newEmployee.stationId, 10),
       departmentId: parseInt(newEmployee.departmentId, 10),
@@ -375,20 +384,20 @@ const Employee = () => {
         if (newEmployee.id) {
             // Existing Employee 
             employeeId = newEmployee?.id; 
-            console.log(employeeId)
+            // console.log(employeeId)
 
             // Update Employee 
             const response = await updateEmployee({ id: employeeId, payload });
 
             employeeId = response[0]?.id;
 
-            console.log(employeeId)
+            // console.log(employeeId)
 
             // Delete and Add new Contacts 
             await deleteEmployeeContact(employeeId);
       
-            console.log(employeeContacts)
-            console.log(employeeContacts.length)
+            // console.log(employeeContacts)
+            // console.log(employeeContacts.length)
             if (employeeContacts.length > 0) {
               await Promise.all(
                 employeeContacts.map(contact => addEmployeeContact({ id: employeeId, payload: contact }))
@@ -478,9 +487,9 @@ const Employee = () => {
     { key: "gender", label: "Gender", hidden: true },
     { key: "civilstatus", label: "Civil Status", hidden: true },
     { key: "address", label: "Address", hidden: true },
-    // { key: "province", label: "Province", hidden: true },
-    // { key: "city", label: "City", hidden: true },
-    // { key: "barangay", label: "Barangay", hidden: true },
+    { key: "province", label: "Province", hidden: true },
+    { key: "city", label: "City", hidden: true },
+    { key: "barangay", label: "Barangay", hidden: true },
     { key: "datehired", label: "Date Hired", hidden: true },
     { key: "station", label: "Station", hidden: true },
     { key: "department", label: "Department", hidden: false },
@@ -665,7 +674,8 @@ const Employee = () => {
       setImage(URL.createObjectURL(file)); 
     }
   }
-
+// console.log(newEmployee.provinceId, "TEST LOAD PROV")
+// console.log(newEmployee.cityId, "TEST LOAD CITY")
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
       {notification && 
@@ -715,7 +725,7 @@ const Employee = () => {
                     placeholder="Enter employee code" 
                     value={newEmployee.code}
                     onChange={(e) => setNewEmployee({ ...newEmployee, code: e.target.value })}
-                    disabled
+                    
                     isRequired
                   />
                 </div>
@@ -821,7 +831,7 @@ const Employee = () => {
                 />
               </div>
               <div className="col-span-2 gap-3">
-                {/* <AutoCompleteProvince 
+                <AutoCompleteProvince 
                   selectedKey={newEmployee.provinceId} 
                   onSelectionChange={(code) =>
                     setNewEmployee({
@@ -829,10 +839,10 @@ const Employee = () => {
                       provinceId: code 
                     })
                   }
-                /> */}
+                />
               </div>
               <div className="col-span-2 gap-3">
-                {/* <AutoCompleteCityMunicipality
+                <AutoCompleteCityMunicipality
                   selectedKey={newEmployee.cityId} 
                   onSelectionChange={(provinceCode) =>
                     setNewEmployee({
@@ -840,10 +850,10 @@ const Employee = () => {
                       cityId: provinceCode 
                     })
                   }
-                /> */}
+                />
               </div>
               <div className="col-span-2 gap-3">
-                {/* <AutoCompleteBarangays
+                <AutoCompleteBarangays
                   selectedKey={newEmployee.barangayId} 
                   onSelectionChange={(cityCode) =>
                     setNewEmployee({
@@ -851,7 +861,7 @@ const Employee = () => {
                       barangayId: cityCode 
                     })
                   }
-                /> */}
+                />
               </div>
             </div>
 
@@ -931,8 +941,24 @@ const Employee = () => {
                   isRequired
                 />
               </div>
-              <div></div>
+
+
+
+              <div className="col-span-2 gap-3"><Button radius="none"
+            className="rounded-md bg-primary opacity-80 ml-2 text-white font-semibold"
+            onPress={() => navigate('signup', {
+              state: {
+                newEmployee,
+                id2: newEmployee.id,
+                lastName: newEmployee.lastName,
+                firstName: newEmployee.firstName,
+                stations: newEmployee.stationId
+              }
+            })} >Create User Account</Button></div>
             </div>
+
+
+            
           </AccordionItem>
           <AccordionItem key="emergency_contacts" aria-label="Emergency Contacts" title="Emergency Contacts">
             {loadingEmployeeContacts ? (
