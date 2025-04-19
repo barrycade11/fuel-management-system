@@ -1,9 +1,21 @@
 import { apiClient } from "~/Constants/ApiClient";
 import { endPoints } from "~/Constants/EndPoints";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
 const fetchfuelDeliveryAttachments = async (fuelDeliveryId) => {
     try {
-        const response = await apiClient.get(`${endPoints.GlobalRecords}/fuelDelivery/${fuelDeliveryId}/Attachment`);
+        const response = await apiClient.get(`${endPoints.FuelManagements}/fuelDelivery/${fuelDeliveryId}/Attachment`);
+
+        return response.data;
+    }
+    catch (error) {
+        throw error;
+    }
+};
+
+const fetchfuelDeliveryAttachment = async (fuelDeliveryId, id) => {
+    try {
+        const response = await apiClient.get(`${endPoints.FuelManagements}/fuelDelivery/${fuelDeliveryId}/Attachment/${id}`);
 
         return response.data;
     }
@@ -14,75 +26,38 @@ const fetchfuelDeliveryAttachments = async (fuelDeliveryId) => {
 
 
 
-// const getDataController = (params) => {
-//     return new Promise((resolve, reject) => {
-//       CRUD.get(params.data, params.url, params.addConfig)
-//         .then((res) => {
-//           if (!res.isError) {
-//             resolve(res);
-//           } else {
-//             resolve(false);
-//           }
-//         })
-//         .catch((err) => {
-//           reject(err);
-//         });
-//     });
-//   };
+const addFuelDeliveryAttachment = (resource) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: async ({ fuelDeliveryId, payload}) => {  
 
+         
 
+        const response = await apiClient.post(`${endPoints.FuelManagements}/fuelDelivery/${fuelDeliveryId}/attachment`, payload, 
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",  
+                }
+            },
+        );
 
-//   get(data, url, addConfig) {
-//     return new Promise((resolve, reject) => {
-//       const payload = { ...data };
-
-//       this.Request.get(url, payload, addConfig)
-//         .then((res) => {
-//           let result = res.data;
-//           resolve(result);
-//         })
-//         .catch((err) => {
-//           reject(err);
-//         });
-//     });
-//   }
-
-  
-//   get(url, payload, addConfig) {
-//     return new Promise((resolve, reject) => {
-//       // Create the config object for the axios call
-//       let config = {
-//         url: url,
-//         method: "get",
-//         headers: {},
-//         data: payload,
-//         ...addConfig,
-//       };
-//       // Execute axios call to backend
-//       this._axiosExecute(config)
-//         .then((res) => {
-//           resolve(res);
-//         })
-//         .catch((err) => {
-//           reject(err);
-//         });
-//     });
-//   }
-
-const fetchfuelDeliveryAttachment = async (fuelDeliveryId, id) => {
-    try {
-        const response = await apiClient.get(`${endPoints.GlobalRecords}/fuelDelivery/${fuelDeliveryId}/Attachment/${id}`);
+        console.log("addFuelDeliveryAttachment",response);
 
         return response.data;
-    }
-    catch (error) {
-        throw error;
-    }
+      },
+      onSuccess: (data) => {
+        console.log(`Added ${resource} photo successfully:`, data);
+        queryClient.invalidateQueries([`${resource}s`]);
+      },
+      onError: (error) => {
+        console.log(`Failed to add ${resource} photo:`, error);
+      },
+    });
 };
 
 const createfuelDeliveryAttachment = async (fuelDeliveryId, data) => {
     try {
-        const response = await apiClient.post(`${endPoints.GlobalRecords}/fuelDelivery/${fuelDeliveryId}/Attachment`, data);
+        const response = await apiClient.post(`${endPoints.FuelManagements}/fuelDelivery/${fuelDeliveryId}/Attachment`, data);
 
         return response.data;
     }
@@ -93,7 +68,7 @@ const createfuelDeliveryAttachment = async (fuelDeliveryId, data) => {
 
 const updatefuelDeliveryAttachment = async (fuelDeliveryId, id, data) => {
     try {
-        const response = await apiClient.put(`${endPoints.GlobalRecords}/fuelDelivery/${fuelDeliveryId}/Attachment/${id}`, data);
+        const response = await apiClient.put(`${endPoints.FuelManagements}/fuelDelivery/${fuelDeliveryId}/Attachment/${id}`, data);
 
         return response.data;
     }
@@ -104,7 +79,7 @@ const updatefuelDeliveryAttachment = async (fuelDeliveryId, id, data) => {
 
 const deletefuelDeliveryAttachment = async (fuelDeliveryId, id) => {
     try {
-        const response = await apiClient.delete(`${endPoints.GlobalRecords}/fuelDelivery/${fuelDeliveryId}/Attachment/${id}`);
+        const response = await apiClient.delete(`${endPoints.FuelManagements}/fuelDelivery/${fuelDeliveryId}/Attachment/${id}`);
 
         return response.data;
     }
@@ -116,7 +91,7 @@ const deletefuelDeliveryAttachment = async (fuelDeliveryId, id) => {
 export {
     fetchfuelDeliveryAttachments,
     fetchfuelDeliveryAttachment,
-    createfuelDeliveryAttachment,
+    createfuelDeliveryAttachment,addFuelDeliveryAttachment,
     updatefuelDeliveryAttachment,
     deletefuelDeliveryAttachment,
 };

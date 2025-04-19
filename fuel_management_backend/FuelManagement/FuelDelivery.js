@@ -111,27 +111,30 @@ router.get("/fuelDeliveries/:id", async (req, res) => {
         SELECT      a.id,
                     a.effectiveDate,
                     a.stationId,
-                    b.name            station
+                    b.name AS station,
+                    b.code AS stationcode,
                     a.shiftManagerId,
+                    fn_getEmployeeName( cast( a.shiftManagerId as integer) ) shiftmanager,
                     a.shiftId,
-                    d.name            shift,
-                    a.deliveryNo,
+                    d.name AS shift,
+                    a.deliveryNo deliveryno,
                     a.hauler,
                     a.plateNo,
                     a.driver,
                     a.receiverId,
-                    f.lastName        receiver
+                    fn_getEmployeeName( cast( a.receiverId as integer) ) AS receiver
         FROM        fuelDelivery a
         INNER JOIN  station b
                 ON  a.stationId = b.id
         INNER JOIN  stationShift c
                 ON  b.id = c.stationId
+				        AND c.shiftid = a.shiftid
         INNER JOIN  shift d
                 ON  c.shiftId = d.id
-        INNER JOIN  stationShiftCrew e
-                ON  c.id = e.stationShiftId
-        INNER JOIN  employee f
-                ON  e.employeeId = f.id
+        --INNER JOIN  stationShiftCrew e
+        --        ON  c.id = e.stationShiftId
+        --INNER JOIN  employee f
+        --        ON  e.employeeId = f.id 
         WHERE       a.id = $1
     `, [id]);
 
@@ -153,7 +156,7 @@ router.post("/fuelDelivery", async (req, res) => {
   const client = await pool.connect();
 
   try {
-    const { effectiveDate, stationId, shiftManagerId, deliveryNo, hauler, plateNo, driver, receiverId } = req.body;
+  const { effectiveDate, stationId, shiftManagerId, deliveryNo, hauler, plateNo, driver, receiverId, shiftId } = req.body;
 
     await client.query("BEGIN");
 
@@ -167,11 +170,12 @@ router.post("/fuelDelivery", async (req, res) => {
                         hauler,
                         plateNo,
                         driver,
-                        receiverId
+                        receiverId,
+                        shiftId
                     )
-        VALUES      ($1, $2, $3, $4, $5, $6, $7, $8)
+        VALUES      ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING   id
-    `, [effectiveDate, stationId, shiftManagerId, deliveryNo, hauler, plateNo, driver, receiverId]);
+    `, [effectiveDate, stationId, shiftManagerId, deliveryNo, hauler, plateNo, driver, receiverId,  shiftId]);
 
     await client.query("COMMIT");
 
