@@ -46,7 +46,7 @@ const FuelDeliveryList = () => {
         try {
             const data = await fetchfuelDeliveries({effectivedate:date, stationids:selectedStation});
             setNewFuelDeliveries(data);
-            console.log("getFuelDeliveries",data);
+            // console.log("getFuelDeliveries",data);
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {
@@ -66,7 +66,8 @@ const FuelDeliveryList = () => {
   }
 
   const handleEdit = async (fuelDelivery) => {    
-    navigate(`/${StringRoutes.fuelDelivery}/${fuelDelivery.id}`);
+    // navigate(`/${StringRoutes.fuelDelivery}/${fuelDelivery.id}`);
+    navigate(`/${StringRoutes.fuelDelivery}/${fuelDelivery.id}`, { state: fuelDelivery });
   }
   
    
@@ -97,8 +98,8 @@ const FuelDeliveryList = () => {
     ),
   };
 
-  console.log("Selected Date:", localStorage.getItem('fuel-delivery.effectivedate'));
-  console.log("Selected Station:", localStorage.getItem('fuel-delivery.station'));
+  // console.log("Selected Date:", localStorage.getItem('fuel-delivery.effectivedate'));
+  // console.log("Selected Station:", localStorage.getItem('fuel-delivery.station'));
   //  console.log("Stations:", stations);  
   //  console.log("Selected Station:", selectedStation);  
   return ( 
