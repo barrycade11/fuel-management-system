@@ -5,7 +5,7 @@ import useRoles from "~/Hooks/Settings/useRoles";
 import { SelectOptionRole } from "../Settings/Components/SelectComponent";
 import { Button, CircularProgress, Form } from "@heroui/react";
 import PrimaryButton from "~/Components/PrimayButton";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams,useLocation } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFetchStationIdAndName } from "~/Hooks/Setup/Station/useFetchStationIdAndNameOnly";
 import { useDebugValue, useEffect, useState } from "react";
@@ -20,8 +20,10 @@ import useAccountDeleteMutation from "~/Hooks/Settings/userAccountDeleteMutation
 const Signup = () => {
   
   const { id } = useParams();
-  console.log("Registering new employee", id)
+  const location = useLocation();
+  const {newEmployee, id2,lastName,firstName,stations} = location.state || {};
   const query = useQueryClient();
+  // console.log("Registering new employee", id2, lastName,firstName,stations)
   const { data: userDetails, isLoading: userLoading, isSuccess: userSuccess, error: userError, refetch: refetchUser } = useAccountGetById();
   const { data: rolesData, isLoading: rolesLoading, isSuccess: rolesSuccess, error: rolesError } = useRoles();
   const { isSuccess: stationSuccess, error: stationError } = useFetchStationIdAndName();
@@ -45,11 +47,13 @@ const Signup = () => {
 
   useEffect(() => {
     if ((id !== undefined || id === null) && !userSuccess) {
+      // console.log("new user")
       query.invalidateQueries(['accountid', id, 'roles']);
       refetchUser();
     }
 
     if (userSuccess && rolesSuccess && stationSuccess) {
+      // console.log("new user 2")
       const newStationIds = new Set();
       userDetails?.body?.[0]?.stations?.forEach((item) => {
         newStationIds.add(item.stationid.toString());
@@ -58,6 +62,7 @@ const Signup = () => {
       const _currentRoleId = new Set([userDetails.body[0].roleid.toString()]);
       setCurrentRoleId(_currentRoleId);
       if (id) {
+        // console.log("new user 3")
         query.invalidateQueries(['accountid', id]);
       }
     }
@@ -65,6 +70,7 @@ const Signup = () => {
 
 
   if (userLoading || rolesLoading) {
+    // console.log("new user 4")
     return (
       <div className="flex flex-col bg-white flex-grow justify-center items-center">
         <CircularProgress aria-labelledby="loading" />
@@ -75,6 +81,7 @@ const Signup = () => {
   const cachedData = query.getQueryData(['stationidname'])
 
   if (!cachedData) {
+    // console.log("new user 5")
     // refetch();
   }
 

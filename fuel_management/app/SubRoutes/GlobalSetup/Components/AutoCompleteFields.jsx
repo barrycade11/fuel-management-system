@@ -5,31 +5,31 @@ import useGetProvinces from "~/Hooks/Locations/useGetProvinces";
 import useLocationStoreState from "~/Hooks/Locations/useLocationStoreState";
 
 export const AutoCompleteProvince = ({ selectedKey, onSelectionChange }) => {
-  console.log("Autocomplete Province Call", selectedKey)
+  // console.log("Autocomplete Province Call", selectedKey)
     const { isLoading, isError, data } = useGetProvinces();
     const getCityMutate = useGetCitiesMunicipalities();
     const { onSetCitiesMunicipalities, onSetBarangays, onSetError, onSetIsLoading } = useLocationStoreState();
 
     
     const handleChange = (val) => {
-      console.log("Autocomplete Province handleChange", val)
+      // console.log("Autocomplete Province handleChange", val)
       onSelectionChange(val); 
       if (!val) {
-        console.log("No val")
+        // console.log("No val")
         onSetCitiesMunicipalities([]);
         onSetBarangays([]);
         return;
       }
-      console.log("Val", val)
+      // console.log("Val", val)
       const selected = data?.body.find(i => i.code === val);
       if (selected) {
-        console.log("Selected:", selected)
+        // console.log("Selected:", selected)
         onManageCitiesMunicipalities(selected.code);
       }
     };
   
     const onManageCitiesMunicipalities = async (provinceId) => {
-      console.log("PROVINCE MANAGE CITY")
+      // console.log("PROVINCE MANAGE CITY")
       onSetIsLoading(true);
       getCityMutate.mutate({ code: provinceId }, {
         onError: (error) => {
@@ -63,7 +63,7 @@ export const AutoCompleteProvince = ({ selectedKey, onSelectionChange }) => {
 
 
 export const AutoCompleteCityMunicipality = ({ selectedKey, onSelectionChange }) => {
-  console.log("Autocomplete City Call", selectedKey)
+  // console.log("Autocomplete City Call", selectedKey)
   const { isLoading2, isErro2r, data } = useGetCitiesMunicipalities();
     const {
       citiesMunicipalities, isLoading, error,
@@ -73,9 +73,9 @@ export const AutoCompleteCityMunicipality = ({ selectedKey, onSelectionChange })
     const getBarangaysMutation = useGetBarangays();
   
     const handleChange = (val) => {
-      console.log("Autocomplete City handleChange", val)
+      // console.log("Autocomplete City handleChange", val)
       onSelectionChange(val);
-      console.log("Autocomplete City full", citiesMunicipalities)
+      // console.log("Autocomplete City full", citiesMunicipalities)
       const selectedCity = citiesMunicipalities.find(i => i.code === val);
       if (selectedCity) {
         onManageGetBarangays(selectedCity.code);
@@ -83,14 +83,14 @@ export const AutoCompleteCityMunicipality = ({ selectedKey, onSelectionChange })
     };
   
     const onManageGetBarangays = (cityId) => {
-      console.log("Autocomplete City getBarangay", selectedKey)
+      // console.log("Autocomplete City getBarangay", selectedKey)
       onSetBarangayLoading(true);
       getBarangaysMutation.mutate({ code: cityId }, {
         onError: (error) => onSetBarangayError(error),
         onSuccess: (response) => onSetBarangays(response.body)
       });
     };
-console.log(citiesMunicipalities, "TESTING AUTOCITY")
+// console.log(citiesMunicipalities, "TESTING AUTOCITY")
     return (
       <Autocomplete
         isRequired

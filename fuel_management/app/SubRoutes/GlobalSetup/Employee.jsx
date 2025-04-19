@@ -328,7 +328,7 @@ const Employee = () => {
   };
 
   const handleSave = async () => {
-    console.log(newEmployee)
+    // console.log(newEmployee)
     if (!newEmployee.firstName || !newEmployee.middleName || !newEmployee.lastName ||
         !newEmployee.birthDate || !newEmployee.genderId || !newEmployee.civilStatusId || 
         !newEmployee.address || 
@@ -384,20 +384,20 @@ const Employee = () => {
         if (newEmployee.id) {
             // Existing Employee 
             employeeId = newEmployee?.id; 
-            console.log(employeeId)
+            // console.log(employeeId)
 
             // Update Employee 
             const response = await updateEmployee({ id: employeeId, payload });
 
             employeeId = response[0]?.id;
 
-            console.log(employeeId)
+            // console.log(employeeId)
 
             // Delete and Add new Contacts 
             await deleteEmployeeContact(employeeId);
       
-            console.log(employeeContacts)
-            console.log(employeeContacts.length)
+            // console.log(employeeContacts)
+            // console.log(employeeContacts.length)
             if (employeeContacts.length > 0) {
               await Promise.all(
                 employeeContacts.map(contact => addEmployeeContact({ id: employeeId, payload: contact }))
@@ -674,8 +674,8 @@ const Employee = () => {
       setImage(URL.createObjectURL(file)); 
     }
   }
-console.log(newEmployee.provinceId, "TEST LOAD PROV")
-console.log(newEmployee.cityId, "TEST LOAD CITY")
+// console.log(newEmployee.provinceId, "TEST LOAD PROV")
+// console.log(newEmployee.cityId, "TEST LOAD CITY")
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
       {notification && 
@@ -725,7 +725,7 @@ console.log(newEmployee.cityId, "TEST LOAD CITY")
                     placeholder="Enter employee code" 
                     value={newEmployee.code}
                     onChange={(e) => setNewEmployee({ ...newEmployee, code: e.target.value })}
-                    disabled
+                    
                     isRequired
                   />
                 </div>
@@ -946,7 +946,15 @@ console.log(newEmployee.cityId, "TEST LOAD CITY")
 
               <div className="col-span-2 gap-3"><Button radius="none"
             className="rounded-md bg-primary opacity-80 ml-2 text-white font-semibold"
-            onPress={() => navigate(`signup?id=${newEmployee.id}`)} >Create User Account</Button></div>
+            onPress={() => navigate('signup', {
+              state: {
+                newEmployee,
+                id2: newEmployee.id,
+                lastName: newEmployee.lastName,
+                firstName: newEmployee.firstName,
+                stations: newEmployee.stationId
+              }
+            })} >Create User Account</Button></div>
             </div>
 
 
