@@ -60,6 +60,8 @@ const useUpdateGlobalRecord = (resource) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, payload }) => {
+      // console.log("payload", id, payload)
+      // console.log(resource)
       const response = await apiClient.put(`${endPoints.GlobalRecords}/${resource}/${id}`, payload);
       return response.data;
     },

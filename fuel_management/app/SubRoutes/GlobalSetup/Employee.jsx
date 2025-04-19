@@ -335,7 +335,7 @@ const Employee = () => {
         !newEmployee.provinceId || !newEmployee.cityId || !newEmployee.barangayId || 
         !newEmployee.dateHired || !newEmployee.stationId || 
         !newEmployee.departmentId || !newEmployee.designationId || !newEmployee.employeeStatusId || 
-        !newEmployee.contactNo 
+        !newEmployee.contactNo || !newEmployee.code
         // || !newEmployee.email
       ) {
         setNotification({ message: "All fields are required.", type: "error" });
@@ -356,6 +356,7 @@ const Employee = () => {
     };
 
     const payload = {
+      code: newEmployee.code,
       firstName: newEmployee.firstName,
       middleName: newEmployee.middleName,
       lastName: newEmployee.lastName,
@@ -674,6 +675,7 @@ const Employee = () => {
       setImage(URL.createObjectURL(file)); 
     }
   }
+  // console.log(newEmployee)
 // console.log(newEmployee.provinceId, "TEST LOAD PROV")
 // console.log(newEmployee.cityId, "TEST LOAD CITY")
   return (

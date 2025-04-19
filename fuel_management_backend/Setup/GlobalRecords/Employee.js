@@ -160,10 +160,11 @@ router.get("/employees/:id", async (req, res) => {
 });
 
 router.post("/employee", async (req, res) => {
+  // console.log("new employee", req.body)
   const client = await pool.connect();
 
   try {
-    const { firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email } = req.body;
+    const { code, firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email } = req.body;
     
     await client.query("BEGIN");
 
@@ -207,8 +208,8 @@ router.post("/employee", async (req, res) => {
                   )
       VALUES      ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       RETURNING id
-    `, [newCode, firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email]);
-
+    `, [code, firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email]);
+// `, [newCode, firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email]);
     await client.query("COMMIT");
     
     // res.status(201).json(result.rows);
@@ -224,8 +225,9 @@ router.post("/employee", async (req, res) => {
 });
 
 router.put("/employee/:id", async (req, res) => {
+  // console.log("updating employee", req.body)
   const client = await pool.connect();
-  const { firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email } = req.body;
+  const { code, firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email } = req.body;
   const { id } = req.params;
   if (!id) {
     console.error("Error: ID is undefined or missing");
@@ -255,10 +257,11 @@ router.put("/employee/:id", async (req, res) => {
                   designationId = $15,
                   employeeStatusId = $16,
                   contactNo = $17,
-                  email = $18 
+                  email = $18,
+                  code = $19
       WHERE       id = $1 
       RETURNING id
-    `, [id, firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email]);
+    `, [id, firstName, middleName, lastName, birthdate, genderId, civilStatusId, address, provinceId, cityId, barangayId, datehired, stationId, departmentId, designationId, employeeStatusId, contactNo, email, code]);
 
     await client.query("COMMIT");
     
